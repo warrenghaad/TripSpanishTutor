@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Activity, User, Brain, Hand, MapPin, ArrowRight, Utensils, DollarSign, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 
 export default function Learn() {
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
@@ -114,11 +116,19 @@ export default function Learn() {
                                
                                <div className="w-12 h-1 bg-primary rounded-full mb-6 relative z-10" />
                                
-                               <div className="space-y-2 relative z-10">
+                               <div className="space-y-2 relative z-10 mb-8">
                                  <p className="text-white/60 text-sm uppercase tracking-widest font-bold">The Solution</p>
                                  <p className="text-2xl font-display font-medium">"{scenario.spanishAction}"</p>
                                  <p className="text-white/80 italic">({scenario.action})</p>
                                </div>
+
+                               {scenario.linkedSituationId && (
+                                 <Link href={`/situations/${scenario.linkedSituationId}`}>
+                                    <Button className="relative z-10 bg-white text-secondary hover:bg-white/90 font-bold gap-2">
+                                      Practice Here <ArrowRight className="w-4 h-4" />
+                                    </Button>
+                                 </Link>
+                               )}
                             </Card>
                           </motion.div>
                         );

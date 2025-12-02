@@ -26,6 +26,7 @@ export type Scenario = {
   spanishAction: string;
   location: string;
   icon: string;
+  linkedSituationId?: string;
 };
 
 export const bodyParts: VocabularyItem[] = [
@@ -133,6 +134,28 @@ export const situations = [
       { speaker: 'me', spanish: '¿Qué me recomienda?', english: 'What do you recommend?' },
       { speaker: 'them', spanish: '¿Todo bien?', english: 'Is everything okay?' },
     ]
+  },
+  {
+    id: 'pharmacy',
+    title: 'At the Pharmacy',
+    description: 'Describing symptoms and asking for medicine.',
+    icon: 'activity',
+    phrases: [
+      { speaker: 'me', spanish: 'Me duele la cabeza y el estómago.', english: 'My head and stomach hurt.' },
+      { speaker: 'me', spanish: '¿Tiene algo para el mareo?', english: 'Do you have something for dizziness?' },
+      { speaker: 'them', spanish: 'Tome esto cada ocho horas.', english: 'Take this every 8 hours.' },
+    ]
+  },
+  {
+    id: 'market',
+    title: 'At the Market',
+    description: 'Asking prices, colors, and bargaining.',
+    icon: 'shopping-bag',
+    phrases: [
+      { speaker: 'me', spanish: '¿Cuánto cuesta esta camisa?', english: 'How much is this shirt?' },
+      { speaker: 'me', spanish: '¿Tiene en color azul?', english: 'Do you have it in blue?' },
+      { speaker: 'me', spanish: 'Es muy caro. ¿Cuánto es lo menos?', english: 'It is too expensive. What is your lowest price?' },
+    ]
   }
 ];
 
@@ -144,7 +167,8 @@ export const conditionalScenarios: Scenario[] = [
     action: "I go to a restaurant",
     spanishAction: "Voy a un restaurante",
     location: "El Restaurante",
-    icon: "utensils"
+    icon: "utensils",
+    linkedSituationId: "restaurant"
   },
   {
     id: 'sick',
@@ -153,7 +177,8 @@ export const conditionalScenarios: Scenario[] = [
     action: "I go to the pharmacy/doctor",
     spanishAction: "Voy a la farmacia o al doctor",
     location: "La Farmacia",
-    icon: "activity"
+    icon: "activity",
+    linkedSituationId: "pharmacy"
   },
   {
     id: 'lost',
@@ -162,7 +187,8 @@ export const conditionalScenarios: Scenario[] = [
     action: "I ask for help",
     spanishAction: "Pido ayuda",
     location: "La Calle / El Policía",
-    icon: "map-pin"
+    icon: "map-pin",
+    // No linked situation yet, could add 'directions' later
   },
   {
     id: 'money',
@@ -173,13 +199,14 @@ export const conditionalScenarios: Scenario[] = [
     location: "El Banco / El Cajero",
     icon: "dollar-sign"
   },
-    {
+  {
     id: 'shopping',
     condition: "If I want to buy clothes...",
     spanishCondition: "Si quiero comprar ropa...",
     action: "I go to the market/store",
     spanishAction: "Voy al mercado o a la tienda",
     location: "El Mercado",
-    icon: "shopping-bag"
+    icon: "shopping-bag",
+    linkedSituationId: "market"
   }
 ];
