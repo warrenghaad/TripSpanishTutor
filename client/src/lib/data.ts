@@ -18,6 +18,16 @@ export type Verb = {
   };
 };
 
+export type Scenario = {
+  id: string;
+  condition: string;
+  spanishCondition: string;
+  action: string;
+  spanishAction: string;
+  location: string;
+  icon: string;
+};
+
 export const bodyParts: VocabularyItem[] = [
   { id: 'cabeza', spanish: 'la cabeza', english: 'head', category: 'body', icon: 'brain' },
   { id: 'brazo', spanish: 'el brazo', english: 'arm', category: 'body', icon: 'hand' },
@@ -58,6 +68,36 @@ export const commonVerbs: Verb[] = [
       future: { yo: 'moveré', tu: 'moverás', el: 'moverá' },
     },
   },
+  {
+    id: 'ir',
+    spanish: 'ir',
+    english: 'to go',
+    conjugations: {
+      present: { yo: 'voy', tu: 'vas', el: 'va' },
+      past: { yo: 'fui', tu: 'fuiste', el: 'fue' },
+      future: { yo: 'iré', tu: 'irás', el: 'irá' },
+    },
+  },
+  {
+    id: 'necesitar',
+    spanish: 'necesitar',
+    english: 'to need',
+    conjugations: {
+      present: { yo: 'necesito', tu: 'necesitas', el: 'necesita' },
+      past: { yo: 'necesité', tu: 'necesitaste', el: 'necesitó' },
+      future: { yo: 'necesitaré', tu: 'necesitarás', el: 'necesitará' },
+    },
+  },
+  {
+    id: 'querer',
+    spanish: 'querer',
+    english: 'to want',
+    conjugations: {
+      present: { yo: 'quiero', tu: 'quieres', el: 'quiere' },
+      past: { yo: 'quise', tu: 'quisiste', el: 'quiso' },
+      future: { yo: 'querré', tu: 'querrás', el: 'querrá' },
+    },
+  },
 ];
 
 export const situations = [
@@ -93,5 +133,53 @@ export const situations = [
       { speaker: 'me', spanish: '¿Qué me recomienda?', english: 'What do you recommend?' },
       { speaker: 'them', spanish: '¿Todo bien?', english: 'Is everything okay?' },
     ]
+  }
+];
+
+export const conditionalScenarios: Scenario[] = [
+  {
+    id: 'hungry',
+    condition: "If I am hungry...",
+    spanishCondition: "Si tengo hambre...",
+    action: "I go to a restaurant",
+    spanishAction: "Voy a un restaurante",
+    location: "El Restaurante",
+    icon: "utensils"
+  },
+  {
+    id: 'sick',
+    condition: "If I feel sick...",
+    spanishCondition: "Si me siento mal...",
+    action: "I go to the pharmacy/doctor",
+    spanishAction: "Voy a la farmacia o al doctor",
+    location: "La Farmacia",
+    icon: "activity"
+  },
+  {
+    id: 'lost',
+    condition: "If I am lost...",
+    spanishCondition: "Si estoy perdido...",
+    action: "I ask for help",
+    spanishAction: "Pido ayuda",
+    location: "La Calle / El Policía",
+    icon: "map-pin"
+  },
+  {
+    id: 'money',
+    condition: "If I need money...",
+    spanishCondition: "Si necesito dinero...",
+    action: "I go to the bank/ATM",
+    spanishAction: "Voy al banco o al cajero",
+    location: "El Banco / El Cajero",
+    icon: "dollar-sign"
+  },
+    {
+    id: 'shopping',
+    condition: "If I want to buy clothes...",
+    spanishCondition: "Si quiero comprar ropa...",
+    action: "I go to the market/store",
+    spanishAction: "Voy al mercado o a la tienda",
+    location: "El Mercado",
+    icon: "shopping-bag"
   }
 ];
