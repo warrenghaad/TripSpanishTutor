@@ -8,6 +8,8 @@ import Home from "@/pages/home";
 import Learn from "@/pages/learn";
 import Situations from "@/pages/situations";
 import Journal from "@/pages/journal";
+import ChatWidget from "./components/chat-widget";
+import TranslatorPanel from "./components/translator-panel";
 
 function Router() {
   return (
@@ -27,6 +29,8 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <ChatWidget />
+        <TranslatorPanel />
       </TooltipProvider>
     </QueryClientProvider>
   );

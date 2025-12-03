@@ -20,17 +20,30 @@ export async function analyzeSpanishText(
   text: string,
   tenseFocus: string
 ): Promise<GrammarFeedback> {
+  const tenseDescriptions: Record<string, string> = {
+    present: "presente (present tense) - describing current actions or states",
+    past: "pretérito (preterite/past tense) - completed past actions",
+    future: "futuro simple (simple future) - actions that will happen",
+    conditional: "condicional simple (conditional) - expressing wishes, polite requests, or hypotheticals (e.g., 'me gustaría', 'querría')",
+    conditional_perfect: "condicional perfecto (conditional perfect) - expressing what would have happened (e.g., 'habría ido', 'habría hecho')"
+  };
+
+  const tenseDesc = tenseDescriptions[tenseFocus] || tenseFocus;
+
   const prompt = `You are a Spanish language tutor helping an English speaker practice Spanish for travel in Mexico.
 
-The student is focusing on practicing the ${tenseFocus} tense.
+The student is focusing on practicing the ${tenseDesc}.
 
-Student's text: "${text}"
+Student's Spanish text: "${text}"
 
 Please:
-1. Correct any grammar mistakes, especially related to verb conjugations in the ${tenseFocus} tense
-2. Provide a polished Spanish version
+1. Correct any grammar mistakes, especially related to verb conjugations in this tense
+2. Provide a polished Spanish version using the appropriate verb forms
 3. Identify specific corrections made (original phrase → corrected phrase with explanation)
 4. Extract 3-5 new vocabulary words from the corrected text that would be useful for travel
+
+For conditional tense, ensure proper use of endings (-ía, -ías, -ía, -íamos, -ían).
+For conditional perfect, ensure proper "habría/habrías/habría + past participle" structure.
 
 Respond in JSON format:
 {

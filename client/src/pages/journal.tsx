@@ -2,8 +2,8 @@ import Layout from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mic, Book, Sparkles, ArrowRight, Info } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Book, Sparkles, ArrowRight, Info, Heart, Lightbulb, Wind, Globe } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
@@ -14,10 +14,97 @@ type Feedback = {
   vocab: { word: string; translation: string }[];
 };
 
+type JournalSection = {
+  id: string;
+  title: string;
+  tenseLabel: string;
+  tenseFocus: string;
+  spanishHint: string;
+  prompt: string;
+  placeholder: string;
+};
+
+const journalSections: JournalSection[] = [
+  {
+    id: "notice",
+    title: "What I Notice",
+    tenseLabel: "Mindfulness",
+    tenseFocus: "present",
+    spanishHint: "Noto que...",
+    prompt: "What's present right now? Notice body sensations, thoughts, or feelings without judgment.",
+    placeholder: "I notice a steady hum of anxiety... (Write in English, we'll help with Spanish)"
+  },
+  {
+    id: "did",
+    title: "What I Did",
+    tenseLabel: "Pretérito",
+    tenseFocus: "past",
+    spanishHint: "Ayer... / Fui... / Probé...",
+    prompt: "What actions did you take? What did you experience?",
+    placeholder: "Yesterday I visited the gallery and tried the local coffee..."
+  },
+  {
+    id: "wish",
+    title: "What I Wish I Could Do",
+    tenseLabel: "Condicional",
+    tenseFocus: "conditional",
+    spanishHint: "Me gustaría...",
+    prompt: "What would you enjoy doing? No pressure, just gentle wishes.",
+    placeholder: "I'd like to go to a jazz set by the malecón..."
+  },
+  {
+    id: "shouldve",
+    title: "What I Could've Done",
+    tenseLabel: "Condicional Perfecto",
+    tenseFocus: "conditional_perfect",
+    spanishHint: "Habría...",
+    prompt: "Reflect gently — not for self-criticism, but for learning.",
+    placeholder: "I would have booked the food tour earlier..."
+  },
+  {
+    id: "willdo",
+    title: "What I Will Do",
+    tenseLabel: "Futuro",
+    tenseFocus: "future",
+    spanishHint: "Mañana... / Voy a...",
+    prompt: "One small, values-aligned step for tomorrow.",
+    placeholder: "Tomorrow I'll walk to the bookstore..."
+  }
+];
+
+const interestThemes = [
+  { id: "books", label: "Books & Film", emoji: "📚" },
+  { id: "jazz", label: "Jazz & Music", emoji: "🎷" },
+  { id: "art", label: "Galleries & Art", emoji: "🎨" },
+  { id: "food", label: "Food Tours", emoji: "🍽️" },
+  { id: "nature", label: "Beach & Nature", emoji: "🌊" },
+];
+
 export default function Journal() {
-  const [text, setText] = useState("");
-  const [tenseFocus, setTenseFocus] = useState("past");
+  const [activeSection, setActiveSection] = useState("notice");
+  const [englishEntries, setEnglishEntries] = useState<Record<string, string>>({});
+  const [spanishEntries, setSpanishEntries] = useState<Record<string, string>>({});
+  const [humLevel, setHumLevel] = useState([3]);
+  const [theme, setTheme] = useState("food");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  const translateMutation = useMutation({
+    mutationFn: async (data: { text: string; section: string }) => {
+      const response = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          text: data.text, 
+          target: "es", 
+          preset: "journal", 
+          soften: true 
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to translate");
+      return response.json();
+    },
+  });
 
   const analyzeMutation = useMutation({
     mutationFn: async (data: { text: string; tenseFocus: string }) => {
@@ -26,11 +113,7 @@ export default function Journal() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      
-      if (!response.ok) {
-        throw new Error("Failed to analyze text");
-      }
-      
+      if (!response.ok) throw new Error("Failed to analyze text");
       return response.json();
     },
     onSuccess: (data) => {
@@ -38,99 +121,268 @@ export default function Journal() {
     },
   });
 
-  const handleTranslate = () => {
-    if (!text) return;
-    analyzeMutation.mutate({ text, tenseFocus });
+  const currentSection = journalSections.find(s => s.id === activeSection)!;
+  const englishText = englishEntries[activeSection] || "";
+  const spanishText = spanishEntries[activeSection] || "";
+
+  const handleEnglishChange = (value: string) => {
+    setEnglishEntries(prev => ({ ...prev, [activeSection]: value }));
+    setSpanishEntries(prev => ({ ...prev, [activeSection]: "" }));
+    setFeedback(null);
   };
+
+  const handleGetNudge = async () => {
+    if (!englishText.trim()) return;
+    try {
+      const result = await translateMutation.mutateAsync({ text: englishText, section: activeSection });
+      setSpanishEntries(prev => ({ ...prev, [activeSection]: result.translation }));
+    } catch (error) {
+      console.error("Translation failed:", error);
+    }
+  };
+
+  const handleAnalyze = async () => {
+    if (!englishText.trim()) return;
+    
+    setIsTranslating(true);
+    try {
+      let textToAnalyze = spanishText;
+      
+      if (!textToAnalyze) {
+        const result = await translateMutation.mutateAsync({ text: englishText, section: activeSection });
+        textToAnalyze = result.translation;
+        setSpanishEntries(prev => ({ ...prev, [activeSection]: textToAnalyze }));
+      }
+      
+      analyzeMutation.mutate({ text: textToAnalyze, tenseFocus: currentSection.tenseFocus });
+    } catch (error) {
+      console.error("Analysis failed:", error);
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const humLabels = ["Quiet", "Present", "Steady", "Strong", "Loud"];
+  const isLoading = translateMutation.isPending || analyzeMutation.isPending || isTranslating;
 
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto px-6 py-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-foreground mb-2">Travel Journal</h1>
-          <p className="text-muted-foreground">Practice your past and future tenses describing your day.</p>
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
+        <header className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-2">Mindful Journal</h1>
+          <p className="text-muted-foreground text-sm md:text-base">Write in English. Get gentle Spanish nudges. Learn naturally.</p>
         </header>
 
-        <div className="grid gap-6">
-          <Card className="p-6 space-y-4 border-primary/20 shadow-md">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
-              <div className="flex items-center gap-2">
-                <label className="font-bold text-sm text-muted-foreground uppercase tracking-wider">Focus Tense:</label>
-                <Select value={tenseFocus} onValueChange={setTenseFocus}>
-                  <SelectTrigger className="w-[140px] h-8 text-xs font-bold uppercase tracking-wider bg-secondary/10 border-0 text-secondary">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="past">Past (Yesterday)</SelectItem>
-                    <SelectItem value="future">Future (Tomorrow)</SelectItem>
-                    <SelectItem value="present">Present (Now)</SelectItem>
-                  </SelectContent>
-                </Select>
+        <Card className="p-4 md:p-6 mb-6 bg-gradient-to-br from-secondary/5 to-primary/5 border-0">
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Wind className="w-4 h-4 text-secondary" />
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  The Hum Right Now
+                </span>
               </div>
-              <Button variant="ghost" size="sm" className="text-primary self-end md:self-auto">
-                <Mic className="w-4 h-4 mr-2" />
-                Dictate
-              </Button>
+              <Slider
+                value={humLevel}
+                onValueChange={setHumLevel}
+                max={4}
+                step={1}
+                className="w-full"
+                data-testid="slider-hum-level"
+              />
+              <div className="flex justify-between mt-1">
+                {humLabels.map((label, i) => (
+                  <span 
+                    key={label} 
+                    className={`text-[10px] ${humLevel[0] === i ? "text-secondary font-bold" : "text-muted-foreground"}`}
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
             </div>
             
-            <Textarea 
-              placeholder={tenseFocus === 'past' ? "Yesterday I went to... (Ayer fui a...)" : "Tomorrow I will go to... (Mañana iré a...)"}
-              className="min-h-[150px] text-lg font-sans bg-background border-border/60 focus:border-primary/50 resize-none p-4"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              data-testid="textarea-journal-entry"
-            />
+            <div className="border-l border-border/50 pl-4 hidden md:block" />
             
-            <div className="flex justify-end">
-              <Button 
-                onClick={handleTranslate} 
-                disabled={analyzeMutation.isPending || !text}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-                data-testid="button-analyze"
-              >
-                {analyzeMutation.isPending ? (
-                  <span className="flex items-center"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"/> Analyzing...</span>
-                ) : (
-                  <span className="flex items-center"><Sparkles className="w-4 h-4 mr-2" /> Check My Grammar</span>
-                )}
-              </Button>
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Heart className="w-4 h-4 text-primary" />
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Today's Theme
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {interestThemes.map(t => (
+                  <Button
+                    key={t.id}
+                    variant={theme === t.id ? "default" : "outline"}
+                    size="sm"
+                    className={`text-xs h-7 px-2 ${theme === t.id ? "bg-primary" : ""}`}
+                    onClick={() => setTheme(t.id)}
+                    data-testid={`button-theme-${t.id}`}
+                  >
+                    {t.emoji}
+                  </Button>
+                ))}
+              </div>
             </div>
-          </Card>
+          </div>
+          
+          {humLevel[0] >= 3 && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="mt-4 p-3 bg-white/50 rounded-lg border border-secondary/20"
+            >
+              <p className="text-sm text-secondary flex items-start gap-2">
+                <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>The hum is loud right now, and that's okay. Let it be background noise while you write. Breathe slowly: 4 counts in, 7 hold, 8 out.</span>
+              </p>
+            </motion.div>
+          )}
+        </Card>
 
-          <AnimatePresence>
-            {feedback && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-                data-testid="card-feedback"
-              >
-                <Card className="p-6 bg-white border-l-4 border-l-primary shadow-lg overflow-hidden relative">
-                  <div className="absolute top-0 right-0 p-4 opacity-5 text-primary">
-                    <Book className="w-32 h-32 -mr-8 -mt-8" />
+        <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2">
+          {journalSections.map((section) => (
+            <Button
+              key={section.id}
+              variant={activeSection === section.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setActiveSection(section.id);
+                setFeedback(null);
+              }}
+              className={`text-xs whitespace-nowrap ${activeSection === section.id ? "bg-secondary" : ""}`}
+              data-testid={`button-section-${section.id}`}
+            >
+              {section.title}
+            </Button>
+          ))}
+        </div>
+
+        <Card className="p-4 md:p-6 border-secondary/20 shadow-md mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4">
+            <div>
+              <h2 className="font-display font-bold text-lg text-foreground">{currentSection.title}</h2>
+              <div className="flex items-center gap-2">
+                <span className="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full font-bold">
+                  {currentSection.tenseLabel}
+                </span>
+                <span className="text-xs text-muted-foreground italic">
+                  {currentSection.spanishHint}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <p className="text-sm text-muted-foreground mb-4 bg-muted/30 p-3 rounded-lg">
+            {currentSection.prompt}
+          </p>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
+                Your thoughts (English)
+              </label>
+              <Textarea 
+                placeholder={currentSection.placeholder}
+                className="min-h-[120px] text-base bg-background border-border/60 focus:border-primary/50 resize-none p-4"
+                value={englishText}
+                onChange={(e) => handleEnglishChange(e.target.value)}
+                data-testid="textarea-english-entry"
+              />
+            </div>
+
+            <AnimatePresence>
+              {spanishText && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <label className="text-xs font-bold text-secondary uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <Globe className="w-3 h-3" /> Spanish Version
+                  </label>
+                  <Textarea 
+                    className="min-h-[100px] text-base bg-secondary/5 border-secondary/30 focus:border-secondary resize-none p-4"
+                    value={spanishText}
+                    onChange={(e) => setSpanishEntries(prev => ({ ...prev, [activeSection]: e.target.value }))}
+                    data-testid="textarea-spanish-entry"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-2 mt-4">
+            <Button 
+              variant="outline"
+              onClick={handleGetNudge} 
+              disabled={isLoading || !englishText.trim()}
+              className="flex-1 border-secondary text-secondary hover:bg-secondary/10"
+              data-testid="button-get-nudge"
+            >
+              {translateMutation.isPending ? (
+                <span className="flex items-center"><div className="w-4 h-4 border-2 border-secondary/30 border-t-secondary rounded-full animate-spin mr-2"/> Translating...</span>
+              ) : (
+                <span className="flex items-center"><Globe className="w-4 h-4 mr-2" /> Get Spanish Nudge</span>
+              )}
+            </Button>
+            
+            <Button 
+              onClick={handleAnalyze} 
+              disabled={isLoading || !englishText.trim()}
+              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+              data-testid="button-analyze"
+            >
+              {(analyzeMutation.isPending || isTranslating) ? (
+                <span className="flex items-center"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"/> Analyzing...</span>
+              ) : (
+                <span className="flex items-center"><Sparkles className="w-4 h-4 mr-2" /> Translate & Check</span>
+              )}
+            </Button>
+          </div>
+          
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            Write freely in English — we'll translate to Spanish before checking grammar.
+          </p>
+        </Card>
+
+        <AnimatePresence>
+          {feedback && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+              data-testid="card-feedback"
+            >
+              <Card className="p-4 md:p-6 bg-white border-l-4 border-l-primary shadow-lg overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-4 opacity-5 text-primary">
+                  <Book className="w-32 h-32 -mr-8 -mt-8" />
+                </div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 mb-4 text-primary">
+                    <Sparkles className="w-5 h-5" />
+                    <h3 className="font-display font-bold text-lg">Polished Spanish Entry</h3>
                   </div>
                   
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-4 text-primary">
-                      <Sparkles className="w-5 h-5" />
-                      <h3 className="font-display font-bold text-lg">Polished Entry</h3>
-                    </div>
-                    
-                    <p className="text-xl md:text-2xl font-display text-foreground leading-relaxed mb-6" data-testid="text-corrected">
-                      {feedback.corrected}
-                    </p>
+                  <p className="text-lg md:text-xl font-display text-foreground leading-relaxed mb-6" data-testid="text-corrected">
+                    {feedback.corrected}
+                  </p>
 
+                  {feedback.corrections.length > 0 && (
                     <div className="grid md:grid-cols-2 gap-6 pt-6 border-t border-dashed border-border">
                       <div>
                         <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                          <Info className="w-3 h-3" /> Grammar Fixes
+                          <Info className="w-3 h-3" /> Grammar Insights ({currentSection.tenseLabel})
                         </h4>
                         <ul className="space-y-3">
                           {feedback.corrections.map((correction, idx) => (
                             <li key={idx} className="text-sm group" data-testid={`correction-${idx}`}>
-                              <div className="flex items-baseline gap-2 mb-1">
+                              <div className="flex items-baseline gap-2 mb-1 flex-wrap">
                                 <span className="text-red-400 line-through decoration-red-400/50 decoration-2">{correction.original}</span>
-                                <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                                <ArrowRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                                 <span className="text-green-600 font-bold bg-green-50 px-1 rounded">{correction.fixed}</span>
                               </div>
                               <p className="text-muted-foreground text-xs pl-4 border-l-2 border-border group-hover:border-primary/30 transition-colors">
@@ -141,26 +393,34 @@ export default function Journal() {
                         </ul>
                       </div>
 
-                      <div>
-                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                          <Book className="w-3 h-3" /> New Vocabulary
-                        </h4>
-                         <div className="grid grid-cols-2 gap-2">
-                          {feedback.vocab.map((v, idx) => (
-                            <div key={idx} className="bg-secondary/5 p-2 rounded-lg flex flex-col" data-testid={`vocab-${idx}`}>
-                              <span className="font-bold text-secondary text-sm">{v.word}</span>
-                              <span className="text-muted-foreground text-xs">{v.translation}</span>
-                            </div>
-                          ))}
+                      {feedback.vocab.length > 0 && (
+                        <div>
+                          <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <Book className="w-3 h-3" /> New Vocabulary
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            {feedback.vocab.map((v, idx) => (
+                              <div key={idx} className="bg-secondary/5 p-2 rounded-lg flex flex-col" data-testid={`vocab-${idx}`}>
+                                <span className="font-bold text-secondary text-sm">{v.word}</span>
+                                <span className="text-muted-foreground text-xs">{v.translation}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
-                  </div>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                  )}
+                </div>
+              </Card>
+
+              <Card className="p-4 bg-muted/30 border-0">
+                <p className="text-sm text-muted-foreground text-center italic">
+                  "The amp hum is background; your chosen song is foreground." — Keep writing, keep growing.
+                </p>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </Layout>
   );
