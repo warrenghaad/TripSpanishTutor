@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Languages, ArrowRightLeft, Copy, Volume2, Sparkles, X, Check } from "lucide-react";
+import { Languages, ArrowRightLeft, Copy, Sparkles, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -189,9 +189,6 @@ export default function TranslatorPanel() {
                       >
                         {copied ? <Check className="w-3 h-3 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
                         {copied ? "Copied!" : "Copy"}
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-xs">
-                        <Volume2 className="w-3 h-3 mr-1" /> Speak
                       </Button>
                     </div>
                   </div>

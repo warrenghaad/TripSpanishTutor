@@ -40,16 +40,16 @@ const journalSections: JournalSection[] = [
     tenseLabel: "Pretérito",
     tenseFocus: "past",
     spanishHint: "Ayer... / Fui... / Probé...",
-    prompt: "What actions did you take? What did you experience?",
-    placeholder: "Yesterday I visited the gallery and tried the local coffee..."
+    prompt: "What did you do today? What places did you visit, foods did you try?",
+    placeholder: "Today I visited the gallery on Calle Hidalgo and tried the local café..."
   },
   {
     id: "wish",
-    title: "What I Wish I Could Do",
+    title: "What I'd Like to Do",
     tenseLabel: "Condicional",
     tenseFocus: "conditional",
     spanishHint: "Me gustaría...",
-    prompt: "What would you enjoy doing? No pressure, just gentle wishes.",
+    prompt: "What would you enjoy doing? Dream destinations, activities, experiences.",
     placeholder: "I'd like to go to a jazz set by the malecón..."
   },
   {
@@ -63,12 +63,12 @@ const journalSections: JournalSection[] = [
   },
   {
     id: "willdo",
-    title: "What I Will Do",
+    title: "Tomorrow's Plan",
     tenseLabel: "Futuro",
     tenseFocus: "future",
     spanishHint: "Mañana... / Voy a...",
-    prompt: "One small, values-aligned step for tomorrow.",
-    placeholder: "Tomorrow I'll walk to the bookstore..."
+    prompt: "Plan your next adventure. Where will you go? What will you do?",
+    placeholder: "Tomorrow I'll visit the Malecon at sunset and try tacos al pastor..."
   }
 ];
 
