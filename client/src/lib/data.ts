@@ -101,6 +101,26 @@ export const commonVerbs: Verb[] = [
   },
 ];
 
+export const adjectives: VocabularyItem[] = [
+  { id: 'grande', spanish: 'grande', english: 'big', category: 'adjective' },
+  { id: 'pequeno', spanish: 'pequeño', english: 'small', category: 'adjective' },
+  { id: 'bueno', spanish: 'bueno', english: 'good', category: 'adjective' },
+  { id: 'malo', spanish: 'malo', english: 'bad', category: 'adjective' },
+  { id: 'rojo', spanish: 'rojo', english: 'red', category: 'adjective' },
+  { id: 'caliente', spanish: 'caliente', english: 'hot', category: 'adjective' },
+  { id: 'frio', spanish: 'frío', english: 'cold', category: 'adjective' },
+];
+
+export const adverbs: VocabularyItem[] = [
+  { id: 'rapido', spanish: 'rápidamente', english: 'quickly', category: 'adverb' },
+  { id: 'lento', spanish: 'lentamente', english: 'slowly', category: 'adverb' },
+  { id: 'bien', spanish: 'bien', english: 'well', category: 'adverb' },
+  { id: 'mal', spanish: 'mal', english: 'badly', category: 'adverb' },
+  { id: 'hoy', spanish: 'hoy', english: 'today', category: 'adverb' },
+  { id: 'manana', spanish: 'mañana', english: 'tomorrow', category: 'adverb' },
+  { id: 'mucho', spanish: 'mucho', english: 'a lot', category: 'adverb' },
+];
+
 export const situations = [
   {
     id: 'taxi',
@@ -188,7 +208,6 @@ export const conditionalScenarios: Scenario[] = [
     spanishAction: "Pido ayuda",
     location: "La Calle / El Policía",
     icon: "map-pin",
-    // No linked situation yet, could add 'directions' later
   },
   {
     id: 'money',
