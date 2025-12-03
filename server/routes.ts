@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { type Server } from "http";
 import { storage } from "./storage";
-import { analyzeSpanishText } from "./ai-service";
+import { analyzeSpanishText, chatWithAssistant, translateText } from "./ai-service";
 import { insertJournalEntrySchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -70,6 +70,38 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching journal entry:", error);
       res.status(500).json({ error: "Failed to fetch entry" });
+    }
+  });
+
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { messages } = req.body;
+      
+      if (!messages || !Array.isArray(messages)) {
+        return res.status(400).json({ error: "Missing messages array" });
+      }
+
+      const reply = await chatWithAssistant(messages);
+      res.json({ reply });
+    } catch (error) {
+      console.error("Error in chat:", error);
+      res.status(500).json({ error: "Chat failed" });
+    }
+  });
+
+  app.post("/api/translate", async (req, res) => {
+    try {
+      const { text, target, preset, soften } = req.body;
+      
+      if (!text || !target) {
+        return res.status(400).json({ error: "Missing text or target language" });
+      }
+
+      const result = await translateText(text, target, preset || "general", soften || false);
+      res.json(result);
+    } catch (error) {
+      console.error("Error translating:", error);
+      res.status(500).json({ error: "Translation failed" });
     }
   });
 

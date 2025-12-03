@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, BookOpen, MessageSquare, PenTool, Settings } from "lucide-react";
+import { Home, BookOpen, MessageSquare, PenTool } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Navigation() {
@@ -23,16 +23,17 @@ export default function Navigation() {
           const isActive = location === item.href;
           return (
             <li key={item.href}>
-              <Link href={item.href}>
-                <a className={cn(
+              <Link 
+                href={item.href}
+                className={cn(
                   "flex flex-col items-center p-2 rounded-xl transition-all duration-200 md:flex-row md:space-x-3 md:px-4 md:py-3",
                   isActive 
                     ? "text-primary bg-primary/10 md:bg-primary/10" 
                     : "text-muted-foreground hover:text-primary hover:bg-primary/5"
-                )}>
-                  <item.icon className={cn("h-6 w-6 mb-1 md:mb-0", isActive && "stroke-[2.5px]")} />
-                  <span className="text-[10px] font-medium md:text-sm">{item.label}</span>
-                </a>
+                )}
+              >
+                <item.icon className={cn("h-6 w-6 mb-1 md:mb-0", isActive && "stroke-[2.5px]")} />
+                <span className="text-[10px] font-medium md:text-sm">{item.label}</span>
               </Link>
             </li>
           );

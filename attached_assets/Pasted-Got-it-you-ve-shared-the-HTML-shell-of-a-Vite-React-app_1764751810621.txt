@@ -1,0 +1,276 @@
+Got it — you’ve shared the HTML shell of a Vite/React app (with Replit beacon scripts and a React entry at /src/main.tsx). The simplest way to “insert an AI bot that converses with you” here is to add a chat widget component to your React app and connect it to an LLM API. Below is a clear path you can implement right away.
+
+## 🧭 What we’ll add
+We’ll:
+- Create a ChatWidget React component.
+- Wire it to an API route that proxies requests to an LLM (OpenAI-style example).
+- Mount the widget in your current page.
+
+---
+
+## 🔧 Client: a minimal React chat widget
+This component renders a floating chat bubble and handles messages.
+
+- Files to add: src/components/ChatWidget.tsx
+- Then import it in src/main.tsx and render in your app.
+
+Example ChatWidget.tsx:
+```tsx
+import React, { useState, useRef, useEffect } from "react";
+
+type Message = { role: "user" | "assistant"; content: string };
+
+export default function ChatWidget() {
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "assistant", content: "Hola! I’m your travel Spanish companion. Ask me anything 🇲🇽" }
+  ]);
+  const [loading, setLoading] = useState(false);
+  const endRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, open]);
+
+  async function sendMessage() {
+    const text = input.trim();
+    if (!text) return;
+    setInput("");
+    setMessages(prev => [...prev, { role: "user", content: text }]);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [...messages, { role: "user", content: text }] }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setMessages(prev => [...prev, { role: "assistant", content: data.reply }]);
+    } catch (err) {
+      setMessages(prev => [...prev, { role: "assistant", content: "Oops—something went wrong. Try again." }]);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  return (
+    <>
+      {/* Floating button */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          position: "fixed",
+          right: 16,
+          bottom: 16,
+          borderRadius: "999px",
+          padding: "12px 16px",
+          background: "#0079F2",
+          color: "#fff",
+          border: "none",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+          cursor: "pointer",
+          zIndex: 9999,
+        }}
+      >
+        {open ? "Close Chat" : "Chat"}
+      </button>
+
+      {/* Chat panel */}
+      {open && (
+        <div
+          style={{
+            position: "fixed",
+            right: 16,
+            bottom: 72,
+            width: 340,
+            maxHeight: 480,
+            background: "#fff",
+            borderRadius: 12,
+            boxShadow: "0 16px 40px rgba(0,0,0,0.2)",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            zIndex: 9999,
+            border: "1px solid #e6e6e6",
+            fontFamily: "DM Sans, Outfit, system-ui, sans-serif",
+          }}
+        >
+          <div style={{ padding: "12px 16px", borderBottom: "1px solid #eee", fontWeight: 600 }}>
+            Vallarta Voz Assistant
+          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: 12 }}>
+            {messages.map((m, i) => (
+              <div key={i} style={{ marginBottom: 8, display: "flex" }}>
+                <div
+                  style={{
+                    marginLeft: m.role === "assistant" ? 0 : "auto",
+                    background: m.role === "assistant" ? "#f5f7ff" : "#0079F2",
+                    color: m.role === "assistant" ? "#222" : "#fff",
+                    padding: "8px 10px",
+                    borderRadius: 10,
+                    maxWidth: "80%",
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {m.content}
+                </div>
+              </div>
+            ))}
+            {loading && <div style={{ fontSize: 12, color: "#666", padding: "4px 8px" }}>Thinking…</div>}
+            <div ref={endRef} />
+          </div>
+          <div style={{ display: "flex", gap: 8, padding: 12, borderTop: "1px solid #eee" }}>
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder="Type your question…"
+              style={{
+                flex: 1,
+                padding: "10px 12px",
+                borderRadius: 8,
+                border: "1px solid #ddd",
+                outline: "none",
+              }}
+            />
+            <button
+              onClick={sendMessage}
+              disabled={loading}
+              style={{
+                padding: "10px 14px",
+                borderRadius: 8,
+                border: "none",
+                background: loading ? "#9ec8ff" : "#0079F2",
+                color: "#fff",
+                cursor: loading ? "default" : "pointer",
+              }}
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+Mount it in your app (src/main.tsx):
+```tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import ChatWidget from "./components/ChatWidget";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+    <ChatWidget />
+  </React.StrictMode>
+);
+```
+
+---
+
+## 🌐 Server: simple proxy route to an LLM
+You need an API route to call a model securely with your key. If you’re using Vite + a Node server (e.g., Express), add an endpoint like /api/chat.
+
+Example with Express (server/index.ts):
+```ts
+import express from "express";
+import fetch from "node-fetch";
+
+const app = express();
+app.use(express.json());
+
+app.post("/api/chat", async (req, res) => {
+  try {
+    const { messages } = req.body as { messages: { role: string; content: string }[] };
+
+    // Compose system prompt for your Vallarta Spanish focus
+    const system = {
+      role: "system",
+      content: "You are a friendly travel Spanish companion for Puerto Vallarta. Teach phrases, give cultural tips, and keep replies concise and helpful.",
+    };
+
+    // Call your LLM provider (OpenAI-like)
+    const r = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini", // pick your model
+        messages: [system, ...messages],
+        temperature: 0.7,
+      }),
+    });
+
+    if (!r.ok) {
+      const text = await r.text();
+      return res.status(r.status).json({ error: text });
+    }
+    const data = await r.json();
+    const reply = data.choices?.[0]?.message?.content ?? "Lo siento, no pude responder.";
+    res.json({ reply });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`API listening on :${port}`));
+```
+
+Setup notes:
+- Store your API key in an environment variable (e.g., OPENAI_API_KEY).
+- If you’re on Replit, add it in Secrets. On Vite dev, proxy /api to your server or run both with a dev proxy.
+- If you prefer Cloud options, you can use Botpress Cloud or Voiceflow and replace the server route with their SDK/API.
+
+---
+
+## 🧩 Vite dev proxy (optional)
+If your React app runs on Vite dev server and your API runs separately, add a proxy in vite.config.ts:
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      "/api": "http://localhost:3000",
+    },
+  },
+});
+```
+
+---
+
+## 🛡️ Safety and polish
+- Rate limit requests and debounce the sendAction client-side if needed.
+- Add basic error UI for network failures.
+- If you plan to teach Spanish phrases, consider quick reply buttons (e.g., “Ordering food”, “Directions”, “Greetings”).
+- Respect privacy: do not log personal message content server-side beyond necessary debugging.
+
+---
+
+## ✅ Quick recap
+- Add ChatWidget.tsx to your React app for the UI.
+- Create /api/chat on your server to call a model with your key.
+- Mount the widget via src/main.tsx.
+- Use Vite proxy for smooth local dev.
+
+If you’re running purely static without a custom backend, you can swap the server step for a hosted bot provider that gives you an embed script. Otherwise, the above gives you a fully controllable in-app assistant tailored to Vallarta Voz.

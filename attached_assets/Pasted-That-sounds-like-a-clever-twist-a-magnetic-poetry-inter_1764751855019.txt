@@ -1,0 +1,110 @@
+That sounds like a clever twist: a “magnetic poetry” interface where you physically arrange words to feel verb tenses in your hands. Here’s a structured way to turn that idea into a usable feature, plus variations for regular vs. irregular verbs and Spanish-specific practice.
+
+## 🧭 Concept & Overview
+Imagine draggable tiles for subjects, verbs, tense markers, and complements. Learners snap tiles into a sentence rail and the app instantly validates the conjugation, hints irregular patterns, and plays audio. It’s tactile, visual, and forgiving — perfect for building muscle memory for tenses.
+
+Here’s a quick breakdown of how it could work.
+
+---
+
+## 🔍 Core Mechanics
+- Tiles set
+  - Subjects: yo, tú, él/ella/usted, nosotros, vosotros, ellos/ustedes
+  - Verb stems: hablar, comer, vivir, ir, ser, tener, hacer, poder, querer…
+  - Tense chips: Presente, Pretérito, Imperfecto, Futuro, Condicional, Subjuntivo
+  - Irregular hints: small badges like “yo-go”, “stem-change (e→ie)”, “irregular preterite”
+  - Complement tiles: en la playa, con mis amigos, hoy, ayer, mañana…
+
+- Snap rail + validation
+  - Drop order: Subject → Verb → Tense → Complement.
+  - On drop, app autoconjugates and shows the full rendered sentence.
+  - If the verb is irregular in that tense, show a subtle tooltip: “hacer → hice (pretérito)”.
+
+- Immediate feedback
+  - Color signal: green for correct form; amber for close-but-off (e.g., regular ending used for an irregular).
+  - Micro-hints: “Preterite of tener is tuve, not tene…”
+  - Audio button for native pronunciation of the full sentence.
+
+- Practice modes
+  1. Free Play: build any sentence; validation is passive.
+  2. Challenge: you’re given a prompt (e.g., “Pretérito, yo, hacer”), and your tiles must produce “yo hice…”.
+  3. Timed Drill: produce 5 forms in 60 seconds.
+  4. Minimal Pairs: contrast near-confusions (“yo fui” vs “yo era”; “pude” vs “podía”).
+
+---
+
+## 🧠 Regular vs. Irregular Strategy
+- Regular verbs
+  - Endings cheat strips appear when hovering over tense chips:
+    - -ar (presente): o, as, a, amos, áis, an
+    - -er (presente): o, es, e, emos, éis, en
+    - -ir (presente): o, es, e, imos, ís, en
+  - For preterite, imperfect, etc., show their respective endings on demand.
+
+- Irregular verbs
+  - Tag tiles with pattern badges:
+    - “yo-go” (tengo, hago, pongo…)
+    - stem-change (e→ie, o→ue, e→i) with a mini heatmap highlighting the forms affected.
+    - suppletives (ser/ir preterite: fui, fuiste, fue…; tener preterite: tuve, tuviste…)
+  - When an irregular tense is selected, the app auto-fills the correct form and explains the rule in one line.
+
+- Contrast coach
+  - If a user uses a regular ending on an irregular, show: “Close! Preterite of poder uses ‘pud-’: pude, pudiste, pudo…”
+
+---
+
+## 🎯 Spanish-in-Travel Context (Vallarta flair)
+- Context packs: “Ordering food”, “Directions”, “Small talk”, “Beach day”.
+- Complement tiles tuned to travel situations: “una mesa para dos”, “al malecón”, “en efectivo”, “a las siete”.
+- Ready-made prompts:
+  - “Tell the waiter what you ordered yesterday (pretérito).”
+  - “Describe ongoing beach activities (imperfecto).”
+  - “Ask politely using present subjunctive: ‘Quiero que…’ + verb.”
+
+---
+
+## 🧩 UI Implementation Outline (React)
+- Data model
+  - verbs.json with metadata: infinitive, type (-ar/-er/-ir), stem changes by tense, fully irregular maps.
+  - tenses.json: name, endings for regular patterns, irregular note flags.
+- Components
+  - Tile: draggable; shows label + badges.
+  - Rail: droppable slots; renders the final sentence.
+  - Conjugator service: given subject, verb, tense → returns form, flags irregularity, provides hint.
+  - Feedback strip: color + one-line explanation + audio.
+- Interaction niceties
+  - Ghost preview: hover over tense to preview conjugations per subject.
+  - Double-click verb tile to cycle through tenses quickly.
+  - Keyboard fallback: numbers select slots; arrows rotate through verbs.
+
+---
+
+## 🔬 Example Learning Flows
+- Flow A: Preterite sprint
+  1. Prompt: “yo + hacer + Pretérito”
+  2. Learner builds tiles → app renders “yo hice…” with green feedback.
+  3. Next prompt: “nosotros + poder + Pretérito” → “pudimos…”
+
+- Flow B: Imperfect storytelling
+  1. Prompt: “ellos + ir + Imperfecto + al malecón”
+  2. Tiles → “ellos iban al malecón” with a tooltip: “imperfect: ongoing/used to.”
+
+- Flow C: Subjunctive request
+  1. Prompt: “Quiero que + tú + llegar + Presente Subjuntivo”
+  2. Tiles → “Quiero que tú llegues” with note: “-ar subjunctive: e, es, e, emos, éis, en.”
+
+---
+
+## 📈 Progress & Mastery
+- Track accuracy by tense and verb class (regular vs. irregular).
+- Heatmap of trouble verbs (ser/ir preterite, tener preterite, stem-changes).
+- “Next best drill” suggests 3 verbs and 1 tense you miss often.
+
+---
+
+## 🔧 Quick start data slice
+- Regular present endings map and an irregular dictionary for top travel verbs (tener, hacer, poder, querer, ir, ser).
+- Start with Presente and Pretérito; add Imperfecto after.
+- Add audio for each conjugated form using a TTS API.
+
+The key takeaway: treat conjugation as a hands-on puzzle. With draggable tiles, instant validation, and smart hints for irregulars, learners will internalize patterns faster and enjoy the process.

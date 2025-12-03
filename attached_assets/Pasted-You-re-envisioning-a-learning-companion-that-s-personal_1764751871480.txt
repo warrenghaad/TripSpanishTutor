@@ -1,0 +1,154 @@
+You’re envisioning a learning companion that’s personal, social, and gently therapeutic — where Spanish practice wraps around the things you love (books, film, jazz, acoustic music, art galleries, food tours) and where anxiety gets handled with structure and kindness. Here’s a structured plan to build that into your app, with a journaling flow that uses verb tenses as scaffolding and optional exposure steps for agoraphobia.
+
+## 🎯 Concept & Overview
+A “culture-first” Spanish companion:
+- Daily journal prompts tied to your interests.
+- Magnetic tiles for verb tenses and irregulars.
+- Gentle exposure steps for outings (food tours, galleries, concerts).
+- Progress you can feel: “What I did / wish I could do / should’ve done / will do / will have done.”
+
+Below is a structured approach you can implement in your React app.
+
+---
+
+## 📝 Journaling Framework (tense-guided, anxiety-aware)
+Use a recurring template that both records life and practices tenses. Each section shows endings or irregular forms on hover, with quick examples and audio.
+
+### Sections and tense mapping
+- What I did (Pretérito)
+  - Focus: completed actions.
+  - Example topics: “Fui a la galería,” “Probé tres tacos,” “Leí un capítulo.”
+- What I wish I could do (Condicional or “me gustaría” + infinitive)
+  - Focus: polite desire/soft intent.
+  - Examples: “Me gustaría escuchar jazz en vivo,” “Querría un tour de café.”
+- What I should’ve done (Condicional perfecto: “habría + participio”)
+  - Focus: reflective regret without self-criticism.
+  - Examples: “Habría reservado antes,” “Habría comprado boletos.”
+- What I will do tomorrow (Futuro simple or “voy a + infinitivo”)
+  - Focus: plan-making with small steps.
+  - Examples: “Mañana visitaré el museo,” “Voy a caminar al malecón.”
+- What I will have done (Futuro perfecto: “habré + participio”)
+  - Focus: future accomplishments to build confidence.
+  - Examples: “Para el sábado habré probado cinco platillos,” “Habré visto una película.”
+
+### Anxiety-friendly prompts and pacing
+- Micro-goals: “One small step” line in each entry (e.g., “Escribir una pregunta al guía,” “Salir 15 minutos”).
+- Safety net phrasing: a designated “Plan B” sentence slot (“Si me siento abrumado, me detendré y respiraré.”).
+- Gentle exposure ladder (1–5):
+  1. Read about the venue in Spanish for 5 minutes.
+  2. Write one sentence you might say there.
+  3. Walk to the entrance and back.
+  4. Enter for 10 minutes; describe one artwork or dish.
+  5. Stay for a set time; engage in one interaction.
+
+---
+
+## 🎷 Content Packs aligned to your interests
+Use themed tiles and prompts so practice feels relevant and fun.
+
+### Books and film
+- Tiles: “capítulo,” “director,” “subtítulos,” “reseña,” “trama,” “personaje.”
+- Prompts: “Resume lo que viste ayer (pretérito).” “Qué te gustaría leer este mes (condicional).”
+
+### Jazz and acoustic music
+- Tiles: “concierto,” “ensayo,” “acústico,” “improvisación,” “entrada,” “escenario.”
+- Prompts: “¿Qué escuchaste en el concierto?” “¿Qué habrías tocado si estuvieras allí?”
+
+### Art galleries
+- Tiles: “exposición,” “cuadro,” “escultura,” “curador,” “entrada.”
+- Prompts: “Describe una obra en imperfecto.” “¿Qué verás mañana?”
+
+### Food tasting tours
+- Tiles: “degustación,” “guía,” “parada,” “platillo,” “maridaje.”
+- Prompts: “¿Qué probaste?” “¿Qué te gustaría probar?” “Para el fin de semana habré… (futuro perfecto).”
+
+---
+
+## 💬 Tense Tiles and Irregular Coaching
+Make the “refrigerator poetry” mechanic earn its keep with precise guidance.
+
+### Regular endings quick strips
+- Presente
+  - -ar: o, as, a, amos, áis, an
+  - -er: o, es, e, emos, éis, en
+  - -ir: o, es, e, imos, ís, en
+- Pretérito (common regular patterns)
+  - -ar: é, aste, ó, amos, asteis, aron
+  - -er/-ir: í, iste, ió, imos, isteis, ieron
+
+### Irregular spotlight (travel-friendly set)
+- Tener: pretérito “tuve, tuviste, tuvo, tuvimos, tuvisteis, tuvieron”
+- Hacer: pretérito “hice, hiciste, hizo…”
+- Ir/Ser (suppletive): “fui, fuiste, fue…”
+- Poder: pretérito “pude, pudiste, pudo…”
+- Querer: pretérito “quise, quisiste, quiso…”
+- Futuro perfecto/condicional perfecto: “habré/habría + participio” with participle tiles (probado, visto, escuchado, leído).
+
+Hints:
+- If a regular ending is applied to an irregular, nudge: “Casi — en pretérito ‘pud-’ no ‘pod-’: pude, pudiste…”
+
+---
+
+## 🧠 Therapeutic micro-features (gentle and practical)
+- Mood check-in: emoji slider + one sentence in Spanish (e.g., “Me siento… porque…”).
+- “Tiny win” tracker: a streak for micro-goals (1–5 minutes count).
+- Breathing cue: short animation you can trigger before writing.
+- “Reframe” button: converts “I should’ve…” into a kinder Spanish reframe (“Habría… y está bien; mañana lo intentaré.”).
+
+---
+
+## 📊 Progress & Reflection
+- Dashboard tiles:
+  - “Completed journal days”
+  - “Tenses practiced” heatmap
+  - “Irregular mastery” badges (tener/hacer/ir/ser/poder/querer)
+- Reflection export: weekly PDF with your entries, goals, and highlights.
+
+---
+
+## 🧩 Implementation Sketch (React)
+- Data
+  - interests.json → lists of themed tiles and prompts.
+  - verbs.json → infinitives, category (-ar/-er/-ir), irregular maps, participles.
+  - tenses.json → name, endings, helper texts, examples.
+- Components
+  - JournalEntry.tsx → sections with textarea + tile rail. Each section preselects the tense and shows a conjugation preview.
+  - TileBoard.tsx → draggable tiles (subject, verb, tense, complement).
+  - Conjugator.ts → function(subject, verb, tense) → {form, irregularNote, audioURL}.
+  - ExposureStepper.tsx → 5-step ladder with checkboxes and mini timers.
+  - MoodCheck.tsx → slider + quick sentence.
+- Storage
+  - Local-first (IndexedDB) with optional sync to your backend.
+  - Daily template generator at startup.
+
+UI niceties:
+- Hover tense chip → shows endings cheat strip.
+- Click irregular badge → one-line rule + examples.
+- Audio button for every rendered sentence.
+
+---
+
+## 🗓 Sample Daily Template (ready to use)
+- What I did (pretérito):
+  - “Fui a la galería y vi una exposición de fotografía.”
+- What I wish I could do (condicional / me gustaría):
+  - “Me gustaría escuchar un concierto acústico en el malecón.”
+- What I should’ve done (condicional perfecto):
+  - “Habría reservado el tour de comida con anticipación.”
+- What I will do tomorrow (futuro / ir a + infinitivo):
+  - “Mañana visitaré la librería y voy a comprar un libro.”
+- What I will have done (futuro perfecto):
+  - “Para el domingo habré probado cuatro platillos locales.”
+
+Add a tiny win:
+- “Hoy practicaré 5 minutos y escribiré una frase sobre jazz.”
+
+---
+
+## 💡 Takeaways
+- Ground practice in what you love so motivation does the heavy lifting.
+- Use tense-guided journaling to turn anxiety into structured, manageable steps.
+- Pair the “magnetic tiles” with gentle exposure ladders and micro-wins to build confidence.
+- Start with Presente + Pretérito + Condicional perfecto + Futuro/Futuro perfecto, then expand as it feels natural.
+
+If you want, I can draft the JournalEntry component structure and a minimal verbs/tenses dataset slice tailored to your themes.
