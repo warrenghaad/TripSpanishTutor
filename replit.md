@@ -37,9 +37,14 @@ Preferred communication style: Simple, everyday language.
 **Animation**: Framer Motion for smooth transitions and micro-interactions, enhancing the therapeutic feel of the application.
 
 **Key Components**:
-- `ChatWidget`: Floating AI conversational assistant
-- `TranslatorPanel`: Slide-out translation interface with context presets
+- `ChatWidget`: Floating AI conversational assistant for Spanish practice (bottom-right bubble)
+- `TranslatorPanel`: Slide-out translation interface with context presets (journal, travel, arts) and mindful tone toggle for softer alternatives
 - `SentenceBuilder`: Interactive verb conjugation and sentence construction tool
+- `Journal`: English-first therapeutic journaling with:
+  - Tense-guided sections: What I Notice (present), What I Did (pretérito), What I Wish (conditional), What I Could've Done (conditional perfect), What I Will Do (future)
+  - "Hum meter" for anxiety awareness with mindfulness prompts
+  - Interest themes (Books/Film, Jazz/Music, Galleries/Art, Food Tours, Beach/Nature)
+  - Auto-translation to Spanish before grammar analysis
 - `Layout` + `Navigation`: Persistent navigation wrapper with responsive bottom/side navigation
 
 **Design Rationale**: The component-based architecture allows for modular, reusable UI elements. Shadcn UI was chosen for its accessibility-first approach and easy customization. The mobile-first responsive design ensures the app works well for travelers on-the-go.
