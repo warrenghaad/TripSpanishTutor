@@ -39,12 +39,14 @@ Preferred communication style: Simple, everyday language.
 **Key Components**:
 - `ChatWidget`: Floating AI conversational assistant for Spanish practice (bottom-right bubble)
 - `TranslatorPanel`: Slide-out translation interface with context presets (journal, travel, arts) and mindful tone toggle for softer alternatives
-- `SentenceBuilder`: Interactive verb conjugation and sentence construction tool
-- `Journal`: English-first therapeutic journaling with:
-  - Tense-guided sections: What I Notice (present), What I Did (pretérito), What I Wish (conditional), What I Could've Done (conditional perfect), What I Will Do (future)
+- `SentenceBuilder`: Interactive verb conjugation and sentence construction tool - helps practice specific tenses with draggable tiles
+- `Journal`: Travel journal and itinerary planner with Spanish learning:
+  - Write in any mix of English and Spanish you know
+  - AI recognizes correct Spanish usage, corrects mistakes, and teaches new words/verbs
+  - Tense-guided sections: What I Notice (present), What I Did (pretérito), What I'd Like to Do (conditional), What I Could've Done (conditional perfect), Tomorrow's Plan (future)
   - "Hum meter" for anxiety awareness with mindfulness prompts
   - Interest themes (Books/Film, Jazz/Music, Galleries/Art, Food Tours, Beach/Nature)
-  - Auto-translation to Spanish before grammar analysis
+  - Links to Sentence Builder for verb practice
 - `Layout` + `Navigation`: Persistent navigation wrapper with responsive bottom/side navigation
 
 **Design Rationale**: The component-based architecture allows for modular, reusable UI elements. Shadcn UI was chosen for its accessibility-first approach and easy customization. The mobile-first responsive design ensures the app works well for travelers on-the-go.

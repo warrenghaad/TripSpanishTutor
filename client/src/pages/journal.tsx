@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
-import { Book, Sparkles, ArrowRight, Info, Heart, Lightbulb, Wind, Globe } from "lucide-react";
+import { Book, Sparkles, ArrowRight, Info, Heart, Lightbulb, Wind, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
+import { Link } from "wouter";
 
 type Feedback = {
   corrected: string;
@@ -28,11 +29,11 @@ const journalSections: JournalSection[] = [
   {
     id: "notice",
     title: "What I Notice",
-    tenseLabel: "Mindfulness",
+    tenseLabel: "Presente",
     tenseFocus: "present",
-    spanishHint: "Noto que...",
-    prompt: "What's present right now? Notice body sensations, thoughts, or feelings without judgment.",
-    placeholder: "I notice a steady hum of anxiety... (Write in English, we'll help with Spanish)"
+    spanishHint: "Noto que... / Veo... / Siento...",
+    prompt: "What's present right now? Describe what you see, feel, or notice.",
+    placeholder: "I notice the warm breeze... Noto que... (use whatever Spanish you know!)"
   },
   {
     id: "did",
@@ -41,34 +42,34 @@ const journalSections: JournalSection[] = [
     tenseFocus: "past",
     spanishHint: "Ayer... / Fui... / Probé...",
     prompt: "What did you do today? What places did you visit, foods did you try?",
-    placeholder: "Today I visited the gallery on Calle Hidalgo and tried the local café..."
+    placeholder: "Today I went to... Fui a... Probé los tacos..."
   },
   {
     id: "wish",
     title: "What I'd Like to Do",
     tenseLabel: "Condicional",
     tenseFocus: "conditional",
-    spanishHint: "Me gustaría...",
+    spanishHint: "Me gustaría... / Querría...",
     prompt: "What would you enjoy doing? Dream destinations, activities, experiences.",
-    placeholder: "I'd like to go to a jazz set by the malecón..."
+    placeholder: "I would like to see... Me gustaría ir a..."
   },
   {
     id: "shouldve",
     title: "What I Could've Done",
     tenseLabel: "Condicional Perfecto",
     tenseFocus: "conditional_perfect",
-    spanishHint: "Habría...",
-    prompt: "Reflect gently — not for self-criticism, but for learning.",
-    placeholder: "I would have booked the food tour earlier..."
+    spanishHint: "Habría... / Habría ido...",
+    prompt: "Reflect gently — what might you have done differently?",
+    placeholder: "I would have... Habría reservado..."
   },
   {
     id: "willdo",
     title: "Tomorrow's Plan",
     tenseLabel: "Futuro",
     tenseFocus: "future",
-    spanishHint: "Mañana... / Voy a...",
+    spanishHint: "Mañana... / Voy a... / Iré...",
     prompt: "Plan your next adventure. Where will you go? What will you do?",
-    placeholder: "Tomorrow I'll visit the Malecon at sunset and try tacos al pastor..."
+    placeholder: "Tomorrow I will... Mañana voy a... Iré a..."
   }
 ];
 
@@ -81,30 +82,11 @@ const interestThemes = [
 ];
 
 export default function Journal() {
-  const [activeSection, setActiveSection] = useState("notice");
-  const [englishEntries, setEnglishEntries] = useState<Record<string, string>>({});
-  const [spanishEntries, setSpanishEntries] = useState<Record<string, string>>({});
-  const [humLevel, setHumLevel] = useState([3]);
+  const [activeSection, setActiveSection] = useState("did");
+  const [entries, setEntries] = useState<Record<string, string>>({});
+  const [humLevel, setHumLevel] = useState([2]);
   const [theme, setTheme] = useState("food");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [isTranslating, setIsTranslating] = useState(false);
-
-  const translateMutation = useMutation({
-    mutationFn: async (data: { text: string; section: string }) => {
-      const response = await fetch("/api/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          text: data.text, 
-          target: "es", 
-          preset: "journal", 
-          soften: true 
-        }),
-      });
-      if (!response.ok) throw new Error("Failed to translate");
-      return response.json();
-    },
-  });
 
   const analyzeMutation = useMutation({
     mutationFn: async (data: { text: string; tenseFocus: string }) => {
@@ -122,55 +104,26 @@ export default function Journal() {
   });
 
   const currentSection = journalSections.find(s => s.id === activeSection)!;
-  const englishText = englishEntries[activeSection] || "";
-  const spanishText = spanishEntries[activeSection] || "";
+  const currentText = entries[activeSection] || "";
 
-  const handleEnglishChange = (value: string) => {
-    setEnglishEntries(prev => ({ ...prev, [activeSection]: value }));
-    setSpanishEntries(prev => ({ ...prev, [activeSection]: "" }));
+  const handleTextChange = (value: string) => {
+    setEntries(prev => ({ ...prev, [activeSection]: value }));
     setFeedback(null);
   };
 
-  const handleGetNudge = async () => {
-    if (!englishText.trim()) return;
-    try {
-      const result = await translateMutation.mutateAsync({ text: englishText, section: activeSection });
-      setSpanishEntries(prev => ({ ...prev, [activeSection]: result.translation }));
-    } catch (error) {
-      console.error("Translation failed:", error);
-    }
-  };
-
-  const handleAnalyze = async () => {
-    if (!englishText.trim()) return;
-    
-    setIsTranslating(true);
-    try {
-      let textToAnalyze = spanishText;
-      
-      if (!textToAnalyze) {
-        const result = await translateMutation.mutateAsync({ text: englishText, section: activeSection });
-        textToAnalyze = result.translation;
-        setSpanishEntries(prev => ({ ...prev, [activeSection]: textToAnalyze }));
-      }
-      
-      analyzeMutation.mutate({ text: textToAnalyze, tenseFocus: currentSection.tenseFocus });
-    } catch (error) {
-      console.error("Analysis failed:", error);
-    } finally {
-      setIsTranslating(false);
-    }
+  const handleAnalyze = () => {
+    if (!currentText.trim()) return;
+    analyzeMutation.mutate({ text: currentText, tenseFocus: currentSection.tenseFocus });
   };
 
   const humLabels = ["Quiet", "Present", "Steady", "Strong", "Loud"];
-  const isLoading = translateMutation.isPending || analyzeMutation.isPending || isTranslating;
 
   return (
     <Layout>
       <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
         <header className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-2">Mindful Journal</h1>
-          <p className="text-muted-foreground text-sm md:text-base">Write in English. Get gentle Spanish nudges. Learn naturally.</p>
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-2">Travel Journal</h1>
+          <p className="text-muted-foreground text-sm md:text-base">Write in whatever mix of English and Spanish you know. We'll help you learn the rest.</p>
         </header>
 
         <Card className="p-4 md:p-6 mb-6 bg-gradient-to-br from-secondary/5 to-primary/5 border-0">
@@ -273,79 +226,37 @@ export default function Journal() {
                 </span>
               </div>
             </div>
+            <Link href="/learn">
+              <Button variant="ghost" size="sm" className="text-xs text-primary" data-testid="link-practice-verbs">
+                <Book className="w-3 h-3 mr-1" /> Practice verbs
+              </Button>
+            </Link>
           </div>
           
           <p className="text-sm text-muted-foreground mb-4 bg-muted/30 p-3 rounded-lg">
             {currentSection.prompt}
           </p>
           
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
-                Your thoughts (English)
-              </label>
-              <Textarea 
-                placeholder={currentSection.placeholder}
-                className="min-h-[120px] text-base bg-background border-border/60 focus:border-primary/50 resize-none p-4"
-                value={englishText}
-                onChange={(e) => handleEnglishChange(e.target.value)}
-                data-testid="textarea-english-entry"
-              />
-            </div>
-
-            <AnimatePresence>
-              {spanishText && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  <label className="text-xs font-bold text-secondary uppercase tracking-wider mb-2 flex items-center gap-1">
-                    <Globe className="w-3 h-3" /> Spanish Version
-                  </label>
-                  <Textarea 
-                    className="min-h-[100px] text-base bg-secondary/5 border-secondary/30 focus:border-secondary resize-none p-4"
-                    value={spanishText}
-                    onChange={(e) => setSpanishEntries(prev => ({ ...prev, [activeSection]: e.target.value }))}
-                    data-testid="textarea-spanish-entry"
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <Textarea 
+            placeholder={currentSection.placeholder}
+            className="min-h-[140px] text-base bg-background border-border/60 focus:border-primary/50 resize-none p-4 mb-4"
+            value={currentText}
+            onChange={(e) => handleTextChange(e.target.value)}
+            data-testid="textarea-journal-entry"
+          />
           
-          <div className="flex flex-col sm:flex-row gap-2 mt-4">
-            <Button 
-              variant="outline"
-              onClick={handleGetNudge} 
-              disabled={isLoading || !englishText.trim()}
-              className="flex-1 border-secondary text-secondary hover:bg-secondary/10"
-              data-testid="button-get-nudge"
-            >
-              {translateMutation.isPending ? (
-                <span className="flex items-center"><div className="w-4 h-4 border-2 border-secondary/30 border-t-secondary rounded-full animate-spin mr-2"/> Translating...</span>
-              ) : (
-                <span className="flex items-center"><Globe className="w-4 h-4 mr-2" /> Get Spanish Nudge</span>
-              )}
-            </Button>
-            
-            <Button 
-              onClick={handleAnalyze} 
-              disabled={isLoading || !englishText.trim()}
-              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-              data-testid="button-analyze"
-            >
-              {(analyzeMutation.isPending || isTranslating) ? (
-                <span className="flex items-center"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"/> Analyzing...</span>
-              ) : (
-                <span className="flex items-center"><Sparkles className="w-4 h-4 mr-2" /> Translate & Check</span>
-              )}
-            </Button>
-          </div>
-          
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            Write freely in English — we'll translate to Spanish before checking grammar.
-          </p>
+          <Button 
+            onClick={handleAnalyze} 
+            disabled={analyzeMutation.isPending || !currentText.trim()}
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            data-testid="button-analyze"
+          >
+            {analyzeMutation.isPending ? (
+              <span className="flex items-center"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"/> Analyzing...</span>
+            ) : (
+              <span className="flex items-center"><Sparkles className="w-4 h-4 mr-2" /> Check My Spanish</span>
+            )}
+          </Button>
         </Card>
 
         <AnimatePresence>
@@ -364,7 +275,7 @@ export default function Journal() {
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-4 text-primary">
                     <Sparkles className="w-5 h-5" />
-                    <h3 className="font-display font-bold text-lg">Polished Spanish Entry</h3>
+                    <h3 className="font-display font-bold text-lg">Full Spanish Version</h3>
                   </div>
                   
                   <p className="text-lg md:text-xl font-display text-foreground leading-relaxed mb-6" data-testid="text-corrected">
@@ -375,17 +286,20 @@ export default function Journal() {
                     <div className="grid md:grid-cols-2 gap-6 pt-6 border-t border-dashed border-border">
                       <div>
                         <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                          <Info className="w-3 h-3" /> Grammar Insights ({currentSection.tenseLabel})
+                          <Info className="w-3 h-3" /> What You Wrote → What You Could Say
                         </h4>
                         <ul className="space-y-3">
                           {feedback.corrections.map((correction, idx) => (
                             <li key={idx} className="text-sm group" data-testid={`correction-${idx}`}>
                               <div className="flex items-baseline gap-2 mb-1 flex-wrap">
-                                <span className="text-red-400 line-through decoration-red-400/50 decoration-2">{correction.original}</span>
-                                <ArrowRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                                <span className="text-green-600 font-bold bg-green-50 px-1 rounded">{correction.fixed}</span>
+                                <span className="text-muted-foreground">{correction.original}</span>
+                                <ArrowRight className="w-3 h-3 text-primary flex-shrink-0" />
+                                <span className="text-primary font-bold">{correction.fixed}</span>
                               </div>
-                              <p className="text-muted-foreground text-xs pl-4 border-l-2 border-border group-hover:border-primary/30 transition-colors">
+                              <p className="text-muted-foreground text-xs pl-4 border-l-2 border-border group-hover:border-primary/30 transition-colors flex items-start gap-1">
+                                {correction.explanation.toLowerCase().includes('correct') || correction.explanation.toLowerCase().includes('great') ? (
+                                  <CheckCircle2 className="w-3 h-3 text-green-500 mt-0.5 flex-shrink-0" />
+                                ) : null}
                                 {correction.explanation}
                               </p>
                             </li>
@@ -413,11 +327,13 @@ export default function Journal() {
                 </div>
               </Card>
 
-              <Card className="p-4 bg-muted/30 border-0">
-                <p className="text-sm text-muted-foreground text-center italic">
-                  "The amp hum is background; your chosen song is foreground." — Keep writing, keep growing.
-                </p>
-              </Card>
+              <div className="flex justify-center">
+                <Link href="/learn">
+                  <Button variant="outline" className="text-secondary border-secondary" data-testid="link-practice-more">
+                    <Book className="w-4 h-4 mr-2" /> Practice these verbs in Sentence Builder
+                  </Button>
+                </Link>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

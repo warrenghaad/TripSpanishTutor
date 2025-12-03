@@ -34,25 +34,27 @@ export async function analyzeSpanishText(
 
 The student is focusing on practicing the ${tenseDesc}.
 
-Student's Spanish text: "${text}"
+Student's mixed English/Spanish entry: "${text}"
 
-Please:
-1. Correct any grammar mistakes, especially related to verb conjugations in this tense
-2. Provide a polished Spanish version using the appropriate verb forms
-3. Identify specific corrections made (original phrase → corrected phrase with explanation)
-4. Extract 3-5 new vocabulary words from the corrected text that would be useful for travel
+The student may have written in a mix of English and Spanish. Your job:
+1. RECOGNIZE any Spanish they used correctly - acknowledge what they got right
+2. CORRECT any Spanish mistakes they made (wrong conjugation, spelling, grammar)
+3. CONVERT any English words/phrases to Spanish, showing them what they could have said
+4. Create a FULLY SPANISH version of their entry using the ${tenseDesc}
+5. Provide a mini-lesson on verb conjugations they used or could use in this tense
 
-For conditional tense, ensure proper use of endings (-ía, -ías, -ía, -íamos, -ían).
-For conditional perfect, ensure proper "habría/habrías/habría + past participle" structure.
+For corrections, include:
+- Spanish mistakes they made and how to fix them
+- English phrases and their Spanish equivalents (as learning opportunities, not errors)
 
 Respond in JSON format:
 {
-  "corrected": "The fully corrected Spanish text",
+  "corrected": "The fully corrected ALL-SPANISH version of their entry",
   "corrections": [
     {
-      "original": "incorrect phrase",
-      "fixed": "corrected phrase",
-      "explanation": "Brief explanation of the grammar rule"
+      "original": "what they wrote (English or incorrect Spanish)",
+      "fixed": "correct Spanish version",
+      "explanation": "Brief explanation - praise if they got it right, teach if it's new or corrected"
     }
   ],
   "vocab": [
