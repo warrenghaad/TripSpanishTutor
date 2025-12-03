@@ -3,50 +3,44 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mic, Send, Book, Sparkles, ArrowRight, History, Clock, Info } from "lucide-react";
+import { Mic, Book, Sparkles, ArrowRight, Info } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMutation } from "@tanstack/react-query";
 
 type Feedback = {
   corrected: string;
-  corrections: { original: string, fixed: string, explanation: string }[];
-  vocab: { word: string, translation: string }[];
+  corrections: { original: string; fixed: string; explanation: string }[];
+  vocab: { word: string; translation: string }[];
 };
 
 export default function Journal() {
   const [text, setText] = useState("");
   const [tenseFocus, setTenseFocus] = useState("past");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const analyzeMutation = useMutation({
+    mutationFn: async (data: { text: string; tenseFocus: string }) => {
+      const response = await fetch("/api/journal/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to analyze text");
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setFeedback(data.feedback);
+    },
+  });
 
   const handleTranslate = () => {
     if (!text) return;
-    setIsAnalyzing(true);
-    
-    // Simulate API delay
-    setTimeout(() => {
-      setFeedback({
-        corrected: "Hoy fui a la playa y me gustó mucho. Mañana iré a las montañas.",
-        corrections: [
-          { 
-            original: "go to beach", 
-            fixed: "fui a la playa", 
-            explanation: "Use 'fui' (I went) for completed past actions." 
-          },
-          { 
-            original: "I like it", 
-            fixed: "me gustó", 
-            explanation: "In past tense, 'gustar' becomes 'gustó' (it pleased me)." 
-          }
-        ],
-        vocab: [
-          { word: "la montaña", translation: "mountain" },
-          { word: "la arena", translation: "sand" },
-          { word: "las olas", translation: "waves" }
-        ]
-      });
-      setIsAnalyzing(false);
-    }, 1500);
+    analyzeMutation.mutate({ text, tenseFocus });
   };
 
   return (
@@ -84,15 +78,17 @@ export default function Journal() {
               className="min-h-[150px] text-lg font-sans bg-background border-border/60 focus:border-primary/50 resize-none p-4"
               value={text}
               onChange={(e) => setText(e.target.value)}
+              data-testid="textarea-journal-entry"
             />
             
             <div className="flex justify-end">
               <Button 
                 onClick={handleTranslate} 
-                disabled={isAnalyzing || !text}
+                disabled={analyzeMutation.isPending || !text}
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
+                data-testid="button-analyze"
               >
-                {isAnalyzing ? (
+                {analyzeMutation.isPending ? (
                   <span className="flex items-center"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"/> Analyzing...</span>
                 ) : (
                   <span className="flex items-center"><Sparkles className="w-4 h-4 mr-2" /> Check My Grammar</span>
@@ -107,8 +103,8 @@ export default function Journal() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
+                data-testid="card-feedback"
               >
-                {/* Correction Card */}
                 <Card className="p-6 bg-white border-l-4 border-l-primary shadow-lg overflow-hidden relative">
                   <div className="absolute top-0 right-0 p-4 opacity-5 text-primary">
                     <Book className="w-32 h-32 -mr-8 -mt-8" />
@@ -120,7 +116,7 @@ export default function Journal() {
                       <h3 className="font-display font-bold text-lg">Polished Entry</h3>
                     </div>
                     
-                    <p className="text-xl md:text-2xl font-display text-foreground leading-relaxed mb-6">
+                    <p className="text-xl md:text-2xl font-display text-foreground leading-relaxed mb-6" data-testid="text-corrected">
                       {feedback.corrected}
                     </p>
 
@@ -131,7 +127,7 @@ export default function Journal() {
                         </h4>
                         <ul className="space-y-3">
                           {feedback.corrections.map((correction, idx) => (
-                            <li key={idx} className="text-sm group">
+                            <li key={idx} className="text-sm group" data-testid={`correction-${idx}`}>
                               <div className="flex items-baseline gap-2 mb-1">
                                 <span className="text-red-400 line-through decoration-red-400/50 decoration-2">{correction.original}</span>
                                 <ArrowRight className="w-3 h-3 text-muted-foreground" />
@@ -151,7 +147,7 @@ export default function Journal() {
                         </h4>
                          <div className="grid grid-cols-2 gap-2">
                           {feedback.vocab.map((v, idx) => (
-                            <div key={idx} className="bg-secondary/5 p-2 rounded-lg flex flex-col">
+                            <div key={idx} className="bg-secondary/5 p-2 rounded-lg flex flex-col" data-testid={`vocab-${idx}`}>
                               <span className="font-bold text-secondary text-sm">{v.word}</span>
                               <span className="text-muted-foreground text-xs">{v.translation}</span>
                             </div>
