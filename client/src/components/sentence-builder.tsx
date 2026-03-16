@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { bodyParts, commonVerbs, adjectives, adverbs, Verb } from "@/lib/data";
-import { Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -195,10 +194,6 @@ export default function SentenceBuilder() {
            {advMode !== 'none' ? ` (${advMode === 'list' ? adverb?.english : customAdv})` : ''}
         </p>
 
-        <Button size="sm" variant="outline" className="rounded-full gap-2 hover:text-primary hover:border-primary">
-          <Volume2 className="w-4 h-4" />
-          Pronounce
-        </Button>
       </div>
     </Card>
   );

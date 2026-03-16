@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, BookOpen, MessageSquare, PenTool } from "lucide-react";
+import { Home, BookOpen, MessageSquare, PenTool, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Navigation() {
@@ -7,13 +7,14 @@ export default function Navigation() {
 
   const items = [
     { href: "/", icon: Home, label: "Home" },
+    { href: "/dictionary", icon: Search, label: "Dictionary" },
     { href: "/learn", icon: BookOpen, label: "Learn" },
     { href: "/situations", icon: MessageSquare, label: "Situations" },
     { href: "/journal", icon: PenTool, label: "Journal" },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-border/40 pb-safe pt-2 px-6 z-50 md:top-0 md:left-0 md:bottom-0 md:w-64 md:border-r md:border-t-0 md:flex-col md:pt-8 md:px-4 md:h-screen">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-border/40 pb-safe pt-2 px-4 z-50 md:top-0 md:left-0 md:bottom-0 md:w-64 md:border-r md:border-t-0 md:flex-col md:pt-8 md:px-4 md:h-screen">
       <div className="hidden md:block mb-8 px-4">
         <h1 className="font-display text-2xl font-bold text-primary">Vallarta Voz</h1>
       </div>
@@ -32,8 +33,8 @@ export default function Navigation() {
                     : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                 )}
               >
-                <item.icon className={cn("h-6 w-6 mb-1 md:mb-0", isActive && "stroke-[2.5px]")} />
-                <span className="text-[10px] font-medium md:text-sm">{item.label}</span>
+                <item.icon className={cn("h-5 w-5 mb-1 md:mb-0 md:h-6 md:w-6", isActive && "stroke-[2.5px]")} />
+                <span className="text-[9px] font-medium md:text-sm">{item.label}</span>
               </Link>
             </li>
           );

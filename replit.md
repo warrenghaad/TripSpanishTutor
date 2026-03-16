@@ -5,12 +5,15 @@
 Vallarta Voz is a therapeutic Spanish learning companion designed for travelers visiting Puerto Vallarta, Mexico. The application combines language learning with mindfulness practices, drawing from ACT (Acceptance and Commitment Therapy) and DBT (Dialectical Behavior Therapy) frameworks to create a gentle, anxiety-aware learning experience.
 
 The app provides multiple learning modalities including:
-- Tense-focused journaling with therapeutic prompts
+- **Dictionary & Conjugation** (primary feature): AI-powered word lookup with full conjugation tables across 5 tenses, examples, related words. Personal dictionary for saving words.
+- **Text/URL Import**: Paste text from ebooks, emails, articles or provide a URL. Extracts vocabulary AND grammar patterns (verb tenses used, sentence structures, frequency analysis) with explanations.
+- Tense-focused journaling with therapeutic prompts (mixed English/Spanish input, AI teaches corrections)
 - Interactive sentence building with verb conjugations
 - Real-world situation practice scenarios
 - AI-powered translation and grammar feedback
 - Conversational AI chatbot for practice
 - Context-aware vocabulary organized by interests (art, music, food, travel)
+- No audio capability (all text-based)
 
 The design philosophy centers on making Spanish practice feel safe, relevant, and connected to the user's personal interests and values, with particular attention to managing anxiety around language learning and social interactions.
 

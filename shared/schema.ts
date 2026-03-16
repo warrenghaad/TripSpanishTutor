@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, serial, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, serial, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -35,3 +35,22 @@ export const selectJournalEntrySchema = createInsertSchema(journalEntries);
 
 export type InsertJournalEntry = z.infer<typeof insertJournalEntrySchema>;
 export type JournalEntry = typeof journalEntries.$inferSelect;
+
+export const dictionaryWords = pgTable("dictionary_words", {
+  id: serial("id").primaryKey(),
+  spanish: text("spanish").notNull(),
+  english: text("english").notNull(),
+  partOfSpeech: text("part_of_speech").notNull(),
+  conjugations: text("conjugations"),
+  context: text("context"),
+  source: text("source"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertDictionaryWordSchema = createInsertSchema(dictionaryWords).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertDictionaryWord = z.infer<typeof insertDictionaryWordSchema>;
+export type DictionaryWord = typeof dictionaryWords.$inferSelect;

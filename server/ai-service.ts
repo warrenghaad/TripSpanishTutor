@@ -134,6 +134,158 @@ If asked to translate, provide the translation with a brief note on usage or gra
   }
 }
 
+export type WordLookupResult = {
+  spanish: string;
+  english: string;
+  partOfSpeech: string;
+  conjugations?: Record<string, Record<string, string>>;
+  examples: string[];
+  relatedWords: { spanish: string; english: string }[];
+};
+
+export type GrammarPattern = {
+  pattern: string;
+  tense: string;
+  frequency: string;
+  example: string;
+  lesson: string;
+};
+
+export type TextExtractionResult = {
+  words: {
+    spanish: string;
+    english: string;
+    partOfSpeech: string;
+    context: string;
+  }[];
+  grammarPatterns: GrammarPattern[];
+};
+
+export async function lookupWord(word: string): Promise<WordLookupResult> {
+  const prompt = `Look up the word "${word}" (it could be English or Spanish).
+
+Provide:
+1. The Spanish word and English translation
+2. Part of speech (noun, verb, adjective, adverb, phrase)
+3. If it's a verb, provide full conjugation tables for: presente, pretérito, imperfecto, futuro, condicional
+   - For each tense, provide: yo, tú, él/ella, nosotros, ellos/ustedes
+4. 2-3 example sentences using the word (in Spanish with English translation)
+5. 3-4 related words that a traveler would find useful
+
+Respond in JSON:
+{
+  "spanish": "the Spanish word (infinitive if verb)",
+  "english": "English translation",
+  "partOfSpeech": "verb|noun|adjective|adverb|phrase",
+  "conjugations": {
+    "presente": { "yo": "...", "tú": "...", "él": "...", "nosotros": "...", "ellos": "..." },
+    "pretérito": { ... },
+    "imperfecto": { ... },
+    "futuro": { ... },
+    "condicional": { ... }
+  },
+  "examples": ["Spanish sentence — English translation", ...],
+  "relatedWords": [{ "spanish": "...", "english": "..." }, ...]
+}
+
+If the word is not a verb, omit the conjugations field.`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a Spanish-English dictionary specialized in Mexican Spanish for travelers. Always respond with valid JSON only." },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.3,
+    });
+
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("No response");
+    const parsed = JSON.parse(content);
+    return {
+      spanish: parsed.spanish || "",
+      english: parsed.english || "",
+      partOfSpeech: parsed.partOfSpeech || "unknown",
+      conjugations: parsed.conjugations || undefined,
+      examples: Array.isArray(parsed.examples) ? parsed.examples : [],
+      relatedWords: Array.isArray(parsed.relatedWords) ? parsed.relatedWords : [],
+    };
+  } catch (error) {
+    console.error("Error looking up word:", error);
+    throw new Error("Word lookup failed");
+  }
+}
+
+export async function extractVocabulary(text: string): Promise<TextExtractionResult> {
+  const prompt = `Analyze this text for a Spanish learner. The text may be in English, Spanish, or mixed.
+
+Text:
+"""
+${text.substring(0, 3000)}
+"""
+
+Do two things:
+
+1. VOCABULARY: Extract up to 20 of the most useful words and phrases for a Spanish learner traveling in Mexico. For each word:
+   - The Spanish word (infinitive if verb, with article if noun)
+   - English translation
+   - Part of speech
+   - A short context phrase showing usage
+
+2. GRAMMAR PATTERNS: Identify up to 8 grammar patterns in the text — verb tenses used, sentence structures, common phrases, or recurring patterns. For each pattern:
+   - Name the pattern (e.g., "present tense descriptions", "conditional wishes", "past narration")
+   - Which tense it uses
+   - How frequently it appears (e.g., "5 times", "throughout")
+   - One example from the text
+   - A brief lesson explaining how this pattern works in Spanish
+
+Respond in JSON:
+{
+  "words": [
+    {
+      "spanish": "Spanish word",
+      "english": "English translation",
+      "partOfSpeech": "verb|noun|adjective|adverb|phrase",
+      "context": "Short phrase showing how it was used"
+    }
+  ],
+  "grammarPatterns": [
+    {
+      "pattern": "Name of the pattern",
+      "tense": "Which tense",
+      "frequency": "How often it appears",
+      "example": "Example from the text",
+      "lesson": "Brief explanation of how this works in Spanish"
+    }
+  ]
+}`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a vocabulary extraction tool for Spanish learners. Focus on practical, travel-useful words. Always respond with valid JSON only." },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.3,
+    });
+
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("No response");
+    const parsed = JSON.parse(content);
+    return {
+      words: Array.isArray(parsed.words) ? parsed.words : [],
+      grammarPatterns: Array.isArray(parsed.grammarPatterns) ? parsed.grammarPatterns : [],
+    };
+  } catch (error) {
+    console.error("Error extracting vocabulary:", error);
+    throw new Error("Vocabulary extraction failed");
+  }
+}
+
 export async function translateText(
   text: string,
   targetLang: string,
