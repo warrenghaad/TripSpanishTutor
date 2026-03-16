@@ -1,116 +1,643 @@
 import { useLocation } from "wouter";
 import Layout from "@/components/layout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { situations } from "@/lib/data";
 import SituationCard from "@/components/situation-card";
-import { ArrowRight, Sun, MapPin, Search, PenTool, BookOpen } from "lucide-react";
-import generatedImage from '@assets/generated_images/vibrant_puerto_vallarta_street_illustration.png';
+import {
+  Search, Plus, BookOpen, FileText, Globe, MapPin, Sun,
+  PenTool, ArrowLeftRight, ChevronDown, ChevronUp, Lightbulb, Trash2, X
+} from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+
+type ConjugationTable = Record<string, Record<string, string>>;
+
+type LookupResult = {
+  spanish: string;
+  english: string;
+  partOfSpeech: string;
+  conjugations?: ConjugationTable;
+  examples: string[];
+  relatedWords: { spanish: string; english: string }[];
+};
+
+type ExtractedWord = {
+  spanish: string;
+  english: string;
+  partOfSpeech: string;
+  context: string;
+};
+
+type GrammarPattern = {
+  pattern: string;
+  tense: string;
+  frequency: string;
+  example: string;
+  lesson: string;
+};
+
+type SavedWord = {
+  id: number;
+  spanish: string;
+  english: string;
+  partOfSpeech: string;
+  conjugations: ConjugationTable | null;
+  context: string | null;
+  source: string | null;
+  createdAt: string;
+};
+
+const tenseLabels: Record<string, string> = {
+  presente: "Present",
+  "pretérito": "Past",
+  preterito: "Past",
+  imperfecto: "Imperfect",
+  futuro: "Future",
+  condicional: "Conditional",
+};
+
+const personLabels: Record<string, string> = {
+  yo: "yo",
+  "tú": "tú",
+  "él": "él/ella",
+  "él/ella": "él/ella",
+  nosotros: "nosotros",
+  ellos: "ellos",
+  "ellos/ustedes": "ellos/uds.",
+};
+
+function ConjugationDisplay({ conjugations }: { conjugations: ConjugationTable }) {
+  const tenses = Object.keys(conjugations);
+  const allPersons = ["yo", "tú", "él", "él/ella", "nosotros", "ellos", "ellos/ustedes"];
+  const visiblePersons = allPersons.filter(p => tenses.some(t => conjugations[t]?.[p] !== undefined));
+
+  return (
+    <div className="overflow-x-auto -mx-2">
+      <table className="w-full text-sm" data-testid="table-conjugations">
+        <thead>
+          <tr className="border-b border-border">
+            <th className="text-left py-2 pr-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Person</th>
+            {tenses.map(t => (
+              <th key={t} className="text-left py-2 px-2 text-xs font-bold text-secondary uppercase tracking-wider whitespace-nowrap">
+                {tenseLabels[t] || t}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {visiblePersons.map(person => (
+            <tr key={person} className="border-b border-border/30 hover:bg-muted/30">
+              <td className="py-1.5 pr-3 font-medium text-muted-foreground italic text-xs">
+                {personLabels[person] || person}
+              </td>
+              {tenses.map(t => (
+                <td key={t} className="py-1.5 px-2 font-medium text-foreground text-sm">
+                  {conjugations[t]?.[person] || "—"}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function GrammarPatternCard({ pattern }: { pattern: GrammarPattern }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <Card className="overflow-hidden border-l-4 border-l-amber-400">
+      <div className="p-3 cursor-pointer hover:bg-muted/20 transition-colors" onClick={() => setExpanded(!expanded)}>
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <Lightbulb className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+              <span className="font-bold text-sm text-foreground">{pattern.pattern}</span>
+              <span className="text-[10px] bg-secondary/10 text-secondary px-1.5 py-0.5 rounded-full uppercase font-bold">{pattern.tense}</span>
+              <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">{pattern.frequency}</span>
+            </div>
+            <p className="text-xs text-muted-foreground italic">"{pattern.example}"</p>
+          </div>
+          {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
+        </div>
+      </div>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+            <div className="px-3 pb-3 border-t border-border/30 pt-2">
+              <p className="text-sm text-foreground leading-relaxed">{pattern.lesson}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Card>
+  );
+}
 
 export default function Home() {
   const [_, setLocation] = useLocation();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [direction, setDirection] = useState<"en-es" | "es-en">("en-es");
+  const [lookupResult, setLookupResult] = useState<LookupResult | null>(null);
+  const [importText, setImportText] = useState("");
+  const [importUrl, setImportUrl] = useState("");
+  const [extractedWords, setExtractedWords] = useState<ExtractedWord[]>([]);
+  const [grammarPatterns, setGrammarPatterns] = useState<GrammarPattern[]>([]);
+  const [expandedSaved, setExpandedSaved] = useState<number | null>(null);
+  const [savedFilter, setSavedFilter] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const savedWordsQuery = useQuery<SavedWord[]>({
+    queryKey: ["/api/dictionary/words", savedFilter],
+    queryFn: async () => {
+      const url = savedFilter
+        ? `/api/dictionary/words?q=${encodeURIComponent(savedFilter)}`
+        : "/api/dictionary/words";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    },
+  });
+
+  const lookupMutation = useMutation({
+    mutationFn: async (word: string) => {
+      const res = await fetch("/api/dictionary/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ word, direction }),
+      });
+      if (!res.ok) throw new Error("Lookup failed");
+      return res.json() as Promise<LookupResult>;
+    },
+    onSuccess: (data) => setLookupResult(data),
+    onError: () => toast({ title: "Lookup failed", description: "Try another word.", variant: "destructive" }),
+  });
+
+  const extractMutation = useMutation({
+    mutationFn: async (text: string) => {
+      const res = await fetch("/api/dictionary/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) throw new Error("Extract failed");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setExtractedWords(data.words || []);
+      setGrammarPatterns(data.grammarPatterns || []);
+    },
+    onError: () => toast({ title: "Extraction failed", variant: "destructive" }),
+  });
+
+  const fetchUrlMutation = useMutation({
+    mutationFn: async (url: string) => {
+      const res = await fetch("/api/dictionary/fetch-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      if (!res.ok) throw new Error("Fetch failed");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setExtractedWords(data.words || []);
+      setGrammarPatterns(data.grammarPatterns || []);
+    },
+    onError: () => toast({ title: "Failed to process URL", description: "Make sure the URL is accessible.", variant: "destructive" }),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async (word: { spanish: string; english: string; partOfSpeech: string; conjugations?: any; context?: string; source?: string }) => {
+      const res = await fetch("/api/dictionary/words", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(word),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/dictionary/words"] });
+      toast({ title: "Word saved!" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/dictionary/words/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Delete failed");
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/dictionary/words"] }),
+  });
+
+  const handleLookup = () => {
+    if (!searchTerm.trim()) return;
+    lookupMutation.mutate(searchTerm.trim());
+  };
+
+  const toggleDirection = () => {
+    setDirection(d => d === "en-es" ? "es-en" : "en-es");
+    setLookupResult(null);
+  };
 
   return (
     <Layout>
-      <div className="relative w-full h-[260px] md:h-[300px] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
-        <img 
-          src={generatedImage} 
-          alt="Puerto Vallarta Streets" 
-          className="w-full h-full object-cover"
-          data-testid="img-hero"
-        />
-        <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
-          <div className="max-w-3xl mx-auto">
-            <div className="flex items-center space-x-2 text-primary mb-2 font-medium">
-              <MapPin className="w-4 h-4" />
-              <span>Puerto Vallarta, Mexico</span>
+      <div className="max-w-3xl mx-auto px-4 md:px-6 pt-4 md:pt-6 pb-8 space-y-6">
+        <header className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-primary text-sm font-medium mb-1">
+              <MapPin className="w-3.5 h-3.5" />
+              <span>Puerto Vallarta</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-2" data-testid="text-greeting">
-              Buenos días, Traveler
+            <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground" data-testid="text-greeting">
+              Vallarta Voz
             </h1>
-            <p className="text-base md:text-lg text-muted-foreground max-w-xl">
-              Ready to explore? Let's practice your Spanish for today's adventures.
-            </p>
           </div>
-        </div>
-      </div>
+        </header>
 
-      <div className="max-w-3xl mx-auto px-4 md:px-6 py-8 space-y-10">
         <section>
-          <div 
-            onClick={() => setLocation('/dictionary')}
-            className="bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-6 md:p-8 text-white cursor-pointer hover:shadow-xl hover:shadow-primary/20 transition-all mb-4"
-            data-testid="card-dictionary-hero"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-4">
-                  <Search className="w-6 h-6" />
-                </div>
-                <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">Dictionary & Conjugation</h2>
-                <p className="text-white/80 text-sm md:text-base mb-1">Look up any word, see full conjugation tables across all tenses.</p>
-                <p className="text-white/60 text-sm mb-6">Import text from articles, ebooks, or URLs to build your vocabulary.</p>
-                <Button variant="secondary" className="bg-white text-primary hover:bg-white/90" data-testid="button-open-dictionary">
-                  Open Dictionary <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
+          <Card className="p-4 md:p-5 border-primary/30 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-display font-bold text-lg">Dictionary & Conjugation</h2>
+              <button
+                onClick={toggleDirection}
+                className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors"
+                data-testid="button-swap-direction"
+              >
+                {direction === "en-es" ? "EN → ES" : "ES → EN"}
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+              </button>
             </div>
-          </div>
+            <div className="flex gap-2 mb-2">
+              <Input
+                placeholder={direction === "en-es" ? "Type a word in English..." : "Escribe una palabra en español..."}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLookup()}
+                className="flex-1 text-base"
+                data-testid="input-word-search"
+              />
+              <Button
+                onClick={handleLookup}
+                disabled={lookupMutation.isPending || !searchTerm.trim()}
+                className="bg-primary px-5"
+                data-testid="button-lookup"
+              >
+                {lookupMutation.isPending ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Search className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {direction === "en-es" ? 'Try: "to eat", "beach", "to want", "beautiful"' : 'Try: "comer", "playa", "querer", "hermoso"'}
+            </p>
+          </Card>
+
+          <AnimatePresence>
+            {lookupResult && (
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
+                <Card className="p-4 md:p-5 border-l-4 border-l-secondary shadow-md">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-xl md:text-2xl font-display font-bold text-foreground" data-testid="text-lookup-spanish">
+                        {lookupResult.spanish}
+                      </h3>
+                      <p className="text-base text-muted-foreground" data-testid="text-lookup-english">{lookupResult.english}</p>
+                      <span className="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-full font-bold uppercase">
+                        {lookupResult.partOfSpeech}
+                      </span>
+                    </div>
+                    <Button
+                      onClick={() => saveMutation.mutate({
+                        spanish: lookupResult.spanish,
+                        english: lookupResult.english,
+                        partOfSpeech: lookupResult.partOfSpeech,
+                        conjugations: lookupResult.conjugations,
+                        source: "lookup",
+                      })}
+                      disabled={saveMutation.isPending}
+                      size="sm"
+                      className="bg-primary"
+                      data-testid="button-save-lookup"
+                    >
+                      <Plus className="w-4 h-4 mr-1" /> Save
+                    </Button>
+                  </div>
+
+                  {lookupResult.conjugations && (
+                    <div className="mb-4">
+                      <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Conjugation Table</h4>
+                      <ConjugationDisplay conjugations={lookupResult.conjugations} />
+                    </div>
+                  )}
+
+                  {lookupResult.examples.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Examples</h4>
+                      <ul className="space-y-1.5">
+                        {lookupResult.examples.map((ex, i) => (
+                          <li key={i} className="text-sm bg-muted/30 p-2.5 rounded-lg" data-testid={`text-example-${i}`}>{ex}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {lookupResult.relatedWords.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Related Words</h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {lookupResult.relatedWords.map((rw, i) => (
+                          <button
+                            key={i}
+                            onClick={() => { setSearchTerm(rw.spanish); lookupMutation.mutate(rw.spanish); }}
+                            className="bg-secondary/5 hover:bg-secondary/10 border border-secondary/20 px-2.5 py-1 rounded-lg text-xs transition-colors"
+                            data-testid={`button-related-${i}`}
+                          >
+                            <span className="font-bold text-secondary">{rw.spanish}</span>
+                            <span className="text-muted-foreground ml-1">({rw.english})</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </section>
 
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-display font-bold" data-testid="text-quick-start">Quick Start</h2>
+          <Tabs defaultValue="import" className="space-y-4">
+            <TabsList className="bg-background border-b border-border w-full justify-start rounded-none h-auto p-0 gap-4">
+              <TabsTrigger
+                value="import"
+                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-1 py-2.5 font-medium text-sm text-muted-foreground"
+                data-testid="tab-import"
+              >
+                <FileText className="w-4 h-4 mr-1.5" /> Import Text
+              </TabsTrigger>
+              <TabsTrigger
+                value="saved"
+                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-1 py-2.5 font-medium text-sm text-muted-foreground"
+                data-testid="tab-saved"
+              >
+                <BookOpen className="w-4 h-4 mr-1.5" /> My Dictionary
+                {savedWordsQuery.data && savedWordsQuery.data.length > 0 && (
+                  <span className="ml-1 bg-primary text-white text-[10px] rounded-full px-1.5 py-0.5">{savedWordsQuery.data.length}</span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="import" className="space-y-4">
+              <Card className="p-4 border-primary/20">
+                <h3 className="font-display font-bold text-sm mb-2">Paste Text</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Paste from an ebook, email, or article. We'll extract vocabulary and grammar patterns.
+                </p>
+                <Textarea
+                  placeholder="Paste any text here — English, Spanish, or mixed..."
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                  className="min-h-[100px] resize-none mb-3 text-sm"
+                  data-testid="textarea-import"
+                />
+                <Button
+                  onClick={() => { if (importText.trim()) extractMutation.mutate(importText.trim()); }}
+                  disabled={extractMutation.isPending || !importText.trim()}
+                  className="w-full bg-primary"
+                  size="sm"
+                  data-testid="button-extract"
+                >
+                  {extractMutation.isPending ? (
+                    <span className="flex items-center"><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" /> Analyzing...</span>
+                  ) : (
+                    <span className="flex items-center"><FileText className="w-3.5 h-3.5 mr-2" /> Extract Vocabulary & Grammar</span>
+                  )}
+                </Button>
+              </Card>
+
+              <Card className="p-4 border-primary/20">
+                <h3 className="font-display font-bold text-sm mb-2">Import from URL</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Paste a link. We'll fetch the content and analyze it.
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://..."
+                    value={importUrl}
+                    onChange={(e) => setImportUrl(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && importUrl.trim() && fetchUrlMutation.mutate(importUrl.trim())}
+                    className="flex-1 text-sm"
+                    data-testid="input-import-url"
+                  />
+                  <Button
+                    onClick={() => { if (importUrl.trim()) fetchUrlMutation.mutate(importUrl.trim()); }}
+                    disabled={fetchUrlMutation.isPending || !importUrl.trim()}
+                    className="bg-secondary"
+                    size="sm"
+                    data-testid="button-fetch-url"
+                  >
+                    {fetchUrlMutation.isPending ? (
+                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Globe className="w-3.5 h-3.5" />
+                    )}
+                  </Button>
+                </div>
+              </Card>
+
+              <AnimatePresence>
+                {grammarPatterns.length > 0 && (
+                  <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+                    <div className="space-y-2">
+                      <h3 className="font-display font-bold text-sm flex items-center gap-2">
+                        <Lightbulb className="w-4 h-4 text-amber-500" />
+                        Grammar Patterns ({grammarPatterns.length})
+                      </h3>
+                      {grammarPatterns.map((gp, idx) => (
+                        <GrammarPatternCard key={idx} pattern={gp} />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence>
+                {extractedWords.length > 0 && (
+                  <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+                    <Card className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-display font-bold text-sm">Vocabulary ({extractedWords.length})</h3>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-7"
+                          onClick={() => extractedWords.forEach(w => saveMutation.mutate({
+                            spanish: w.spanish, english: w.english, partOfSpeech: w.partOfSpeech, context: w.context, source: "import",
+                          }))}
+                          data-testid="button-save-all"
+                        >
+                          <Plus className="w-3 h-3 mr-1" /> Save All
+                        </Button>
+                      </div>
+                      <div className="space-y-1.5">
+                        {extractedWords.map((word, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-2.5 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors" data-testid={`extracted-word-${idx}`}>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-bold text-sm text-secondary">{word.spanish}</span>
+                                <span className="text-muted-foreground text-xs">—</span>
+                                <span className="text-sm text-foreground">{word.english}</span>
+                                <span className="text-[9px] bg-secondary/10 text-secondary px-1 py-0.5 rounded-full uppercase font-bold">{word.partOfSpeech}</span>
+                              </div>
+                              {word.context && <p className="text-[11px] text-muted-foreground mt-0.5 italic truncate">"{word.context}"</p>}
+                            </div>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-primary hover:bg-primary/10 flex-shrink-0"
+                              onClick={() => saveMutation.mutate({
+                                spanish: word.spanish, english: word.english, partOfSpeech: word.partOfSpeech, context: word.context, source: "import",
+                              })}
+                              data-testid={`button-save-extracted-${idx}`}
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </TabsContent>
+
+            <TabsContent value="saved" className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Filter your dictionary..."
+                  value={savedFilter}
+                  onChange={(e) => setSavedFilter(e.target.value)}
+                  className="flex-1 text-sm"
+                  data-testid="input-filter-saved"
+                />
+                {savedFilter && (
+                  <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setSavedFilter("")}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+
+              {savedWordsQuery.isLoading ? (
+                <div className="text-center py-8 text-muted-foreground text-sm">Loading...</div>
+              ) : savedWordsQuery.data && savedWordsQuery.data.length > 0 ? (
+                <div className="space-y-1.5">
+                  {savedWordsQuery.data.map((word) => (
+                    <Card key={word.id} className="overflow-hidden" data-testid={`saved-word-${word.id}`}>
+                      <div
+                        className="flex items-center justify-between p-3 cursor-pointer hover:bg-muted/20 transition-colors"
+                        onClick={() => setExpandedSaved(expandedSaved === word.id ? null : word.id)}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-bold text-secondary">{word.spanish}</span>
+                            <span className="text-muted-foreground text-xs">—</span>
+                            <span className="text-foreground text-sm">{word.english}</span>
+                            <span className="text-[9px] bg-secondary/10 text-secondary px-1 py-0.5 rounded-full uppercase font-bold">{word.partOfSpeech}</span>
+                            {word.source && <span className="text-[9px] bg-muted text-muted-foreground px-1 py-0.5 rounded-full">{word.source}</span>}
+                          </div>
+                          {word.context && <p className="text-[11px] text-muted-foreground mt-0.5 italic">"{word.context}"</p>}
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(word.id); }}
+                            data-testid={`button-delete-${word.id}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                          {word.conjugations && (
+                            expandedSaved === word.id ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </div>
+                      </div>
+                      <AnimatePresence>
+                        {expandedSaved === word.id && word.conjugations && (
+                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                            <div className="px-3 pb-3 border-t border-border/30 pt-2">
+                              <ConjugationDisplay conjugations={word.conjugations} />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <BookOpen className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-muted-foreground text-sm">
+                    {savedFilter ? "No words match your filter." : "Your dictionary is empty. Look up words or import text to get started!"}
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </section>
+
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-display font-bold">More Tools</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div 
+          <div className="grid grid-cols-2 gap-3">
+            <div
               onClick={() => setLocation('/learn')}
-              className="bg-gradient-to-br from-secondary to-secondary/80 rounded-2xl p-6 text-white cursor-pointer hover:shadow-lg hover:shadow-secondary/20 transition-all"
+              className="bg-gradient-to-br from-secondary to-secondary/80 rounded-xl p-4 text-white cursor-pointer hover:shadow-lg transition-all"
               data-testid="card-daily-essentials"
             >
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mb-4">
-                <BookOpen className="w-5 h-5" />
-              </div>
-              <h3 className="text-xl font-display font-bold mb-1">Daily Essentials</h3>
-              <p className="text-white/80 text-sm mb-4">Practice the core vocabulary you'll need today.</p>
-              <Button variant="secondary" className="bg-white text-secondary hover:bg-white/90 w-full" data-testid="button-start-learning">
-                Start Learning
-              </Button>
+              <BookOpen className="w-5 h-5 mb-2 opacity-80" />
+              <h3 className="font-display font-bold text-sm mb-0.5">Daily Essentials</h3>
+              <p className="text-white/70 text-[11px]">Core vocabulary practice</p>
             </div>
-
-            <div 
+            <div
               onClick={() => setLocation('/journal')}
-              className="bg-white border border-border rounded-2xl p-6 cursor-pointer hover:border-primary/50 transition-all"
+              className="bg-white border border-border rounded-xl p-4 cursor-pointer hover:border-primary/50 transition-all"
               data-testid="card-journal"
             >
-              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
-                <PenTool className="w-5 h-5" />
-              </div>
-              <h3 className="text-xl font-display font-bold mb-1 text-foreground">Write & Journal</h3>
-              <p className="text-muted-foreground text-sm mb-4">Write your day in mixed English/Spanish. AI teaches corrections.</p>
-              <Button variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/5" data-testid="button-open-journal">
-                Open Journal
-              </Button>
+              <PenTool className="w-5 h-5 mb-2 text-primary opacity-80" />
+              <h3 className="font-display font-bold text-sm mb-0.5 text-foreground">Journal</h3>
+              <p className="text-muted-foreground text-[11px]">Write in mixed English/Spanish</p>
             </div>
-          </div>
-        </section>
-
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-display font-bold">Practice Situations</h2>
-            <Button variant="ghost" className="text-primary hover:text-primary/80" onClick={() => setLocation('/situations')} data-testid="button-view-all-situations">
-              View All
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {situations.map((situation, index) => (
-              <SituationCard 
-                key={situation.id} 
-                {...situation} 
-                icon={situation.id === 'taxi' ? MapPin : situation.id === 'hotel' ? Sun : BookOpen}
-                delay={index * 0.1}
-              />
-            ))}
+            <div
+              onClick={() => setLocation('/situations')}
+              className="bg-white border border-border rounded-xl p-4 cursor-pointer hover:border-primary/50 transition-all"
+              data-testid="card-situations"
+            >
+              <MapPin className="w-5 h-5 mb-2 text-secondary opacity-80" />
+              <h3 className="font-display font-bold text-sm mb-0.5 text-foreground">Situations</h3>
+              <p className="text-muted-foreground text-[11px]">Real-world practice</p>
+            </div>
+            <div
+              onClick={() => setLocation('/dictionary')}
+              className="bg-white border border-border rounded-xl p-4 cursor-pointer hover:border-primary/50 transition-all"
+              data-testid="card-full-dictionary"
+            >
+              <Search className="w-5 h-5 mb-2 text-primary opacity-80" />
+              <h3 className="font-display font-bold text-sm mb-0.5 text-foreground">Full Dictionary</h3>
+              <p className="text-muted-foreground text-[11px]">Expanded view</p>
+            </div>
           </div>
         </section>
       </div>

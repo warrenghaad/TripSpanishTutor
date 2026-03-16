@@ -92,11 +92,11 @@ export async function registerRoutes(
 
   app.post("/api/dictionary/lookup", async (req, res) => {
     try {
-      const { word } = req.body;
+      const { word, direction } = req.body;
       if (!word) {
         return res.status(400).json({ error: "Missing word" });
       }
-      const result = await lookupWord(word);
+      const result = await lookupWord(word, direction);
       res.json(result);
     } catch (error) {
       console.error("Error looking up word:", error);

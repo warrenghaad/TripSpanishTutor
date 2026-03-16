@@ -161,8 +161,14 @@ export type TextExtractionResult = {
   grammarPatterns: GrammarPattern[];
 };
 
-export async function lookupWord(word: string): Promise<WordLookupResult> {
-  const prompt = `Look up the word "${word}" (it could be English or Spanish).
+export async function lookupWord(word: string, direction?: string): Promise<WordLookupResult> {
+  const directionHint = direction === "es-en"
+    ? `The user typed "${word}" in Spanish. Provide its English translation and full Spanish details.`
+    : direction === "en-es"
+    ? `The user typed "${word}" in English. Provide its Spanish translation and full Spanish details.`
+    : `The user typed "${word}" (it could be English or Spanish). Determine the language and provide the translation.`;
+
+  const prompt = `${directionHint}
 
 Provide:
 1. The Spanish word and English translation
