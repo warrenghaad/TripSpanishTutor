@@ -1,3 +1,19 @@
+export type Locale = {
+  id: string;
+  name: string;
+  description: string;
+};
+
+export const locales: Locale[] = [
+  { id: "neutral", name: "Neutral / Textbook", description: "Standard Spanish without regional slang" },
+  { id: "puerto-vallarta", name: "Puerto Vallarta / Jalisco", description: "Mexican Pacific coast — güey, chido, neta" },
+  { id: "mexico-city", name: "Mexico City", description: "Chilango slang — chido, neta, órale, chamba" },
+  { id: "oaxaca", name: "Oaxaca", description: "Southern Mexican — mano, compa, regional expressions" },
+  { id: "colombia", name: "Colombia", description: "Colombian — parcero, bacano, chevere, ¿qué más?" },
+  { id: "argentina", name: "Argentina", description: "Rioplatense — vos, che, boludo, re, bárbaro" },
+  { id: "spain", name: "Spain", description: "Peninsular — tío, vale, mola, guay, vosotros" },
+  { id: "cuba", name: "Cuba", description: "Cuban — asere, ¿qué bolá?, dale, tremendo" },
+];
 
 export type VocabularyItem = {
   id: string;

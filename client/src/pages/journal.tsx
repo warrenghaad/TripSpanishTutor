@@ -8,6 +8,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { useLocale } from "@/lib/locale-context";
 
 type Feedback = {
   corrected: string;
@@ -87,9 +88,10 @@ export default function Journal() {
   const [humLevel, setHumLevel] = useState([2]);
   const [theme, setTheme] = useState("food");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const { locale } = useLocale();
 
   const analyzeMutation = useMutation({
-    mutationFn: async (data: { text: string; tenseFocus: string }) => {
+    mutationFn: async (data: { text: string; tenseFocus: string; locale: string }) => {
       const response = await fetch("/api/journal/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -113,7 +115,7 @@ export default function Journal() {
 
   const handleAnalyze = () => {
     if (!currentText.trim()) return;
-    analyzeMutation.mutate({ text: currentText, tenseFocus: currentSection.tenseFocus });
+    analyzeMutation.mutate({ text: currentText, tenseFocus: currentSection.tenseFocus, locale });
   };
 
   const humLabels = ["Quiet", "Present", "Steady", "Strong", "Loud"];

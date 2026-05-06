@@ -114,6 +114,17 @@ Preferred communication style: Simple, everyday language.
 1. **Grammar Analysis**: Analyzes Spanish text with focus on specific verb tenses, returns corrections, explanations, and vocabulary
 2. **Translation**: Context-aware translation with presets for different scenarios (journal, travel, arts)
 3. **Chat Assistant**: Conversational practice partner for Spanish learning
+4. **Dictionary Lookup**: Word/phrase lookup with conjugation tables, examples, and related words
+5. **Vocabulary Extraction**: Extract vocabulary and grammar patterns from pasted text or URLs
+
+All AI functions accept an optional `locale` parameter to generate region-specific Spanish (slang, idioms, speech patterns).
+
+**Locale System**: Users can select a Spanish-speaking region to adjust all AI-generated content:
+- Available locales: Neutral/Textbook, Puerto Vallarta/Jalisco, Mexico City, Oaxaca, Colombia, Argentina, Spain, Cuba
+- Locale is stored in React context (`LocaleProvider` in `client/src/lib/locale-context.tsx`) and persists across page navigation within a session
+- Locale selector appears in the sidebar navigation (desktop) and in the translator panel
+- Each locale has detailed prompt instructions for regional slang, grammar variations (e.g., voseo for Argentina, vosotros for Spain)
+- Translation results include `localeNotes` explaining any regional expressions used
 
 **Prompt Engineering**: Custom system prompts guide the AI to provide:
 - Tense-specific grammar feedback
@@ -121,6 +132,7 @@ Preferred communication style: Simple, everyday language.
 - Gentle, encouraging tone aligned with therapeutic approach
 - Context-aware translations (general, journaling tone, travel phrases, arts vocabulary)
 - Optional "softer alternatives" for anxiety-aware rephrasing
+- Locale-specific slang, idioms, and speech patterns with explanatory notes
 
 **Design Rationale**: OpenAI's GPT models provide high-quality language understanding and generation. The service abstraction allows swapping providers if needed. Structured JSON responses ensure predictable parsing and display in the UI.
 

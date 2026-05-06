@@ -1,9 +1,15 @@
 import { Link, useLocation } from "wouter";
-import { Home, BookOpen, MessageSquare, PenTool, Search } from "lucide-react";
+import { Home, BookOpen, MessageSquare, PenTool, Search, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/lib/locale-context";
+import { locales } from "@/lib/data";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Navigation() {
   const [location] = useLocation();
+  const { locale, setLocale } = useLocale();
+
+  const currentLocale = locales.find(l => l.id === locale);
 
   const items = [
     { href: "/", icon: Home, label: "Home" },
@@ -40,6 +46,32 @@ export default function Navigation() {
           );
         })}
       </ul>
+
+      <div className="hidden md:block mt-auto pt-4 border-t border-border/40">
+        <div className="px-2 mb-2">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+            <MapPin className="w-3 h-3" />
+            Region
+          </span>
+        </div>
+        <Select value={locale} onValueChange={setLocale}>
+          <SelectTrigger className="text-xs h-9 bg-muted/30 border-border/50" data-testid="nav-select-locale">
+            <SelectValue placeholder="Select region" />
+          </SelectTrigger>
+          <SelectContent>
+            {locales.map((l) => (
+              <SelectItem key={l.id} value={l.id} data-testid={`nav-locale-option-${l.id}`}>
+                <div className="flex flex-col">
+                  <span className="font-medium text-xs">{l.name}</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {currentLocale && currentLocale.id !== "neutral" && (
+          <p className="text-[10px] text-muted-foreground mt-1 px-1">{currentLocale.description}</p>
+        )}
+      </div>
     </nav>
   );
 }

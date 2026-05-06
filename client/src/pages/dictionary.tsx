@@ -4,11 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Plus, Trash2, BookOpen, FileText, Globe, ChevronDown, ChevronUp, X, Lightbulb } from "lucide-react";
+import { Search, Plus, Trash2, BookOpen, FileText, Globe, ChevronDown, ChevronUp, X, Lightbulb, MapPin } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useLocale } from "@/lib/locale-context";
 
 type ConjugationTable = Record<string, Record<string, string>>;
 
@@ -19,6 +20,7 @@ type LookupResult = {
   conjugations?: ConjugationTable;
   examples: string[];
   relatedWords: { spanish: string; english: string }[];
+  localeNotes?: string[];
 };
 
 type ExtractedWord = {
@@ -158,6 +160,7 @@ export default function Dictionary() {
   const [savedFilter, setSavedFilter] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { locale } = useLocale();
 
   const savedWordsQuery = useQuery<SavedWord[]>({
     queryKey: ["/api/dictionary/words", savedFilter],
@@ -176,7 +179,7 @@ export default function Dictionary() {
       const res = await fetch("/api/dictionary/lookup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word }),
+        body: JSON.stringify({ word, locale }),
       });
       if (!res.ok) throw new Error("Lookup failed");
       return res.json() as Promise<LookupResult>;
@@ -190,7 +193,7 @@ export default function Dictionary() {
       const res = await fetch("/api/dictionary/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, locale }),
       });
       if (!res.ok) throw new Error("Extract failed");
       return res.json();
@@ -207,7 +210,7 @@ export default function Dictionary() {
       const res = await fetch("/api/dictionary/fetch-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, locale }),
       });
       if (!res.ok) throw new Error("Fetch failed");
       return res.json();
@@ -409,6 +412,26 @@ export default function Dictionary() {
                               <span className="font-bold text-secondary">{rw.spanish}</span>
                               <span className="text-muted-foreground ml-1">({rw.english})</span>
                             </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {lookupResult.localeNotes && lookupResult.localeNotes.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1">
+                          <MapPin className="w-4 h-4" />
+                          Regional Notes
+                        </h3>
+                        <div className="space-y-2">
+                          {lookupResult.localeNotes.map((note, idx) => (
+                            <div
+                              key={idx}
+                              className="bg-amber-50 border border-amber-200/50 rounded-lg p-3 text-sm text-amber-900"
+                              data-testid={`text-dict-locale-note-${idx}`}
+                            >
+                              {note}
+                            </div>
                           ))}
                         </div>
                       </div>

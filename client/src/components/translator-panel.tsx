@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Languages, ArrowRightLeft, Copy, Sparkles, X, Check } from "lucide-react";
+import { Languages, ArrowRightLeft, Copy, Sparkles, X, Check, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useLocale } from "@/lib/locale-context";
+import { locales } from "@/lib/data";
 
 type TranslationResult = {
   translation: string;
   alternatives?: string[];
+  localeNotes?: string[];
 };
 
 export default function TranslatorPanel() {
@@ -21,9 +24,10 @@ export default function TranslatorPanel() {
   const [result, setResult] = useState<TranslationResult | null>(null);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+  const { locale, setLocale } = useLocale();
 
   const translateMutation = useMutation({
-    mutationFn: async (data: { text: string; target: string; preset: string; soften: boolean }) => {
+    mutationFn: async (data: { text: string; target: string; preset: string; soften: boolean; locale: string }) => {
       const response = await fetch("/api/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -42,7 +46,7 @@ export default function TranslatorPanel() {
 
   const handleTranslate = () => {
     if (!sourceText.trim()) return;
-    translateMutation.mutate({ text: sourceText, target: targetLang, preset, soften });
+    translateMutation.mutate({ text: sourceText, target: targetLang, preset, soften, locale });
   };
 
   const handleSwap = () => {
@@ -126,29 +130,45 @@ export default function TranslatorPanel() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <Select value={preset} onValueChange={(v: any) => setPreset(v)}>
-                  <SelectTrigger className="text-xs h-8">
-                    <SelectValue placeholder="Preset" />
+              <div className="space-y-2">
+                <Select value={locale} onValueChange={setLocale}>
+                  <SelectTrigger className="text-xs h-8" data-testid="select-locale">
+                    <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
+                    <SelectValue placeholder="Region" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="general">General</SelectItem>
-                    <SelectItem value="journal">Journal (Gentle)</SelectItem>
-                    <SelectItem value="travel">Travel Phrases</SelectItem>
-                    <SelectItem value="arts">Arts & Music</SelectItem>
+                    {locales.map((l) => (
+                      <SelectItem key={l.id} value={l.id} data-testid={`locale-option-${l.id}`}>
+                        <span className="font-medium">{l.name}</span>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
-                <Button 
-                  variant={soften ? "default" : "outline"} 
-                  size="sm" 
-                  className={`text-xs h-8 ${soften ? "bg-primary" : ""}`}
-                  onClick={() => setSoften(!soften)}
-                  data-testid="button-toggle-soften"
-                >
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  Mindful Tone
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Select value={preset} onValueChange={(v: any) => setPreset(v)}>
+                    <SelectTrigger className="text-xs h-8">
+                      <SelectValue placeholder="Preset" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="general">General</SelectItem>
+                      <SelectItem value="journal">Journal (Gentle)</SelectItem>
+                      <SelectItem value="travel">Travel Phrases</SelectItem>
+                      <SelectItem value="arts">Arts & Music</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Button 
+                    variant={soften ? "default" : "outline"} 
+                    size="sm" 
+                    className={`text-xs h-8 ${soften ? "bg-primary" : ""}`}
+                    onClick={() => setSoften(!soften)}
+                    data-testid="button-toggle-soften"
+                  >
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    Mindful Tone
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -192,6 +212,24 @@ export default function TranslatorPanel() {
                       </Button>
                     </div>
                   </div>
+
+                  {result.localeNotes && result.localeNotes.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        Regional Notes
+                      </h4>
+                      {result.localeNotes.map((note, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-amber-50 border border-amber-200/50 rounded-lg p-3 text-sm text-amber-900"
+                          data-testid={`text-locale-note-${idx}`}
+                        >
+                          {note}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {result.alternatives && result.alternatives.length > 0 && (
                     <div className="space-y-2">

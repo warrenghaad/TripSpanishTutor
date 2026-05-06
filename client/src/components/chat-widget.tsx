@@ -4,6 +4,7 @@ import { MessageCircle, X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLocale } from "@/lib/locale-context";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -15,6 +16,7 @@ export default function ChatWidget() {
   ]);
   const [loading, setLoading] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
+  const { locale } = useLocale();
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -32,7 +34,7 @@ export default function ChatWidget() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [...messages, { role: "user", content: text }] }),
+        body: JSON.stringify({ messages: [...messages, { role: "user", content: text }], locale }),
       });
       
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

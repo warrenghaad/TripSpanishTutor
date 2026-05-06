@@ -12,11 +12,11 @@ export async function registerRoutes(
   
   app.post("/api/journal/analyze", async (req, res) => {
     try {
-      const { text, tenseFocus } = req.body;
+      const { text, tenseFocus, locale } = req.body;
       if (!text || !tenseFocus) {
         return res.status(400).json({ error: "Missing text or tenseFocus" });
       }
-      const feedback = await analyzeSpanishText(text, tenseFocus);
+      const feedback = await analyzeSpanishText(text, tenseFocus, locale);
       const entry = await storage.createJournalEntry({
         originalText: text,
         correctedText: feedback.corrected,
@@ -64,11 +64,11 @@ export async function registerRoutes(
 
   app.post("/api/chat", async (req, res) => {
     try {
-      const { messages } = req.body;
+      const { messages, locale } = req.body;
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ error: "Missing messages array" });
       }
-      const reply = await chatWithAssistant(messages);
+      const reply = await chatWithAssistant(messages, locale);
       res.json({ reply });
     } catch (error) {
       console.error("Error in chat:", error);
@@ -78,11 +78,11 @@ export async function registerRoutes(
 
   app.post("/api/translate", async (req, res) => {
     try {
-      const { text, target, preset, soften } = req.body;
+      const { text, target, preset, soften, locale } = req.body;
       if (!text || !target) {
         return res.status(400).json({ error: "Missing text or target language" });
       }
-      const result = await translateText(text, target, preset || "general", soften || false);
+      const result = await translateText(text, target, preset || "general", soften || false, locale);
       res.json(result);
     } catch (error) {
       console.error("Error translating:", error);
@@ -92,11 +92,11 @@ export async function registerRoutes(
 
   app.post("/api/dictionary/lookup", async (req, res) => {
     try {
-      const { word, direction } = req.body;
+      const { word, direction, locale } = req.body;
       if (!word) {
         return res.status(400).json({ error: "Missing word" });
       }
-      const result = await lookupWord(word, direction);
+      const result = await lookupWord(word, direction, locale);
       res.json(result);
     } catch (error) {
       console.error("Error looking up word:", error);
@@ -106,11 +106,11 @@ export async function registerRoutes(
 
   app.post("/api/dictionary/extract", async (req, res) => {
     try {
-      const { text } = req.body;
+      const { text, locale } = req.body;
       if (!text) {
         return res.status(400).json({ error: "Missing text" });
       }
-      const result = await extractVocabulary(text);
+      const result = await extractVocabulary(text, locale);
       res.json(result);
     } catch (error) {
       console.error("Error extracting vocabulary:", error);
@@ -120,7 +120,7 @@ export async function registerRoutes(
 
   app.post("/api/dictionary/fetch-url", async (req, res) => {
     try {
-      const { url } = req.body;
+      const { url, locale } = req.body;
       if (!url || typeof url !== "string") {
         return res.status(400).json({ error: "Missing URL" });
       }
@@ -163,7 +163,7 @@ export async function registerRoutes(
       if (textContent.length < 20) {
         return res.status(400).json({ error: "Not enough text content found on that page" });
       }
-      const result = await extractVocabulary(textContent);
+      const result = await extractVocabulary(textContent, locale);
       res.json(result);
     } catch (error) {
       console.error("Error fetching URL:", error);

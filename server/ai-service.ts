@@ -14,11 +14,34 @@ export type GrammarFeedback = {
 export type TranslationResult = {
   translation: string;
   alternatives?: string[];
+  localeNotes?: string[];
 };
+
+const localeDescriptions: Record<string, string> = {
+  "neutral": "Use standard, textbook Spanish without any regional slang or colloquialisms.",
+  "puerto-vallarta": "Use the Spanish spoken in Puerto Vallarta / Jalisco, Mexico. Incorporate local slang like 'güey', 'chido', 'neta', 'a toda madre', 'órale' where natural. Use Mexican Spanish grammar and expressions.",
+  "mexico-city": "Use the Spanish spoken in Mexico City (chilango). Incorporate slang like 'chido', 'neta', 'órale', 'chamba', 'naco', 'padre' where natural. Use Mexican Spanish grammar and expressions.",
+  "oaxaca": "Use the Spanish spoken in Oaxaca, Mexico. Incorporate regional expressions like 'mano', 'compa', and Oaxacan turns of phrase where natural. Use Mexican Spanish grammar.",
+  "colombia": "Use Colombian Spanish. Incorporate Colombian slang like 'parcero/parce', 'bacano', 'chevere', '¿qué más?', 'listo', 'marica' (casual) where natural. Use 'usted' more commonly as Colombians do.",
+  "argentina": "Use Argentine Rioplatense Spanish. Use 'vos' instead of 'tú' with voseo conjugations. Incorporate slang like 'che', 'boludo', 're', 'bárbaro', 'piola', 'morfar', 'laburo' where natural.",
+  "spain": "Use Peninsular Spanish from Spain. Use 'vosotros' for plural you. Incorporate slang like 'tío/tía', 'vale', 'mola', 'guay', 'currar', 'flipar' where natural. Use 'z' and 'c' pronunciation hints.",
+  "cuba": "Use Cuban Spanish. Incorporate Cuban slang like 'asere', '¿qué bolá?', 'dale', 'tremendo', 'jama', 'guagua' (bus) where natural. Use Cuban speech patterns.",
+};
+
+function getLocalePromptSegment(locale?: string): string {
+  if (!locale) return "";
+  if (locale === "neutral") {
+    return `\n\nIMPORTANT LOCALE INSTRUCTION: ${localeDescriptions["neutral"]} Do not use any regional slang, colloquialisms, or informal expressions. Stick to universally understood, formal Spanish.`;
+  }
+  const desc = localeDescriptions[locale];
+  if (!desc) return "";
+  return `\n\nIMPORTANT LOCALE INSTRUCTION: ${desc}\nWhenever you use a locale-specific slang word or idiom, include a brief note explaining it (e.g., "'Chido' is Jalisco slang for 'cool'").`;
+}
 
 export async function analyzeSpanishText(
   text: string,
-  tenseFocus: string
+  tenseFocus: string,
+  locale?: string
 ): Promise<GrammarFeedback> {
   const tenseDescriptions: Record<string, string> = {
     present: "presente (present tense) - describing current actions or states",
@@ -30,7 +53,9 @@ export async function analyzeSpanishText(
 
   const tenseDesc = tenseDescriptions[tenseFocus] || tenseFocus;
 
-  const prompt = `You are a Spanish language tutor helping an English speaker practice Spanish for travel in Mexico.
+  const localeSegment = getLocalePromptSegment(locale);
+
+  const prompt = `You are a Spanish language tutor helping an English speaker practice Spanish.${localeSegment}
 
 The student is focusing on practicing the ${tenseDesc}.
 
@@ -96,14 +121,17 @@ Respond in JSON format:
 }
 
 export async function chatWithAssistant(
-  messages: { role: string; content: string }[]
+  messages: { role: string; content: string }[],
+  locale?: string
 ): Promise<string> {
-  const systemPrompt = `You are a friendly, encouraging Spanish language companion for Puerto Vallarta travel. Your name is "Vallarta Voz."
+  const localeSegment = getLocalePromptSegment(locale);
 
+  const systemPrompt = `You are a friendly, encouraging Spanish language companion. Your name is "Vallarta Voz."
+${localeSegment}
 Your role:
 - Help users learn travel Spanish with practical phrases
 - Explain grammar concepts simply (especially verb tenses)
-- Teach Mexican Spanish slang and cultural tips
+- Teach regional slang and cultural tips appropriate to the locale
 - Practice conversations for real situations (taxis, hotels, restaurants, markets)
 - Be warm, patient, and supportive — many learners have language anxiety
 
@@ -112,6 +140,7 @@ Always:
 - Mix Spanish naturally into your responses with English translations
 - Celebrate small wins and encourage practice
 - Use simple vocabulary appropriate for beginners
+- When using locale-specific slang, briefly explain the term
 
 If asked to translate, provide the translation with a brief note on usage or grammar if helpful.`;
 
@@ -141,6 +170,7 @@ export type WordLookupResult = {
   conjugations?: Record<string, Record<string, string>>;
   examples: string[];
   relatedWords: { spanish: string; english: string }[];
+  localeNotes?: string[];
 };
 
 export type GrammarPattern = {
@@ -161,22 +191,25 @@ export type TextExtractionResult = {
   grammarPatterns: GrammarPattern[];
 };
 
-export async function lookupWord(word: string, direction?: string): Promise<WordLookupResult> {
+export async function lookupWord(word: string, direction?: string, locale?: string): Promise<WordLookupResult> {
   const directionHint = direction === "es-en"
     ? `The user typed "${word}" in Spanish. Provide its English translation and full Spanish details.`
     : direction === "en-es"
     ? `The user typed "${word}" in English. Provide its Spanish translation and full Spanish details.`
     : `The user typed "${word}" (it could be English or Spanish). Determine the language and provide the translation.`;
 
+  const localeSegment = getLocalePromptSegment(locale);
+
   const prompt = `${directionHint}
+${localeSegment}
 
 Provide:
 1. The Spanish word and English translation
 2. Part of speech (noun, verb, adjective, adverb, phrase)
 3. If it's a verb, provide full conjugation tables for: presente, pretérito, imperfecto, futuro, condicional
    - For each tense, provide: yo, tú, él/ella, nosotros, ellos/ustedes
-4. 2-3 example sentences using the word (in Spanish with English translation)
-5. 3-4 related words that a traveler would find useful
+4. 2-3 example sentences using the word (in Spanish with English translation), using locale-appropriate phrasing
+5. 3-4 related words that a traveler would find useful, including any locale-specific synonyms or slang equivalents
 
 Respond in JSON:
 {
@@ -191,7 +224,8 @@ Respond in JSON:
     "condicional": { ... }
   },
   "examples": ["Spanish sentence — English translation", ...],
-  "relatedWords": [{ "spanish": "...", "english": "..." }, ...]
+  "relatedWords": [{ "spanish": "...", "english": "..." }, ...],
+  "localeNotes": ["Brief note for each locale-specific slang/idiom used in examples or related words, e.g. \\"'Che' is Argentine slang used as a friendly interjection\\". Return empty array if no locale-specific terms were used."]
 }
 
 If the word is not a verb, omit the conjugations field.`;
@@ -200,7 +234,7 @@ If the word is not a verb, omit the conjugations field.`;
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are a Spanish-English dictionary specialized in Mexican Spanish for travelers. Always respond with valid JSON only." },
+        { role: "system", content: `You are a Spanish-English dictionary specialized in ${locale && locale !== "neutral" ? "regional" : "general"} Spanish for travelers. Always respond with valid JSON only.` },
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
@@ -217,6 +251,7 @@ If the word is not a verb, omit the conjugations field.`;
       conjugations: parsed.conjugations || undefined,
       examples: Array.isArray(parsed.examples) ? parsed.examples : [],
       relatedWords: Array.isArray(parsed.relatedWords) ? parsed.relatedWords : [],
+      localeNotes: Array.isArray(parsed.localeNotes) ? parsed.localeNotes.filter((n: string) => n && n.length > 0) : undefined,
     };
   } catch (error) {
     console.error("Error looking up word:", error);
@@ -224,8 +259,11 @@ If the word is not a verb, omit the conjugations field.`;
   }
 }
 
-export async function extractVocabulary(text: string): Promise<TextExtractionResult> {
+export async function extractVocabulary(text: string, locale?: string): Promise<TextExtractionResult> {
+  const localeSegment = getLocalePromptSegment(locale);
+
   const prompt = `Analyze this text for a Spanish learner. The text may be in English, Spanish, or mixed.
+${localeSegment}
 
 Text:
 """
@@ -234,7 +272,7 @@ ${text.substring(0, 3000)}
 
 Do two things:
 
-1. VOCABULARY: Extract up to 20 of the most useful words and phrases for a Spanish learner traveling in Mexico. For each word:
+1. VOCABULARY: Extract up to 20 of the most useful words and phrases for a Spanish learner. For each word:
    - The Spanish word (infinitive if verb, with article if noun)
    - English translation
    - Part of speech
@@ -296,7 +334,8 @@ export async function translateText(
   text: string,
   targetLang: string,
   preset: string,
-  soften: boolean
+  soften: boolean,
+  locale?: string
 ): Promise<TranslationResult> {
   const presetInstructions: Record<string, string> = {
     general: "Translate naturally and accurately.",
@@ -309,17 +348,21 @@ export async function translateText(
     ? "\nAlso provide 1-2 'mindful alternatives' — softer, more self-compassionate phrasings that acknowledge feelings without harsh self-judgment. For example, 'I failed' → 'I'm learning and growing.'"
     : "";
 
+  const localeSegment = getLocalePromptSegment(locale);
+
   const prompt = `Translate the following text ${targetLang === "es" ? "from English to Spanish" : "from Spanish to English"}.
 
 ${presetInstructions[preset] || presetInstructions.general}
 ${softenNote}
+${localeSegment}
 
 Text: "${text}"
 
 Respond in JSON format:
 {
   "translation": "The translated text",
-  ${soften ? '"alternatives": ["Alternative phrasing 1", "Alternative phrasing 2"]' : ''}
+  ${soften ? '"alternatives": ["Alternative phrasing 1", "Alternative phrasing 2"],' : ''}
+  "localeNotes": ["Brief note for each locale-specific slang/idiom used, e.g. \\"'Chido' is Jalisco slang for 'cool'\\". Return empty array if no locale-specific terms were used."]
 }`;
 
   try {
@@ -328,7 +371,7 @@ Respond in JSON format:
       messages: [
         {
           role: "system",
-          content: "You are a professional translator specializing in Mexican Spanish. Always respond with valid JSON only."
+          content: `You are a professional translator specializing in ${locale && locale !== "neutral" ? "regional" : "general"} Spanish. Always respond with valid JSON only.`
         },
         {
           role: "user",
@@ -345,7 +388,11 @@ Respond in JSON format:
     }
 
     const result = JSON.parse(content);
-    return result as TranslationResult;
+    return {
+      translation: result.translation || "",
+      alternatives: result.alternatives,
+      localeNotes: Array.isArray(result.localeNotes) ? result.localeNotes.filter((n: string) => n && n.length > 0) : undefined,
+    };
   } catch (error) {
     console.error("Error translating:", error);
     throw new Error("Translation failed");
