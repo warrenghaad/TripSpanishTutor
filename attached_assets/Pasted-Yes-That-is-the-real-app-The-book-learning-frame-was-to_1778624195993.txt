@@ -1,0 +1,872 @@
+Yes. **That is the real app.**
+The book-learning frame was too narrow.
+
+The Borges feature is not the center. Borges is a **high-density poetic Spanish microscope**. Useful, beautiful, but not the organism.
+
+The true organism is:
+
+> **A phenomenological Spanish companion that helps you become articulate as yourself.**
+
+Not “learn Spanish” abstractly.
+Not “translate travel phrases.”
+Not “read books.”
+
+It helps you say:
+
+* who I am
+* what I noticed
+* what happened today
+* what I felt
+* what I carried
+* what I want
+* what I will do
+* what kind of person I am becoming
+* how the world appeared to me
+
+That is much stronger. That is the project’s spine. 🦴✨
+
+---
+
+# The corrected purpose
+
+The app is:
+
+## **A self-articulation engine for Spanish**
+
+Its job is to help you grow from fragments into sentences:
+
+```txt
+cansado
+→ estoy cansado
+→ estoy cansado pero curioso
+→ hoy estoy cansado pero curioso porque viajé mucho
+→ mañana escribiré sobre lo que vi
+```
+
+That is the growth pattern.
+
+Not vocabulary as inventory.
+Vocabulary as **identity becoming speakable**.
+
+---
+
+# The core insight
+
+You are not trying to learn Spanish as an external system.
+
+You are trying to build a Spanish-speaking version of your perceptual self.
+
+That means the app should focus on:
+
+| Dimension               | Spanish task                                |
+| ----------------------- | ------------------------------------------- |
+| **Identity**            | soy, estoy, quiero, pienso, siento          |
+| **Daily life**          | hoy fui, vi, hice, caminé, hablé            |
+| **Texture**             | adjectives and adverbs                      |
+| **Time**                | present, past, future                       |
+| **Intention**           | voy a, quiero, espero, necesito             |
+| **Reflection**          | me di cuenta de que, creo que, aprendí que  |
+| **World contact**       | lugares, objetos, people, weather, movement |
+| **Literary refinement** | Borges as poetic grammar lab                |
+
+This is not a travel app with literature attached.
+
+It is a **phenomenological sentence-growing app** with travel and Borges as training environments.
+
+---
+
+# The new app modes
+
+## 1. **Yo / Identity**
+
+For saying who you are and how you are.
+
+Examples:
+
+```txt
+Soy curioso.
+Soy una persona sensible.
+Estoy cansado.
+Estoy nervioso pero emocionado.
+Estoy aprendiendo español poco a poco.
+Quiero hablar con más claridad.
+```
+
+Grammar focus:
+
+* **ser** for identity
+* **estar** for state
+* adjective agreement
+* personality adjectives
+* emotional adjectives
+
+---
+
+## 2. **Hoy / Daily Journal**
+
+For writing about the day.
+
+Examples:
+
+```txt
+Hoy caminé mucho.
+Hoy leí un poema.
+Hoy escuché español en el aeropuerto.
+Hoy no entendí todo, pero entendí más que ayer.
+Hoy aprendí tres verbos nuevos.
+```
+
+Grammar focus:
+
+* present
+* preterite
+* time words
+* daily verbs
+* sentence sequencing
+
+---
+
+## 3. **Sentence Grower**
+
+This is the heart of the app.
+
+It should help you grow sentences by layers:
+
+```txt
+Yo vi.
+Yo vi una puerta.
+Yo vi una puerta azul.
+Yo vi una puerta azul en el aeropuerto.
+Yo vi una puerta azul en el aeropuerto y pensé en Borges.
+```
+
+The app should literally let you build:
+
+```txt
+Subject → verb → object → adjective → place → adverb → reason → reflection
+```
+
+Example template:
+
+```txt
+Yo + verb + object + adjective + place + adverb + porque...
+```
+
+Output:
+
+```txt
+Yo escribí una frase pequeña en mi cuaderno lentamente porque quería recordar el momento.
+```
+
+That is the machine. The app should grow sentences like vines on a trellis. 🌿
+
+---
+
+## 4. **Verbs / Time Machine**
+
+For conjugations, but always tied to lived use.
+
+Not just:
+
+```txt
+ir: voy, vas, va
+```
+
+But:
+
+```txt
+Hoy voy al aeropuerto.
+Ayer fui al aeropuerto.
+Mañana iré al aeropuerto.
+Voy a leer en el avión.
+```
+
+The app should teach each verb across time:
+
+| Time           | Spanish    | English            |
+| -------------- | ---------- | ------------------ |
+| Present        | leo        | I read             |
+| Past           | leí        | I read             |
+| Future with ir | voy a leer | I am going to read |
+| Simple future  | leeré      | I will read        |
+
+Core verbs:
+
+```txt
+ser
+estar
+ir
+tener
+hacer
+ver
+leer
+escribir
+pensar
+sentir
+querer
+poder
+necesitar
+entender
+aprender
+decir
+escuchar
+caminar
+llevar
+buscar
+recordar
+```
+
+---
+
+## 5. **Future Self**
+
+This deserves its own space.
+
+Because future tense is identity magic.
+
+Examples:
+
+```txt
+Mañana leeré un poema.
+Mañana escribiré cinco frases.
+Algún día hablaré español con calma.
+Voy a entender más.
+Voy a ser más paciente conmigo mismo.
+Quiero poder describir mi vida en español.
+```
+
+Beginner-friendly order:
+
+1. **voy a + infinitive**
+
+   ```txt
+   Voy a leer.
+   Voy a escribir.
+   Voy a practicar.
+   ```
+
+2. **simple future**
+
+   ```txt
+   leeré
+   escribiré
+   practicaré
+   entenderé
+   ```
+
+The app should make future tense feel like building a bridge to the person you are becoming.
+
+---
+
+## 6. **Texture / Adjectives and Adverbs**
+
+This is huge.
+
+Adjectives tell **what kind of world** you are in.
+Adverbs tell **how you move through it**.
+
+Examples:
+
+```txt
+Estoy tranquilo.
+Estoy un poco perdido.
+La mañana fue extraña.
+El aeropuerto estaba ruidoso.
+Caminé lentamente.
+Escuché atentamente.
+Respondí nerviosamente.
+Aprendí rápidamente.
+```
+
+The app needs banks like:
+
+### Identity adjectives
+
+```txt
+curioso
+sensible
+paciente
+impaciente
+cansado
+tranquilo
+nervioso
+abierto
+confundido
+atento
+```
+
+### World adjectives
+
+```txt
+ruidoso
+tranquilo
+extraño
+claro
+oscuro
+lleno
+vacío
+rápido
+lento
+difícil
+fácil
+```
+
+### Adverbs
+
+```txt
+lentamente
+rápidamente
+claramente
+cuidadosamente
+atentamente
+nerviosamente
+tranquilamente
+poco a poco
+de repente
+todavía
+ya
+```
+
+This is not decorative. This is how the self gets resolution. Without adjectives and adverbs, you only have stick-figure Spanish.
+
+---
+
+## 7. **Travel / World Contact**
+
+Travel is still important, but now it is one lived environment.
+
+Airport Spanish becomes a scene where identity, action, fear, attention, and language collide.
+
+Examples:
+
+```txt
+Estoy perdido.
+Busco la puerta.
+Necesito ayuda.
+Llevo una mochila.
+No entiendo todavía.
+¿Puede repetir, por favor?
+Voy a Puerto Vallarta.
+```
+
+But also:
+
+```txt
+Estoy nervioso porque no entiendo todo.
+Caminé lentamente por el aeropuerto.
+Escuché una frase y reconocí una palabra.
+Mañana voy a pedir direcciones en español.
+```
+
+That is the bridge from survival phrase to self-expression.
+
+---
+
+## 8. **Borges Lab**
+
+Borges is a feature, not the frame.
+
+Purpose:
+
+* dissect poetic Spanish
+* notice grammar
+* study metaphor
+* compare Spanish line to English translation
+* learn literary vocabulary
+* imitate structures
+* create personal echoes
+
+Because your edition has Spanish and English translations, the app does **not** need to store the poems. It only needs to let you enter/select:
+
+```txt
+poem title
+line or phrase
+Spanish line from book
+English translation from book
+my question
+grammar I notice
+image/motif
+```
+
+Then the app can guide:
+
+```txt
+1. What is the verb?
+2. What is the subject?
+3. What noun carries the image?
+4. What adjective changes the atmosphere?
+5. Is this about time, memory, identity, place, dream, mirror, blindness, or death?
+6. Can I imitate the grammar with my own sentence?
+```
+
+Example Borges-to-self practice:
+
+```txt
+Borges structure:
+La noche es...
+
+Your sentence:
+La mañana es extraña.
+El aeropuerto es un laberinto.
+Mi cuaderno es pequeño pero importante.
+```
+
+That is perfect. Borges becomes a **poetic sentence laboratory**.
+
+---
+
+# What to tell Replit now
+
+Paste this. This is the corrected scope.
+
+```md
+Reframe the app purpose.
+
+This is not primarily a book-learning app.
+This is not primarily a travel phrase app.
+This is not primarily an offline chatbot.
+
+It is a phenomenological Spanish learning companion.
+
+Its true purpose:
+Help the learner articulate a sense of identity in Spanish, grow sentences from lived experience, write about the day, practice verb conjugations through personal use, describe perception with adjectives/adverbs, and write future-tense intentions.
+
+Borges is a smaller feature:
+A poetic Spanish lab where the learner can use a bilingual Borges edition to dissect literary Spanish, notice grammar, and imitate poetic structures.
+
+Core offline app modes:
+
+1. Yo / Identity
+- Help user write sentences about who they are and how they are.
+- Focus on ser, estar, querer, sentir, pensar, necesitar.
+- Include identity adjectives and emotional states.
+
+2. Hoy / Daily Journal
+- Help user write about the day in Spanish.
+- Prompt:
+  - Today I went...
+  - Today I saw...
+  - Today I read...
+  - Today I felt...
+  - Today I learned...
+- Focus on present and preterite.
+
+3. Sentence Grower
+- User starts with a tiny sentence.
+- App helps expand it:
+  Subject → verb → object → adjective → place → adverb → reason → reflection.
+- Example:
+  "Yo leí."
+  "Yo leí un poema."
+  "Yo leí un poema difícil."
+  "Yo leí un poema difícil lentamente."
+  "Yo leí un poema difícil lentamente porque quería entenderlo."
+
+4. Verbs
+- Core verb conjugation cards tied to personal sentences.
+- Include:
+  ser, estar, ir, tener, hacer, ver, leer, escribir, pensar, sentir, querer, poder, necesitar, entender, aprender, decir, escuchar, caminar, llevar, buscar, recordar.
+- Show:
+  present
+  preterite
+  imperfect when relevant
+  voy a + infinitive
+  simple future
+- Every conjugation must include a personal example sentence.
+
+5. Future Self
+- Help user write future-tense intentions.
+- Teach both:
+  voy a + infinitive
+  simple future
+- Examples:
+  Voy a leer.
+  Voy a escribir.
+  Mañana leeré.
+  Algún día hablaré con calma.
+  Voy a ser más paciente conmigo mismo.
+
+6. Texture
+- Adjectives and adverbs.
+- Help user describe self, world, feeling, movement, and intensity.
+- Include adjective agreement practice.
+- Include adverb placement practice.
+
+7. Travel
+- Airport/travel phrase guide remains, but it is one lived context.
+- Include directions, help, documents, baggage, listening, repair phrases.
+- Tie phrases back to self-expression:
+  "Estoy perdido."
+  "Estoy nervioso porque no entiendo."
+  "Escuché una palabra que reconocí."
+
+8. Borges Lab
+- User has a bilingual Borges edition.
+- Do not store full poems.
+- Let user enter:
+  poem title
+  Spanish line
+  English translation
+  question
+  motif
+  grammar noticed
+- App gives offline scaffold:
+  find verb
+  find subject
+  find noun image
+  find adjective/adverb
+  identify motif
+  imitate structure with a personal sentence.
+
+Offline requirements:
+- App must work in airplane mode.
+- Use bundled JSON content packs.
+- Use local persistence for journal entries, saved phrases, saved questions, personal sentences, and Borges notes.
+- No LLM required offline.
+- The online LLM project may later process saved questions and generate new content packs.
+
+Content packs:
+- identity_core.json
+- daily_journal_prompts.json
+- sentence_grower_templates.json
+- verbs_core_personal.json
+- texture_adjectives_adverbs.json
+- future_self_prompts.json
+- travel_core.json
+- borges_lab_scaffolds.json
+
+Acceptance test:
+1. App launches offline.
+2. User writes "Estoy cansado."
+3. App helps expand it with adjective/adverb/place/reason.
+4. User writes a daily sentence in past tense.
+5. User writes a future intention.
+6. User opens verb card for leer and sees present/past/future personal examples.
+7. User saves a sentence.
+8. User opens Borges Lab and enters a line from their book.
+9. App gives grammar/literary scaffold without using network.
+10. Saved material persists after restart.
+
+Do not:
+- Do not make Borges the main app.
+- Do not make travel the main app.
+- Do not build fake offline LLM chat.
+- Do not require server calls for core use.
+- Do not add broad architecture before this works.
+```
+
+---
+
+# New content packs
+
+## `identity_core.json`
+
+```json
+{
+  "id": "identity.ser.curioso",
+  "type": "identity_card",
+  "title": "Saying who I am",
+  "pattern": "Soy + adjective/noun",
+  "examples": [
+    {
+      "es": "Soy curioso.",
+      "en": "I am curious."
+    },
+    {
+      "es": "Soy una persona sensible.",
+      "en": "I am a sensitive person."
+    },
+    {
+      "es": "Soy alguien que aprende por imágenes.",
+      "en": "I am someone who learns through images."
+    }
+  ],
+  "grammar": [
+    "Use ser for identity or lasting traits.",
+    "Adjectives usually agree with gender and number.",
+    "Alguien que means someone who."
+  ],
+  "practice": [
+    {
+      "prompt": "Say: I am a patient person.",
+      "answer": "Soy una persona paciente."
+    },
+    {
+      "prompt": "Say: I am someone who writes.",
+      "answer": "Soy alguien que escribe."
+    }
+  ],
+  "tags": ["identity", "ser", "adjectives", "self"]
+}
+```
+
+---
+
+## `daily_journal_prompts.json`
+
+```json
+{
+  "id": "journal.today.basic",
+  "type": "journal_prompt",
+  "title": "Write about today",
+  "prompt_en": "Write three sentences about today.",
+  "sentence_frames": [
+    {
+      "frame_es": "Hoy fui a ____.",
+      "frame_en": "Today I went to ____.",
+      "grammar": "fui = I went, preterite of ir"
+    },
+    {
+      "frame_es": "Hoy vi ____.",
+      "frame_en": "Today I saw ____.",
+      "grammar": "vi = I saw, preterite of ver"
+    },
+    {
+      "frame_es": "Hoy aprendí ____.",
+      "frame_en": "Today I learned ____.",
+      "grammar": "aprendí = I learned, preterite of aprender"
+    }
+  ],
+  "example_entry": {
+    "es": "Hoy fui al aeropuerto. Vi mucha gente. Aprendí la palabra puerta.",
+    "en": "Today I went to the airport. I saw many people. I learned the word gate."
+  },
+  "tags": ["journal", "preterite", "today", "identity"]
+}
+```
+
+---
+
+## `sentence_grower_templates.json`
+
+```json
+{
+  "id": "sentence.grower.basic",
+  "type": "sentence_grower",
+  "title": "Grow a sentence",
+  "base": "Yo leí.",
+  "layers": [
+    {
+      "name": "object",
+      "result": "Yo leí un poema."
+    },
+    {
+      "name": "adjective",
+      "result": "Yo leí un poema difícil."
+    },
+    {
+      "name": "adverb",
+      "result": "Yo leí un poema difícil lentamente."
+    },
+    {
+      "name": "place",
+      "result": "Yo leí un poema difícil lentamente en el aeropuerto."
+    },
+    {
+      "name": "reason",
+      "result": "Yo leí un poema difícil lentamente en el aeropuerto porque quería entenderlo."
+    }
+  ],
+  "grammar": [
+    "Adjectives often come after nouns: un poema difícil.",
+    "Adverbs often describe how the action happens: lentamente.",
+    "Porque adds a reason."
+  ],
+  "tags": ["sentence_growth", "adjectives", "adverbs", "journal"]
+}
+```
+
+---
+
+## `future_self_prompts.json`
+
+```json
+{
+  "id": "future.self.reading",
+  "type": "future_prompt",
+  "title": "What I will do",
+  "patterns": [
+    {
+      "pattern": "Voy a + infinitive",
+      "examples": [
+        "Voy a leer.",
+        "Voy a escribir.",
+        "Voy a practicar español."
+      ]
+    },
+    {
+      "pattern": "simple future",
+      "examples": [
+        "Leeré un poema.",
+        "Escribiré cinco frases.",
+        "Practicaré mañana."
+      ]
+    }
+  ],
+  "identity_prompts": [
+    {
+      "en": "Tomorrow I am going to write about my day.",
+      "es": "Mañana voy a escribir sobre mi día."
+    },
+    {
+      "en": "One day I will speak calmly.",
+      "es": "Algún día hablaré con calma."
+    },
+    {
+      "en": "I will understand more.",
+      "es": "Entenderé más."
+    }
+  ],
+  "tags": ["future", "intention", "identity", "verbs"]
+}
+```
+
+---
+
+# The real central loop
+
+This should be the app’s loop:
+
+```txt
+Notice
+→ name
+→ build sentence
+→ add texture
+→ place in time
+→ save
+→ practice verb
+→ return tomorrow
+```
+
+Example:
+
+```txt
+Notice:
+I feel strange in the airport.
+
+Name:
+extraño, nervioso, atento
+
+Build:
+Estoy nervioso.
+
+Add texture:
+Estoy un poco nervioso.
+
+Place:
+Estoy un poco nervioso en el aeropuerto.
+
+Reason:
+Estoy un poco nervioso en el aeropuerto porque no entiendo todo.
+
+Future:
+Mañana voy a entender más.
+
+Identity:
+Soy alguien que aprende lentamente pero profundamente.
+```
+
+That’s the app.
+
+That’s not just Spanish.
+That’s selfhood becoming grammatical.
+
+---
+
+# What to tell Perplexity now
+
+Perplexity should generate content for the actual center, not just Borges/travel.
+
+```md
+The app is a phenomenological Spanish companion.
+
+Its main purpose is to help the learner articulate identity, write about daily experience, grow sentences, practice adjectives/adverbs, learn verb conjugations through personal sentences, and write future-tense intentions.
+
+Borges is a smaller feature for poetic Spanish analysis. Travel is another lived context.
+
+Generate structured content packs only. Do not write app code.
+
+Create JSON cards for:
+
+1. Identity Spanish
+- soy
+- estoy
+- quiero
+- siento
+- pienso
+- necesito
+- me gusta
+- estoy aprendiendo
+
+2. Daily journal Spanish
+- Hoy fui...
+- Hoy vi...
+- Hoy hice...
+- Hoy sentí...
+- Hoy aprendí...
+- Hoy leí...
+- Hoy escuché...
+- Hoy escribí...
+
+3. Sentence growth
+- base sentence
+- add object
+- add adjective
+- add adverb
+- add place
+- add time
+- add reason
+- add reflection
+
+4. Adjectives and adverbs
+- identity adjectives
+- emotional adjectives
+- world adjectives
+- intensity words
+- adverbs of manner
+- adverbs of time
+- adverbs of uncertainty
+
+5. Verb cards
+For each verb, include:
+- infinitive
+- meaning
+- present yo
+- preterite yo
+- imperfect yo when useful
+- voy a + infinitive
+- simple future yo
+- personal example sentences
+- travel example
+- literary/reading example when useful
+
+6. Future self prompts
+- voy a + infinitive
+- simple future
+- intention
+- hope
+- promise to self
+- tomorrow / someday / next time
+
+7. Borges Lab
+- motif cards
+- grammar scaffolds
+- line-analysis template
+- no full poems
+- user supplies Spanish/English from their bilingual edition
+
+Every card must be beginner-safe, personally usable, and offline-ready.
+```
+
+---
+
+# The corrected one-sentence identity of the app
+
+Use this everywhere:
+
+> **Vallarta Voz helps me become articulate in Spanish by turning lived experience, identity, books, and travel into sentences I can understand, practice, save, and grow.**
+
+That’s it.
+
+The app is not “Spanish lessons.”
+It is **sentence gardening for the self**.

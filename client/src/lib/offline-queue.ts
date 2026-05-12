@@ -10,6 +10,7 @@ export type QueuedRequest = {
   body: any;
   trailId?: number;
   trailNodeId?: number;
+  invalidateKeys?: any[][];
   queuedAt: string;
   label: string;
 };
@@ -52,6 +53,27 @@ export async function replayQueue(handlers: ReplayHandlers = {}): Promise<{ repl
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
+
+        // Upgrade the linked trail node in place so the timeline shows live answer
+        if (req.trailId && req.trailNodeId) {
+          try {
+            await fetch(`/api/trails/${req.trailId}/nodes/${req.trailNodeId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                payload: { request: req.body, response: data, upgradedAt: new Date().toISOString() },
+                source: "live",
+              }),
+            });
+          } catch { /* non-fatal */ }
+        }
+
+        // Invalidate query caches so UI refreshes
+        if (req.invalidateKeys?.length) {
+          const { queryClient } = await import("./queryClient");
+          for (const k of req.invalidateKeys) queryClient.invalidateQueries({ queryKey: k });
+        }
+
         await dequeue(req.id);
         if (handlers.onSuccess) await handlers.onSuccess(req, data);
         replayed++;

@@ -144,6 +144,11 @@ export class DatabaseStorage implements IStorage {
     return n;
   }
 
+  async updateTrailNode(id: number, patch: { payload?: any; source?: string; label?: string }): Promise<TrailNode | undefined> {
+    const [n] = await db.update(trailNodes).set(patch).where(eq(trailNodes.id, id)).returning();
+    return n;
+  }
+
   async recordPackManifest(manifest: InsertPackManifest): Promise<PackManifest> {
     const [m] = await db.insert(packManifests).values(manifest).returning();
     return m;

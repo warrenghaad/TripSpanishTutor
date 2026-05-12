@@ -265,6 +265,16 @@ export async function registerRoutes(
     } catch (e) { console.error(e); res.status(500).json({ error: "Failed to add node" }); }
   });
 
+  app.patch("/api/trails/:id/nodes/:nodeId", async (req, res) => {
+    try {
+      const nodeId = parseInt(req.params.nodeId);
+      const { payload, source, label } = req.body;
+      const node = await storage.updateTrailNode(nodeId, { payload, source, label });
+      if (!node) return res.status(404).json({ error: "Not found" });
+      res.json(node);
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed to update node" }); }
+  });
+
   app.post("/api/trails/:id/summarize", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
