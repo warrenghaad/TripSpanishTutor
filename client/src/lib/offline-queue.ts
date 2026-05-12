@@ -66,6 +66,12 @@ export async function replayQueue(handlers: ReplayHandlers = {}): Promise<{ repl
   try {
     const queue = await listQueued();
     for (const req of queue) {
+      // Skip items still tied to a staged (negative) trail/node id — sync
+      // hasn't reconciled them yet. Leave queued so the next pass (after
+      // syncStaged remaps ids) can replay AND upgrade in place.
+      if ((req.trailId !== undefined && req.trailId < 0) || (req.trailNodeId !== undefined && req.trailNodeId < 0)) {
+        continue;
+      }
       try {
         const res = await fetch(req.endpoint, {
           method: req.method,

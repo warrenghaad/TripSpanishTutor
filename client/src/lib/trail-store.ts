@@ -11,6 +11,17 @@ const KV = "kv";
 
 export type ActiveTrail = { id: number; name: string; staged?: boolean };
 
+const LAST_NODE_PREFIX = "vv-last-node:";
+function readLastNode(trailId: number): number | null {
+  try {
+    const raw = localStorage.getItem(`${LAST_NODE_PREFIX}${trailId}`);
+    return raw ? Number(raw) : null;
+  } catch { return null; }
+}
+function writeLastNode(trailId: number, nodeId: number) {
+  try { localStorage.setItem(`${LAST_NODE_PREFIX}${trailId}`, String(nodeId)); } catch { /* ignore */ }
+}
+
 let listeners = new Set<(t: ActiveTrail | null) => void>();
 
 function readActive(): ActiveTrail | null {
@@ -84,15 +95,20 @@ export async function recordNode(
   let trail = readActive();
   if (!trail) trail = await ensureTrail(autoTrailName(), locale, ["auto"]);
 
-  // If trail is staged OR we're offline OR server fails, stage the node
+  // Auto-link to the previous node on this trail so the timeline is a real
+  // graph (relation: follow_up). Branches are still created explicitly.
+  const fromNodeId = readLastNode(trail.id);
+
   const stageNode = async (): Promise<{ trailId: number; nodeId: number; staged: true }> => {
     const stagedId = -Date.now() - Math.floor(Math.random() * 1000);
     await idbPut(KV, {
       stagedNodeId: stagedId,
       trailId: trail!.id,
       kind, label, payload, source,
+      fromNodeId, relation: fromNodeId ? "follow_up" : null,
       createdAt: new Date().toISOString(),
     }, `${STAGED_PREFIX}${stagedId}`);
+    writeLastNode(trail!.id, stagedId);
     return { trailId: trail!.id, nodeId: stagedId, staged: true };
   };
 
@@ -102,10 +118,14 @@ export async function recordNode(
     const res = await fetch(`/api/trails/${trail.id}/nodes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind, label, payload, source }),
+      body: JSON.stringify({
+        kind, label, payload, source,
+        ...(fromNodeId && fromNodeId > 0 ? { fromNodeId, relation: "follow_up" } : {}),
+      }),
     });
     if (!res.ok) return stageNode();
     const node = await res.json();
+    writeLastNode(trail.id, node.id);
     return { trailId: trail.id, nodeId: node.id };
   } catch { return stageNode(); }
 }
@@ -168,15 +188,29 @@ export async function syncStaged(): Promise<{ trails: number; nodes: number }> {
   for (const n of stagedNodes) {
     const realTrailId = n.trailId < 0 ? trailMap.get(n.trailId) : n.trailId;
     if (!realTrailId) continue;
+    // If staged node remembered a fromNodeId, remap it (might still be
+    // negative if the predecessor wasn't synced yet — only attach when
+    // we have a real id).
+    let fromNodeId: number | undefined = n.fromNodeId ?? undefined;
+    if (fromNodeId !== undefined && fromNodeId < 0) {
+      const remapped = nodeMap.get(fromNodeId);
+      fromNodeId = remapped && remapped > 0 ? remapped : undefined;
+    }
     try {
       const res = await fetch(`/api/trails/${realTrailId}/nodes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: n.kind, label: n.label, payload: n.payload, source: n.source }),
+        body: JSON.stringify({
+          kind: n.kind, label: n.label, payload: n.payload, source: n.source,
+          ...(fromNodeId ? { fromNodeId, relation: n.relation || "follow_up" } : {}),
+        }),
       });
       if (!res.ok) continue;
       const created = await res.json();
       nodeMap.set(n.stagedNodeId, created.id);
+      // If active trail's "last node" pointed at this staged id, update it.
+      const active = readActive();
+      if (active && readLastNode(active.id) === n.stagedNodeId) writeLastNode(active.id, created.id);
       await idbDelete(KV, `${STAGED_PREFIX}${n.stagedNodeId}`);
       createdNodes++;
     } catch { /* retry next pass */ }

@@ -8,9 +8,10 @@
  * Version-bumped caches let new deploys invalidate stale shell cache while
  * preserving user data (IndexedDB packs + trails are untouched).
  */
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const SHELL_CACHE = `vv-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vv-runtime-${CACHE_VERSION}`;
+const FONT_CACHE = `vv-fonts-${CACHE_VERSION}`;
 
 const SHELL_URLS = [
   "/",
@@ -31,7 +32,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
-        keys.filter((k) => ![SHELL_CACHE, RUNTIME_CACHE].includes(k)).map((k) => caches.delete(k))
+        keys.filter((k) => ![SHELL_CACHE, RUNTIME_CACHE, FONT_CACHE].includes(k)).map((k) => caches.delete(k))
       )
     ).then(() => self.clients.claim())
   );
@@ -51,6 +52,24 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
+
+  // Cross-origin font assets (Google Fonts CSS + woff2) — cache so the app
+  // renders correctly offline. Stale-while-revalidate.
+  if (url.origin === "https://fonts.googleapis.com" || url.origin === "https://fonts.gstatic.com") {
+    event.respondWith(
+      caches.open(FONT_CACHE).then((cache) =>
+        cache.match(req).then((cached) => {
+          const network = fetch(req).then((res) => {
+            if (res && res.ok) cache.put(req, res.clone());
+            return res;
+          }).catch(() => cached);
+          return cached || network;
+        })
+      )
+    );
+    return;
+  }
+
   if (url.origin !== self.location.origin) return;
 
   // App shell: cache-first, network refresh in the background
