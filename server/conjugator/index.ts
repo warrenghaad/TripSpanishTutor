@@ -80,7 +80,7 @@ export function acceptableForms(r: ConjugateRequest): string[] {
   if (r.person === "2s") {
     try { out.add(conjugate({ ...r, person: "2s_vos" }).form); } catch { /* swallow */ }
   }
-  return [...out];
+  return Array.from(out);
 }
 
 /**
