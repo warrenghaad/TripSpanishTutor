@@ -8,10 +8,8 @@ import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useLocale } from "@/lib/locale-context";
 import { locales } from "@/lib/data";
-import { recordNode } from "@/lib/trail-store";
 import { useOnline } from "@/lib/use-online";
-import { getActivePack, lookupInPack } from "@/lib/pack-store";
-import { enqueueRequest } from "@/lib/offline-queue";
+import { smartFetch } from "@/lib/api-fetch";
 
 type TranslationResult = {
   translation: string;
@@ -33,32 +31,26 @@ export default function TranslatorPanel() {
   const online = useOnline();
   const translateMutation = useMutation({
     mutationFn: async (data: { text: string; target: string; preset: string; soften: boolean; locale: string }) => {
-      if (!online) {
-        const pack = await getActivePack();
-        const hit = pack ? lookupInPack(pack, data.text) : undefined;
-        await enqueueRequest({
-          endpoint: "/api/translate",
-          method: "POST",
-          body: data,
-          label: `Translate: "${data.text.slice(0, 40)}"`,
-        });
-        if (hit) {
-          return { translation: hit.text, alternatives: [], localeNotes: [`From your saved trip pack (${hit.confidence} confidence). Will refresh with a live translation when you reconnect.`] };
-        }
-        return { translation: "(queued — will translate when online)", alternatives: [], localeNotes: ["You're offline. We saved this and will translate it as soon as you reconnect."] };
-      }
-      const response = await fetch("/api/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+      const r = await smartFetch<TranslationResult>({
+        endpoint: "/api/translate",
+        body: data,
+        trailKind: "translation",
+        label: `Translate: "${data.text.slice(0, 40)}"`,
+        lookupKey: data.text,
+        packToResponse: (text, confidence) => ({
+          translation: text,
+          alternatives: [],
+          localeNotes: [`From your saved trip pack (${confidence} confidence). Will refresh with a live translation when you reconnect.`],
+        }),
+        offlineFallback: () => ({
+          translation: "(queued — will translate when online)",
+          alternatives: [],
+          localeNotes: ["You're offline. We saved this and will translate it as soon as you reconnect."],
+        }),
       });
-      if (!response.ok) throw new Error("Translation failed");
-      return response.json();
+      return r.data;
     },
-    onSuccess: (data, vars) => {
-      setResult(data);
-      recordNode("translation", `${vars.text} → ${data.translation}`, { source: vars.text, target: data.translation, preset: vars.preset, soften: vars.soften }, online ? "live" : "pack");
-    },
+    onSuccess: (data) => setResult(data),
     onError: () => {
       toast({ title: "Translation failed", description: "Please try again.", variant: "destructive" });
     },
