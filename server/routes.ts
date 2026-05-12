@@ -199,7 +199,15 @@ export async function registerRoutes(
   app.get("/api/trails", async (_req, res) => {
     try {
       const list = await storage.listTrails();
-      res.json(list);
+      // Attach a lightweight kind sequence (last 12 steps) so the client can
+      // render a per-card thumbnail without a per-trail roundtrip.
+      const enriched = await Promise.all(list.map(async (t) => {
+        try {
+          const nodes = await storage.getTrailNodes(t.id);
+          return { ...t, nodeCount: nodes.length, kindSequence: nodes.slice(-12).map((n) => n.kind) };
+        } catch { return { ...t, nodeCount: 0, kindSequence: [] as string[] }; }
+      }));
+      res.json(enriched);
     } catch (e) {
       console.error(e); res.status(500).json({ error: "Failed to list trails" });
     }

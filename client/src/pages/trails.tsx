@@ -10,7 +10,7 @@ import { useLocale } from "@/lib/locale-context";
 import { useActiveTrail } from "@/lib/trail-store";
 import { useOnline } from "@/lib/use-online";
 
-type Trail = { id: number; name: string; tags: string[]; locale: string | null; createdAt: string; updatedAt: string };
+type Trail = { id: number; name: string; tags: string[]; locale: string | null; createdAt: string; updatedAt: string; nodeCount?: number; kindSequence?: string[] };
 type TrailNode = { id: number; trailId: number; kind: string; label: string; payload: any; source: string; createdAt: string };
 type TrailEdge = { id: number; trailId: number; fromNodeId: number | null; toNodeId: number; relation: string };
 
@@ -130,6 +130,25 @@ export default function TrailsPage() {
     onSuccess: (data) => setDoors(data.doors || []),
   });
 
+  function TrailCardThumb({ kindSequence, nodeCount }: { kindSequence?: string[]; nodeCount?: number }) {
+    const seq = kindSequence || [];
+    if (seq.length === 0) return <div className="text-[10px] text-muted-foreground italic mt-1">no steps yet</div>;
+    const colorFor = (kind: string) => kind === "translation" ? "#0ea5e9" : kind === "lookup" ? "#f59e0b" : kind === "journal" ? "#a855f7" : kind === "situation" ? "#ef4444" : "#64748b";
+    const W = 220, H = 18, pad = 4;
+    const stepX = seq.length > 1 ? (W - pad * 2) / (seq.length - 1) : 0;
+    return (
+      <div className="mt-1.5 flex items-center gap-1.5">
+        <svg viewBox={`0 0 ${W} ${H}`} className="h-4 flex-1" preserveAspectRatio="none">
+          <line x1={pad} y1={H/2} x2={W-pad} y2={H/2} stroke="#e2e8f0" strokeWidth={1} />
+          {seq.map((k, i) => (
+            <circle key={i} cx={pad + stepX * i} cy={H/2} r={3} fill={colorFor(k)} />
+          ))}
+        </svg>
+        <span className="text-[9px] text-muted-foreground">{nodeCount}</span>
+      </div>
+    );
+  }
+
   function TrailGraph({ nodes, edges }: { nodes: TrailNode[]; edges: TrailEdge[] }) {
     const W = 560, H = 110, pad = 16;
     const stepX = nodes.length > 1 ? (W - pad * 2) / (nodes.length - 1) : 0;
@@ -248,13 +267,16 @@ export default function TrailsPage() {
                 <li key={t.id}>
                   <button
                     onClick={() => setSelectedId(t.id)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm ${
                       selectedId === t.id ? "bg-primary/10 text-primary" : "hover:bg-muted/30"
                     }`}
                     data-testid={`button-trail-${t.id}`}
                   >
-                    <span className="truncate">{t.name}</span>
-                    {active?.id === t.id && <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">ACTIVE</span>}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate flex-1">{t.name}</span>
+                      {active?.id === t.id && <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">ACTIVE</span>}
+                    </div>
+                    <TrailCardThumb kindSequence={t.kindSequence} nodeCount={t.nodeCount} />
                   </button>
                 </li>
               ))}
