@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useLocale } from "@/lib/locale-context";
 import { useActiveTrail } from "@/lib/trail-store";
+import { useOnline } from "@/lib/use-online";
 
 type Trail = { id: number; name: string; tags: string[]; locale: string | null; createdAt: string; updatedAt: string };
 type TrailNode = { id: number; trailId: number; kind: string; label: string; payload: any; source: string; createdAt: string };
@@ -82,12 +83,49 @@ export default function TrailsPage() {
     },
   });
 
+  const online = useOnline();
+
+  const localSummary = (nodes: TrailNode[]) => {
+    const byKind: Record<string, number> = {};
+    nodes.forEach((n) => { byKind[n.kind] = (byKind[n.kind] || 0) + 1; });
+    const recent = nodes.slice(-5).map((n) => `• ${n.kind}: ${n.label}`);
+    const breakdown = Object.entries(byKind).map(([k, c]) => `${c} ${k}${c === 1 ? "" : "s"}`).join(", ") || "no steps yet";
+    return {
+      summary: `Offline view — ${nodes.length} step${nodes.length === 1 ? "" : "s"} so far (${breakdown}). A richer AI recap will appear when you're back online.`,
+      bullets: recent.length ? recent : ["No steps recorded yet."],
+    };
+  };
+
   const summarizeMutation = useMutation({
-    mutationFn: async () => (await fetch(`/api/trails/${selectedId}/summarize`, { method: "POST" })).json(),
+    mutationFn: async () => {
+      if (!online) {
+        const nodes = detailQuery.data?.nodes || [];
+        return localSummary(nodes);
+      }
+      const res = await fetch(`/api/trails/${selectedId}/summarize`, { method: "POST" });
+      if (!res.ok) return localSummary(detailQuery.data?.nodes || []);
+      return res.json();
+    },
     onSuccess: (data) => setSummary(data),
   });
+
+  const localDoors = (nodes: TrailNode[]) => {
+    const seeds = Array.from(new Set(nodes.map((n) => n.label).filter(Boolean))).slice(-3);
+    return seeds.map((label) => ({
+      kind: "lookup",
+      label: `Revisit "${label}"`,
+      seed: label,
+      reason: "From your recent steps. Live AI suggestions will return when you're online.",
+    }));
+  };
+
   const doorsMutation = useMutation({
-    mutationFn: async () => (await fetch(`/api/trails/${selectedId}/doors`, { method: "POST" })).json(),
+    mutationFn: async () => {
+      if (!online) return { doors: localDoors(detailQuery.data?.nodes || []) };
+      const res = await fetch(`/api/trails/${selectedId}/doors`, { method: "POST" });
+      if (!res.ok) return { doors: localDoors(detailQuery.data?.nodes || []) };
+      return res.json();
+    },
     onSuccess: (data) => setDoors(data.doors || []),
   });
 

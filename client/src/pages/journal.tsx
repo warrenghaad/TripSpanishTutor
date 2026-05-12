@@ -7,9 +7,9 @@ import { Book, Sparkles, ArrowRight, Info, Heart, Lightbulb, Wind, CheckCircle2 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
-import { recordNode } from "@/lib/trail-store";
 import { Link } from "wouter";
 import { useLocale } from "@/lib/locale-context";
+import { smartFetch } from "@/lib/api-fetch";
 
 type Feedback = {
   corrected: string;
@@ -93,18 +93,23 @@ export default function Journal() {
 
   const analyzeMutation = useMutation({
     mutationFn: async (data: { text: string; tenseFocus: string; locale: string }) => {
-      const response = await fetch("/api/journal/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+      const r = await smartFetch<{ feedback: Feedback }>({
+        endpoint: "/api/journal/analyze",
+        body: data,
+        trailKind: "journal",
+        label: `Journal (${data.tenseFocus}): ${data.text.slice(0, 40)}`,
+        lookupKey: data.text,
+        offlineFallback: () => ({
+          feedback: {
+            corrected: data.text,
+            corrections: [],
+            vocab: [],
+          },
+        }),
       });
-      if (!response.ok) throw new Error("Failed to analyze text");
-      return response.json();
+      return r.data;
     },
-    onSuccess: (data, vars) => {
-      setFeedback(data.feedback);
-      recordNode("journal", `${vars.tenseFocus}: ${vars.text.slice(0, 60)}`, { tenseFocus: vars.tenseFocus, text: vars.text, corrected: data.feedback?.corrected });
-    },
+    onSuccess: (data) => setFeedback(data.feedback),
   });
 
   const currentSection = journalSections.find(s => s.id === activeSection)!;

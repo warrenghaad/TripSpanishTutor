@@ -31,6 +31,27 @@ export async function dequeue(id: string) {
   await idbDelete(QUEUE_STORE, id);
 }
 
+/** Rewrite trailId/trailNodeId on every queued request using the given remap.
+ *  Called by the trail sync to point queued PATCH-on-replay at the freshly
+ *  created server node ids, instead of the staged negative sentinels. */
+export async function remapQueuedTrailIds(
+  trailMap: Map<number, number>,
+  nodeMap: Map<number, number>,
+): Promise<number> {
+  if (trailMap.size === 0 && nodeMap.size === 0) return 0;
+  const queue = await listQueued();
+  let updated = 0;
+  for (const req of queue) {
+    const newTrailId = req.trailId !== undefined && trailMap.has(req.trailId) ? trailMap.get(req.trailId)! : req.trailId;
+    const newNodeId = req.trailNodeId !== undefined && nodeMap.has(req.trailNodeId) ? nodeMap.get(req.trailNodeId)! : req.trailNodeId;
+    if (newTrailId !== req.trailId || newNodeId !== req.trailNodeId) {
+      await idbPut(QUEUE_STORE, { ...req, trailId: newTrailId, trailNodeId: newNodeId }, req.id);
+      updated++;
+    }
+  }
+  return updated;
+}
+
 let replayInFlight = false;
 type ReplayHandlers = {
   onSuccess?: (req: QueuedRequest, response: any) => void | Promise<void>;

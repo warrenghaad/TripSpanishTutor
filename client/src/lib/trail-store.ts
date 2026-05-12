@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { idbGetAll, idbPut, idbDelete, idbGet } from "./idb";
+import { remapQueuedTrailIds } from "./offline-queue";
 
 export type TrailNodeKind = "lookup" | "translation" | "journal" | "chat" | "situation" | "grammar" | "question";
 
@@ -143,7 +144,7 @@ export async function syncStaged(): Promise<{ trails: number; nodes: number }> {
   const stagedTrails = all.filter((v) => v && typeof v === "object" && typeof v.stagedId === "number");
   const stagedNodes = all.filter((v) => v && typeof v === "object" && typeof v.stagedNodeId === "number");
 
-  const idMap = new Map<number, number>();
+  const trailMap = new Map<number, number>();
   let createdTrails = 0;
   for (const t of stagedTrails) {
     try {
@@ -154,18 +155,18 @@ export async function syncStaged(): Promise<{ trails: number; nodes: number }> {
       });
       if (!res.ok) continue;
       const created = await res.json();
-      idMap.set(t.stagedId, created.id);
+      trailMap.set(t.stagedId, created.id);
       await idbDelete(KV, `${STAGED_TRAIL_PREFIX}${t.stagedId}`);
       createdTrails++;
-      // If active trail is this staged trail, update it
       const active = readActive();
       if (active?.id === t.stagedId) writeActive({ id: created.id, name: created.name });
     } catch { /* keep staged for next pass */ }
   }
 
+  const nodeMap = new Map<number, number>();
   let createdNodes = 0;
   for (const n of stagedNodes) {
-    const realTrailId = n.trailId < 0 ? idMap.get(n.trailId) : n.trailId;
+    const realTrailId = n.trailId < 0 ? trailMap.get(n.trailId) : n.trailId;
     if (!realTrailId) continue;
     try {
       const res = await fetch(`/api/trails/${realTrailId}/nodes`, {
@@ -174,9 +175,15 @@ export async function syncStaged(): Promise<{ trails: number; nodes: number }> {
         body: JSON.stringify({ kind: n.kind, label: n.label, payload: n.payload, source: n.source }),
       });
       if (!res.ok) continue;
+      const created = await res.json();
+      nodeMap.set(n.stagedNodeId, created.id);
       await idbDelete(KV, `${STAGED_PREFIX}${n.stagedNodeId}`);
       createdNodes++;
     } catch { /* retry next pass */ }
   }
+
+  // Rewrite any queued requests so PATCH-on-replay targets the real ids.
+  await remapQueuedTrailIds(trailMap, nodeMap);
+
   return { trails: createdTrails, nodes: createdNodes };
 }
