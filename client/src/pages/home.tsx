@@ -22,6 +22,7 @@ import { Package, WifiOff, Footprints } from "lucide-react";
 import { useOnline } from "@/lib/use-online";
 import { useEffect, useState as useStateAlias } from "react";
 import { getActivePack } from "@/lib/pack-store";
+import { smartFetch } from "@/lib/api-fetch";
 
 type ConjugationTable = Record<string, Record<string, string>>;
 
@@ -176,30 +177,44 @@ export default function Home() {
 
   const lookupMutation = useMutation({
     mutationFn: async (word: string) => {
-      const res = await fetch("/api/dictionary/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word, direction, locale }),
+      const r = await smartFetch<LookupResult>({
+        endpoint: "/api/dictionary/lookup",
+        body: { word, direction, locale },
+        trailKind: "lookup",
+        label: `Lookup: ${word}`,
+        lookupKey: word,
+        packToResponse: (text, confidence) => ({
+          spanish: word,
+          english: text,
+          partOfSpeech: "—",
+          examples: [],
+          relatedWords: [],
+        }),
+        offlineFallback: () => ({
+          spanish: word,
+          english: "(offline — saved, will look up when you reconnect)",
+          partOfSpeech: "—",
+          examples: [],
+          relatedWords: [],
+        }),
       });
-      if (!res.ok) throw new Error("Lookup failed");
-      return res.json() as Promise<LookupResult>;
+      return r.data;
     },
-    onSuccess: (data) => {
-      setLookupResult(data);
-      recordNode("lookup", data.spanish, { english: data.english, partOfSpeech: data.partOfSpeech });
-    },
+    onSuccess: (data) => setLookupResult(data),
     onError: () => toast({ title: "Lookup failed", description: "Try another word.", variant: "destructive" }),
   });
 
   const extractMutation = useMutation({
     mutationFn: async (text: string) => {
-      const res = await fetch("/api/dictionary/extract", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, locale }),
+      const r = await smartFetch<{ words: ExtractedWord[]; grammarPatterns: GrammarPattern[] }>({
+        endpoint: "/api/dictionary/extract",
+        body: { text, locale },
+        trailKind: "lookup",
+        label: `Extract: "${text.slice(0, 40)}"`,
+        lookupKey: text,
+        offlineFallback: () => ({ words: [], grammarPatterns: [] }),
       });
-      if (!res.ok) throw new Error("Extract failed");
-      return res.json();
+      return r.data;
     },
     onSuccess: (data) => {
       setExtractedWords(data.words || []);

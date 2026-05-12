@@ -74,30 +74,38 @@ export default function PracticeBar() {
     const meta = MODE_META[mode];
     const packHit = pack ? lookupInPack(pack, text) : undefined;
 
-    // Offline path
+    // Offline path — record node + queue for replay regardless of mode
     if (!online) {
-      if (mode === "translate") {
-        await enqueueRequest({
-          endpoint: "/api/translate",
-          method: "POST",
-          body: { text, target: "es", preset: "general", soften: false, locale },
-          label: `Translate: "${text.slice(0, 40)}"`,
-        });
-      }
-      if (packHit) {
-        setMessages((m) => [...m, { role: "assistant", text: packHit.text, source: "pack", confidence: packHit.confidence }]);
-        recordNode(meta.trailKind, text, { answer: packHit.text, packHit }, "pack");
-      } else {
-        setMessages((m) => [...m, {
-          role: "assistant",
-          source: mode === "translate" ? "queued" : "pack",
-          text: mode === "translate"
-            ? "Saved — will translate when you're back online."
-            : pack
-              ? "I'm offline and didn't find that in your trip pack. Try a simpler word, or rebuild the pack."
-              : "I'm offline and you haven't built a trip pack yet. Build one when you're online so I can answer.",
-        }]);
-      }
+      const answerText = packHit
+        ? packHit.text
+        : mode === "translate"
+          ? "Saved — will translate when you're back online."
+          : pack
+            ? "I'm offline and didn't find that in your trip pack. Saved — I'll answer when you reconnect."
+            : "I'm offline. Saved — I'll answer when you reconnect.";
+      const source: "pack" | "queued" = packHit ? "pack" : "queued";
+      setMessages((m) => [...m, { role: "assistant", text: answerText, source, confidence: packHit?.confidence }]);
+
+      const node = await recordNode(meta.trailKind, text, { request: { text, mode }, response: answerText, packHit }, source);
+
+      const endpoint = mode === "translate" ? "/api/translate" : "/api/chat";
+      const body = mode === "translate"
+        ? { text, target: "es", preset: "general", soften: false, locale }
+        : {
+            messages: [
+              ...(mode === "practice" ? [{ role: "system", content: "You are a gentle Spanish coach. Confirm what works, fix what doesn't with a one-line explanation, then suggest one expansion." }] : []),
+              { role: "user", content: text },
+            ],
+            locale,
+          };
+      await enqueueRequest({
+        endpoint,
+        method: "POST",
+        body,
+        label: `${meta.label}: "${text.slice(0, 40)}"`,
+        trailId: node?.trailId,
+        trailNodeId: node?.nodeId,
+      });
       setBusy(false);
       return;
     }
