@@ -10,7 +10,8 @@ import Dictionary from "@/pages/dictionary";
 import Learn from "@/pages/learn";
 import Situations from "@/pages/situations";
 import Journal from "@/pages/journal";
-import ChatWidget from "./components/chat-widget";
+import TripPackPage from "@/pages/trip-pack";
+import TrailsPage from "@/pages/trails";
 import TranslatorPanel from "./components/translator-panel";
 
 function Router() {
@@ -21,6 +22,8 @@ function Router() {
       <Route path="/learn" component={Learn} />
       <Route path="/situations" component={Situations} />
       <Route path="/journal" component={Journal} />
+      <Route path="/trip-pack" component={TripPackPage} />
+      <Route path="/trails" component={TrailsPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -33,7 +36,6 @@ function App() {
         <LocaleProvider>
           <Toaster />
           <Router />
-          <ChatWidget />
           <TranslatorPanel />
         </LocaleProvider>
       </TooltipProvider>

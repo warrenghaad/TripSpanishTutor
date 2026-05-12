@@ -16,6 +16,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useLocale } from "@/lib/locale-context";
+import { recordNode } from "@/lib/trail-store";
+import { Link } from "wouter";
+import { Package, WifiOff, Footprints } from "lucide-react";
+import { useOnline } from "@/lib/use-online";
+import { useEffect, useState as useStateAlias } from "react";
+import { getActivePack } from "@/lib/pack-store";
 
 type ConjugationTable = Record<string, Record<string, string>>;
 
@@ -178,7 +184,10 @@ export default function Home() {
       if (!res.ok) throw new Error("Lookup failed");
       return res.json() as Promise<LookupResult>;
     },
-    onSuccess: (data) => setLookupResult(data),
+    onSuccess: (data) => {
+      setLookupResult(data);
+      recordNode("lookup", data.spanish, { english: data.english, partOfSpeech: data.partOfSpeech });
+    },
     onError: () => toast({ title: "Lookup failed", description: "Try another word.", variant: "destructive" }),
   });
 
@@ -250,6 +259,12 @@ export default function Home() {
     setLookupResult(null);
   };
 
+  const online = useOnline();
+  const [hasPack, setHasPack] = useStateAlias(false);
+  useEffect(() => {
+    getActivePack().then(p => setHasPack(!!p)).catch(() => {});
+  }, []);
+
   return (
     <Layout>
       <div className="max-w-3xl mx-auto px-4 md:px-6 pt-4 md:pt-6 pb-8 space-y-6">
@@ -264,6 +279,41 @@ export default function Home() {
             </h1>
           </div>
         </header>
+
+        <Card className={`p-4 border-2 ${hasPack ? "border-green-200 bg-green-50/40" : "border-primary/30 bg-primary/5"}`} data-testid="card-trip-pack-cta">
+          <div className="flex items-start gap-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${hasPack ? "bg-green-100 text-green-700" : "bg-primary/10 text-primary"}`}>
+              {hasPack ? <Package className="w-5 h-5" /> : <WifiOff className="w-5 h-5" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-display font-bold text-base mb-0.5">
+                {hasPack ? "Trip pack ready for offline use" : "Pack the app for offline use"}
+              </h3>
+              <p className="text-xs text-muted-foreground mb-2">
+                {hasPack
+                  ? "Your saved pack will answer translations, vocab, and common phrases when you're off-grid."
+                  : "Bundle the words, phrases, and verbs you'll need so the app works at the beach, on the plane, or in a dead-zone taxi."}
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                <Link href="/trip-pack">
+                  <Button size="sm" className="bg-primary text-xs h-8" data-testid="button-go-trip-pack">
+                    <Package className="w-3.5 h-3.5 mr-1" /> {hasPack ? "Manage pack" : "Build pack"}
+                  </Button>
+                </Link>
+                <Link href="/trails">
+                  <Button size="sm" variant="outline" className="text-xs h-8" data-testid="button-go-trails">
+                    <Footprints className="w-3.5 h-3.5 mr-1" /> Trails
+                  </Button>
+                </Link>
+                {!online && (
+                  <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-1 rounded-full flex items-center gap-1">
+                    <WifiOff className="w-3 h-3" /> currently offline
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
 
         <section>
           <Card className="p-4 md:p-5 border-primary/30 shadow-sm">

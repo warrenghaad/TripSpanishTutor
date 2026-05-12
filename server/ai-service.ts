@@ -1,8 +1,30 @@
 import OpenAI from "openai";
 
+const replitKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+const replitBase = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+const standardKey = process.env.OPENAI_API_KEY;
+
+const apiKey = replitKey || standardKey;
+const baseURL = replitKey ? replitBase : process.env.OPENAI_BASE_URL;
+
+const aiMode = replitKey
+  ? "replit-managed (AI_INTEGRATIONS_OPENAI_*)"
+  : standardKey
+  ? `standard OpenAI${baseURL ? ` (custom base: ${baseURL})` : ""}`
+  : "DISABLED (no API key found)";
+
+console.log(`[ai-service] mode: ${aiMode}`);
+
+if (!apiKey) {
+  console.warn(
+    "[ai-service] No API key set. Provide AI_INTEGRATIONS_OPENAI_API_KEY (Replit) " +
+    "or OPENAI_API_KEY (standard). All AI endpoints will fail until one is configured."
+  );
+}
+
 const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  apiKey: apiKey || "missing-key-please-set-OPENAI_API_KEY",
+  baseURL: baseURL || undefined,
 });
 
 export type GrammarFeedback = {
@@ -327,6 +349,169 @@ Respond in JSON:
   } catch (error) {
     console.error("Error extracting vocabulary:", error);
     throw new Error("Vocabulary extraction failed");
+  }
+}
+
+export type TripPack = {
+  version: number;
+  locale: string;
+  scope: { interests: string[]; size: string };
+  generatedAt: string;
+  personaBrief: string;
+  translations: { en: string; es: string; topic: string }[];
+  vocabulary: { spanish: string; english: string; partOfSpeech: string; topic: string }[];
+  situations: { name: string; phrases: { es: string; en: string }[] }[];
+  slang: { term: string; meaning: string; usage: string }[];
+  verbs: { spanish: string; english: string; conjugations: Record<string, Record<string, string>> }[];
+};
+
+export async function buildTripPack(
+  locale: string,
+  interests: string[],
+  size: "small" | "medium" | "large" = "medium",
+): Promise<TripPack> {
+  const localeSegment = getLocalePromptSegment(locale);
+  const counts = {
+    small: { trans: 40, vocab: 60, situations: 6, slang: 12, verbs: 10 },
+    medium: { trans: 80, vocab: 120, situations: 10, slang: 20, verbs: 18 },
+    large: { trans: 150, vocab: 200, situations: 14, slang: 30, verbs: 25 },
+  }[size];
+
+  const prompt = `Build an offline Spanish "trip pack" for a traveler.
+${localeSegment}
+
+Traveler interests: ${interests.length ? interests.join(", ") : "general travel"}.
+
+Generate a self-contained JSON intelligence pack the traveler can use OFFLINE when no network is available. Pack should be optimized for the most likely things this traveler will say, ask, or look up.
+
+Include:
+1. PERSONA BRIEF (1-2 sentences) — a compact description of how the offline assistant should sound (tone, locale).
+2. TRANSLATIONS (${counts.trans} entries) — the most frequent phrases a traveler would need both directions, tagged by topic.
+3. VOCABULARY (${counts.vocab} entries) — top words by frequency for the interests above + universal travel needs (food, beach, transit, money, medical, emergencies, lodging, greetings).
+4. SITUATIONS (${counts.situations} entries) — named real-world scenarios with 5-8 ready-to-use phrase pairs each (taxi, restaurant, hotel check-in, pharmacy, beach rental, market haggling, lost item, asking directions, emergency, ordering coffee, art gallery, music venue).
+5. SLANG (${counts.slang} entries) — locale-specific terms with meaning + usage example.
+6. VERBS (${counts.verbs} entries) — most common verbs with full conjugations (presente, pretérito, imperfecto, futuro, condicional × yo/tú/él/nosotros/ellos).
+
+Respond in JSON:
+{
+  "personaBrief": "...",
+  "translations": [{ "en": "...", "es": "...", "topic": "food|beach|transit|money|medical|lodging|greetings|emergency|general" }],
+  "vocabulary": [{ "spanish": "...", "english": "...", "partOfSpeech": "...", "topic": "..." }],
+  "situations": [{ "name": "...", "phrases": [{ "es": "...", "en": "..." }] }],
+  "slang": [{ "term": "...", "meaning": "...", "usage": "..." }],
+  "verbs": [{ "spanish": "infinitive", "english": "...", "conjugations": { "presente": {"yo":"...","tú":"...","él":"...","nosotros":"...","ellos":"..."}, "pretérito": {...}, "imperfecto": {...}, "futuro": {...}, "condicional": {...} } }]
+}`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a precision travel-Spanish curator. Always respond with valid JSON only. Be exhaustive within the requested counts." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.4,
+    });
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("No response");
+    const parsed = JSON.parse(content);
+    return {
+      version: 1,
+      locale,
+      scope: { interests, size },
+      generatedAt: new Date().toISOString(),
+      personaBrief: parsed.personaBrief || "",
+      translations: Array.isArray(parsed.translations) ? parsed.translations : [],
+      vocabulary: Array.isArray(parsed.vocabulary) ? parsed.vocabulary : [],
+      situations: Array.isArray(parsed.situations) ? parsed.situations : [],
+      slang: Array.isArray(parsed.slang) ? parsed.slang : [],
+      verbs: Array.isArray(parsed.verbs) ? parsed.verbs : [],
+    };
+  } catch (error) {
+    console.error("Error building trip pack:", error);
+    throw new Error("Failed to build trip pack");
+  }
+}
+
+export type TrailSummary = { summary: string; bullets: string[] };
+export async function summarizeTrail(
+  trailName: string,
+  nodes: { kind: string; label: string; payload: any }[],
+  locale?: string,
+): Promise<TrailSummary> {
+  const localeSegment = getLocalePromptSegment(locale);
+  const compact = nodes.slice(0, 30).map((n, i) => `${i + 1}. [${n.kind}] ${n.label}`).join("\n");
+  const prompt = `Summarize this Spanish-learning exploration trail named "${trailName}".
+${localeSegment}
+
+Trail steps:
+${compact}
+
+Respond in JSON:
+{
+  "summary": "2-3 sentence narrative paragraph of what was explored and learned",
+  "bullets": ["concise bullet 1", "bullet 2", "bullet 3", "bullet 4", "bullet 5"]
+}`;
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You summarize learning trails. Always respond with valid JSON only." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.5,
+    });
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("No response");
+    const parsed = JSON.parse(content);
+    return {
+      summary: parsed.summary || "",
+      bullets: Array.isArray(parsed.bullets) ? parsed.bullets : [],
+    };
+  } catch (error) {
+    console.error("Error summarizing trail:", error);
+    throw new Error("Failed to summarize trail");
+  }
+}
+
+export type NearbyDoor = { kind: string; label: string; seed: string; reason: string };
+export async function nearbyDoors(
+  trailName: string,
+  nodes: { kind: string; label: string }[],
+  locale?: string,
+): Promise<NearbyDoor[]> {
+  const localeSegment = getLocalePromptSegment(locale);
+  const compact = nodes.slice(-15).map((n) => `[${n.kind}] ${n.label}`).join("\n");
+  const prompt = `Given this recent exploration trail "${trailName}", suggest 6-8 "nearby doors" — natural next things to explore that branch from where the user is.
+${localeSegment}
+
+Recent steps:
+${compact}
+
+Each door should be one of: lookup (a Spanish word to look up), translation (a phrase to translate), grammar (a tense or grammar concept), situation (a scenario to practice), question (a curiosity to ask the chatbot).
+
+Respond in JSON:
+{
+  "doors": [{ "kind": "lookup|translation|grammar|situation|question", "label": "short user-facing label", "seed": "the actual word/phrase/topic to feed into that tool", "reason": "1 sentence on why this is relevant" }]
+}`;
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You suggest learning paths. Always respond with valid JSON only." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+    });
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("No response");
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed.doors) ? parsed.doors : [];
+  } catch (error) {
+    console.error("Error generating doors:", error);
+    throw new Error("Failed to suggest doors");
   }
 }
 
