@@ -7,6 +7,7 @@ import { Book, Sparkles, ArrowRight, Info, Heart, Lightbulb, Wind, CheckCircle2 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
+import { recordNode } from "@/lib/trail-store";
 import { Link } from "wouter";
 import { useLocale } from "@/lib/locale-context";
 
@@ -100,8 +101,9 @@ export default function Journal() {
       if (!response.ok) throw new Error("Failed to analyze text");
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data, vars) => {
       setFeedback(data.feedback);
+      recordNode("journal", `${vars.tenseFocus}: ${vars.text.slice(0, 60)}`, { tenseFocus: vars.tenseFocus, text: vars.text, corrected: data.feedback?.corrected });
     },
   });
 

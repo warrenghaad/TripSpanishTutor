@@ -30,7 +30,8 @@ export default function TripPackPage() {
   const online = useOnline();
   const { toast } = useToast();
   const [interests, setInterests] = useState<string[]>(["food", "beach", "transit"]);
-  const [size, setSize] = useState<"small" | "medium" | "large">("medium");
+  type PackSize = "small" | "medium" | "large";
+  const [size, setSize] = useState<PackSize>("medium");
   const [packs, setPacks] = useState<(TripPack & { id: string })[]>([]);
   const [activeId, setActiveId] = useState<string | undefined>();
 
@@ -119,7 +120,7 @@ export default function TripPackPage() {
               {SIZES.map((s) => (
                 <button
                   key={s.id}
-                  onClick={() => setSize(s.id as any)}
+                  onClick={() => setSize(s.id as PackSize)}
                   className={`text-xs px-3 py-1.5 rounded-full border transition ${
                     size === s.id
                       ? "bg-secondary text-white border-secondary"

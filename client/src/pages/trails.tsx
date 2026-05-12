@@ -1,7 +1,7 @@
 import Layout from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Footprints, Plus, Tag, Sparkles, Compass, Trash2, Play, Pause } from "lucide-react";
+import { Footprints, Plus, Tag, Sparkles, Compass, Trash2, Play, Pause, Pencil, Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -33,7 +33,11 @@ export default function TrailsPage() {
     queryFn: async () => (await fetch(`/api/trails/${selectedId}`)).json(),
   });
 
-  useEffect(() => { setSummary(null); setDoors([]); }, [selectedId]);
+  const [renaming, setRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [tagInput, setTagInput] = useState("");
+
+  useEffect(() => { setSummary(null); setDoors([]); setRenaming(false); }, [selectedId]);
 
   const createMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -57,6 +61,24 @@ export default function TrailsPage() {
       qc.invalidateQueries({ queryKey: ["/api/trails"] });
       if (active?.id === selectedId) setTrail(null);
       setSelectedId(undefined);
+    },
+  });
+
+  const patchMutation = useMutation({
+    mutationFn: async (patch: { name?: string; tags?: string[] }) => {
+      const res = await fetch(`/api/trails/${selectedId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      if (!res.ok) throw new Error("Update failed");
+      return await res.json();
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api/trails"] });
+      qc.invalidateQueries({ queryKey: ["/api/trails", selectedId] });
+      if (renaming) setRenaming(false);
+      setTagInput("");
     },
   });
 
@@ -122,15 +144,62 @@ export default function TrailsPage() {
           {selectedId && detailQuery.data ? (
             <Card className="p-4 md:p-6">
               <div className="flex items-start justify-between mb-4 gap-2">
-                <div>
-                  <h2 className="font-display font-bold text-xl" data-testid="text-trail-name">{detailQuery.data.trail.name}</h2>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {detailQuery.data.trail.tags?.map((t) => (
-                      <span key={t} className="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-full flex items-center gap-1">
+                <div className="flex-1 min-w-0">
+                  {renaming ? (
+                    <div className="flex gap-1 items-center">
+                      <input
+                        autoFocus
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && renameValue.trim()) patchMutation.mutate({ name: renameValue.trim() });
+                          if (e.key === "Escape") setRenaming(false);
+                        }}
+                        className="flex-1 text-lg font-bold border border-border/40 rounded px-2 py-1"
+                        data-testid="input-rename-trail"
+                      />
+                      <Button size="sm" variant="ghost" onClick={() => renameValue.trim() && patchMutation.mutate({ name: renameValue.trim() })} data-testid="button-confirm-rename">
+                        <Check className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setRenaming(false)} data-testid="button-cancel-rename">
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <h2 className="font-display font-bold text-xl" data-testid="text-trail-name">{detailQuery.data.trail.name}</h2>
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => { setRenameValue(detailQuery.data!.trail.name); setRenaming(true); }} data-testid="button-rename-trail">
+                        <Pencil className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-1 mt-1 items-center">
+                    {(detailQuery.data.trail.tags || []).map((t) => (
+                      <span key={t} className="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-full flex items-center gap-1" data-testid={`tag-${t}`}>
                         <Tag className="w-2.5 h-2.5" /> {t}
+                        <button
+                          onClick={() => patchMutation.mutate({ tags: (detailQuery.data!.trail.tags || []).filter((x) => x !== t) })}
+                          className="hover:text-destructive ml-1"
+                          aria-label={`remove ${t}`}
+                        >
+                          <X className="w-2.5 h-2.5" />
+                        </button>
                       </span>
                     ))}
-                    <span className="text-[10px] text-muted-foreground">{detailQuery.data.nodes.length} steps</span>
+                    <input
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && tagInput.trim()) {
+                          const next = Array.from(new Set([...(detailQuery.data!.trail.tags || []), tagInput.trim()]));
+                          patchMutation.mutate({ tags: next });
+                        }
+                      }}
+                      placeholder="+ tag"
+                      className="text-[10px] bg-muted/30 border border-border/30 rounded-full px-2 py-0.5 w-16 focus:outline-none focus:border-primary"
+                      data-testid="input-add-tag"
+                    />
+                    <span className="text-[10px] text-muted-foreground ml-1">{detailQuery.data.nodes.length} steps</span>
                   </div>
                 </div>
                 <div className="flex gap-1">
