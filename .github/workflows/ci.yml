@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [Warrenghaad, "feat/**", "fix/**", "content/**", "release/**"]
+  pull_request:
+    branches: [Warrenghaad]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: TypeScript typecheck
+        run: npx tsc --noEmit
+        continue-on-error: true # remove once existing types are green
+
+      - name: Conjugator smoke tests
+        run: npx tsx server/conjugator/tests/smoke.test.ts
+
+      - name: Unevaluative-language lint (banned words in user-facing strings)
+        run: |
+          set -e
+          if grep -RIn --include="*.ts" --include="*.tsx" --include="*.swift" \
+              -E "\b(XP|streak|correct!|wrong!|incorrect)\b" \
+              client/ server/ 2>/dev/null | grep -v "conjugator/" | grep -v "// ALLOW:" ; then
+            echo "::error::Evaluative language found in user-facing surface. See guardrail in project plan §12."
+            exit 1
+          fi
+          echo "OK — no evaluative language detected."

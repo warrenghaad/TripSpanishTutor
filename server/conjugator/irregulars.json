@@ -1,0 +1,110 @@
+{
+  "estar": {
+    "ind": {
+      "pres": {
+        "1s": "estoy", "2s": "estás", "3s": "está",
+        "1p": "estamos", "2p": "estáis", "3p": "están",
+        "2s_vos": "estás"
+      }
+    }
+  },
+  "ser": {
+    "ind": {
+      "pres": {
+        "1s": "soy", "2s": "eres", "3s": "es",
+        "1p": "somos", "2p": "sois", "3p": "son",
+        "2s_vos": "sos"
+      }
+    }
+  },
+  "ir": {
+    "ind": {
+      "pres": {
+        "1s": "voy", "2s": "vas", "3s": "va",
+        "1p": "vamos", "2p": "vais", "3p": "van",
+        "2s_vos": "vas"
+      }
+    }
+  },
+  "tener": {
+    "ind": {
+      "pres": {
+        "1s": "tengo", "2s": "tienes", "3s": "tiene",
+        "1p": "tenemos", "2p": "tenéis", "3p": "tienen",
+        "2s_vos": "tenés"
+      }
+    }
+  },
+  "haber": {
+    "ind": {
+      "pres": {
+        "1s": "he", "2s": "has", "3s": "ha",
+        "1p": "hemos", "2p": "habéis", "3p": "han",
+        "2s_vos": "has"
+      }
+    }
+  },
+  "hacer": {
+    "ind": {
+      "pres": {
+        "1s": "hago", "2s": "haces", "3s": "hace",
+        "1p": "hacemos", "2p": "hacéis", "3p": "hacen",
+        "2s_vos": "hacés"
+      }
+    }
+  },
+  "decir": {
+    "ind": {
+      "pres": {
+        "1s": "digo", "2s": "dices", "3s": "dice",
+        "1p": "decimos", "2p": "decís", "3p": "dicen",
+        "2s_vos": "decís"
+      }
+    }
+  },
+  "poder": {
+    "ind": {
+      "pres": {
+        "1s": "puedo", "2s": "puedes", "3s": "puede",
+        "1p": "podemos", "2p": "podéis", "3p": "pueden",
+        "2s_vos": "podés"
+      }
+    }
+  },
+  "querer": {
+    "ind": {
+      "pres": {
+        "1s": "quiero", "2s": "quieres", "3s": "quiere",
+        "1p": "queremos", "2p": "queréis", "3p": "quieren",
+        "2s_vos": "querés"
+      }
+    }
+  },
+  "saber": {
+    "ind": {
+      "pres": {
+        "1s": "sé", "2s": "sabes", "3s": "sabe",
+        "1p": "sabemos", "2p": "sabéis", "3p": "saben",
+        "2s_vos": "sabés"
+      }
+    }
+  },
+  "ver": {
+    "ind": {
+      "pres": {
+        "1s": "veo", "2s": "ves", "3s": "ve",
+        "1p": "vemos", "2p": "veis", "3p": "ven",
+        "2s_vos": "ves"
+      }
+    }
+  },
+  "dar": {
+    "ind": {
+      "pres": {
+        "1s": "doy", "2s": "das", "3s": "da",
+        "1p": "damos", "2p": "dais", "3p": "dan",
+        "2s_vos": "das"
+      }
+    }
+  }
+}

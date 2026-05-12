@@ -1,0 +1,31 @@
+{
+  "pack_id": "borges.fervor",
+  "label": "Fervor de Buenos Aires (1923) — first trail",
+  "variant": "es-AR",
+  "stops": [
+    {
+      "ordinal": 1,
+      "poem_id": "borges.fervor.un-patio",
+      "target_skills": ["vocab.patio", "phonology.rioplatense-yeismo", "pragmatic.borges-domestic-space"],
+      "note": "Short, A2-accessible. Start here. Two read-aloud passes before any glossing."
+    },
+    {
+      "ordinal": 2,
+      "poem_id": "borges.fervor.calle-desconocida",
+      "target_skills": ["vocab.arrabal", "etymology.arabic-in-spanish", "pragmatic.twilight-register"],
+      "note": "Introduces *arrabal* — Arabic etymology trail. WordDoor surfaces the al-Andalus inheritance."
+    },
+    {
+      "ordinal": 3,
+      "poem_id": "borges.fervor.la-recoleta",
+      "target_skills": ["vocab.tiempo", "verb.preterite-vs-imperfect", "pragmatic.elegy-register"],
+      "note": "Tiempo as the central node — chronos, weather, and verbal tense in one word."
+    }
+  ],
+  "personal_echo_registers": ["literal", "natural", "argentine", "borges-like", "travel"],
+  "sources": [
+    "https://www.poetryfoundation.org/poets/jorge-luis-borges",
+    "https://es.wikipedia.org/wiki/Fervor_de_Buenos_Aires",
+    "https://lehman.edu/media/Ciberletras/documents/FervorBorges-CL-52-perez.pdf"
+  ]
+}
