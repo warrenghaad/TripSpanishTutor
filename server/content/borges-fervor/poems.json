@@ -1,0 +1,32 @@
+[
+  {
+    "id": "borges.fervor.calle-desconocida",
+    "author": "Jorge Luis Borges",
+    "collection": "Fervor de Buenos Aires (1923)",
+    "title": "Calle desconocida",
+    "year": 1923,
+    "themes": ["arrabal", "twilight", "memory", "buenos-aires"],
+    "target_lemmas": ["arrabal", "calle", "tarde", "esperar"],
+    "notes": "First-pack seed entry — full canonical text to be pulled from a public-domain edition during content pass (the work entered public domain in many jurisdictions in 2057; for v0 we link to the Biblioteca Nacional facsimile and store only metadata + first-line citation)."
+  },
+  {
+    "id": "borges.fervor.la-recoleta",
+    "author": "Jorge Luis Borges",
+    "collection": "Fervor de Buenos Aires (1923)",
+    "title": "La Recoleta",
+    "year": 1923,
+    "themes": ["death", "cemetery", "time", "memory"],
+    "target_lemmas": ["tiempo", "muerte", "olvido"],
+    "notes": "Anchor poem for tiempo etymology trail."
+  },
+  {
+    "id": "borges.fervor.un-patio",
+    "author": "Jorge Luis Borges",
+    "collection": "Fervor de Buenos Aires (1923)",
+    "title": "Un patio",
+    "year": 1923,
+    "themes": ["patio", "night", "domestic-space"],
+    "target_lemmas": ["patio", "noche", "amistad"],
+    "notes": "Short, A2-accessible. Good first-session candidate."
+  }
+]

@@ -1,0 +1,76 @@
+[
+  {
+    "id": "espejo",
+    "pos": "noun",
+    "gloss": "mirror",
+    "cefr": "A2",
+    "borges_role": "Recurring symbol of doubling, infinity, dread. 'Mirrors and copulation are abominable, for they multiply the number of men.' — Tlön, Uqbar, Orbis Tertius",
+    "etymology": [
+      { "era": "Latin", "form": "speculum", "gloss": "instrument of looking, mirror" },
+      { "era": "Vulgar Latin", "form": "spiculum", "note": "metathesis common in Iberian Romance" },
+      { "era": "Old Spanish", "form": "espejo" }
+    ],
+    "sources": [
+      "https://dle.rae.es/espejo",
+      "https://etimologias.dechile.net/?espejo"
+    ]
+  },
+  {
+    "id": "laberinto",
+    "pos": "noun",
+    "gloss": "labyrinth",
+    "cefr": "B1",
+    "borges_role": "Core Borgesian topology — library, garden of forking paths, the universe itself.",
+    "etymology": [
+      { "era": "Greek", "form": "labýrinthos", "gloss": "labyrinth", "note": "possibly from Lydian labrys (double axe), the Cretan royal emblem" },
+      { "era": "Latin", "form": "labyrinthus" },
+      { "era": "Old Spanish", "form": "laberinto" }
+    ],
+    "sources": [
+      "https://dle.rae.es/laberinto",
+      "https://etimologias.dechile.net/?laberinto"
+    ]
+  },
+  {
+    "id": "arrabal",
+    "pos": "noun",
+    "gloss": "outskirts, edge neighborhood (often poetic — the periphery of a city, esp. Buenos Aires)",
+    "cefr": "B1",
+    "borges_role": "The geography of Fervor de Buenos Aires. Borges's arrabales are not slums but liminal zones where the city meets the pampa.",
+    "etymology": [
+      { "era": "Andalusi Arabic", "form": "ar-rabaḍ", "gloss": "the outer quarter, suburb" },
+      { "era": "Old Spanish", "form": "arrabal", "note": "one of ~4,000 Spanish words of Arabic origin — legacy of 800 years of al-Andalus" }
+    ],
+    "sources": [
+      "https://dle.rae.es/arrabal",
+      "https://etimologias.dechile.net/?arrabal"
+    ]
+  },
+  {
+    "id": "biblioteca",
+    "pos": "noun",
+    "gloss": "library",
+    "cefr": "A2",
+    "borges_role": "'I have always imagined that Paradise will be a kind of library.' Borges directed the Biblioteca Nacional 1955–1973.",
+    "etymology": [
+      { "era": "Greek", "form": "bibliothēkē", "gloss": "book-container", "note": "biblíon (book) + thḗkē (case, repository)" },
+      { "era": "Latin", "form": "bibliotheca" }
+    ],
+    "sources": [
+      "https://dle.rae.es/biblioteca"
+    ]
+  },
+  {
+    "id": "tiempo",
+    "pos": "noun",
+    "gloss": "time; weather; verbal tense",
+    "cefr": "A1",
+    "borges_role": "Borges's central obsession — 'Time is the substance from which I am made.' One word, three meanings (chronos, weather, grammar) is itself a Borgesian gift.",
+    "etymology": [
+      { "era": "Latin", "form": "tempus", "gloss": "division of time, occasion, weather" }
+    ],
+    "sources": [
+      "https://www.rae.es/diccionario-estudiante/tiempo"
+    ]
+  }
+]

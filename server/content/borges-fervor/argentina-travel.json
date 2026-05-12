@@ -1,0 +1,46 @@
+{
+  "pack_id": "travel.argentina",
+  "label": "Argentina — Borges pilgrimage + practical travel",
+  "variant": "es-AR",
+  "visa": {
+    "us_citizen": "Valid passport only; no visa required for tourism up to 90 days.",
+    "sources": [
+      "https://travel.state.gov/content/travel/en/international-travel/International-Travel-Country-Information-Pages/Argentina.html"
+    ]
+  },
+  "pilgrimage_stops": [
+    {
+      "place": "Biblioteca Nacional Mariano Moreno",
+      "note": "Borges was director 1955–1973. 'I have always imagined that Paradise will be a kind of library.'"
+    },
+    {
+      "place": "Café Tortoni (Av. de Mayo 825)",
+      "note": "Borges held literary tertulias here. Open since 1858."
+    },
+    {
+      "place": "Palermo neighborhood",
+      "note": "Borges's childhood home. The arrabales of Fervor de Buenos Aires were these streets."
+    },
+    {
+      "place": "Cementerio de la Recoleta",
+      "note": "Subject of 'La Recoleta.' Borges is buried in Geneva, not here — note the distance."
+    }
+  ],
+  "bookstore_phrases": [
+    { "es": "Estoy buscando poesía de Borges.", "en": "I'm looking for Borges poetry." },
+    { "es": "¿Tiene una edición bilingüe?",     "en": "Do you have a bilingual edition?" },
+    { "es": "¿Es de tapa dura?",                "en": "Is it hardcover?" },
+    { "es": "¿Me lo podés recomendar?",         "en": "Could you recommend one to me?", "note": "Voseo: 'podés' not 'puedes'." }
+  ],
+  "rioplatense_quick_reference": {
+    "voseo": "tú → vos. tienes → tenés, eres → sos, puedes → podés. Conjugator covers all of these via the 2s_vos slot.",
+    "sheismo": "ll and y both pronounced /ʃ/ (sh). 'calle' sounds like 'kah-sheh'.",
+    "lunfardo": "Buenos Aires slang of Italian-immigrant origin. Borges dismissed it as 'jerga artificiosa de ladrones,' but it's essential street vocabulary. Out of scope for the Borges pack; reserved for a future travel pack."
+  },
+  "sources": [
+    "https://travel.state.gov/content/travel/en/international-travel/International-Travel-Country-Information-Pages/Argentina.html",
+    "https://en.wikipedia.org/wiki/Rioplatense_Spanish",
+    "https://www.bergesinstitutespanish.com/blog/the-use-of-vos-in-spanish",
+    "https://en.wikipedia.org/wiki/Lunfardo"
+  ]
+}
