@@ -1,6 +1,7 @@
-import { db, safeSelect } from "../db/index";
+import { db, safeSelect, safeExecuteRows } from "../db/index";
 import {
   users, journalEntries, dictionaryWords, trails, trailNodes, trailEdges, packManifests,
+  translationCards, chatConversations, chatMessages,
   type User, type InsertUser,
   type JournalEntry, type InsertJournalEntry,
   type DictionaryWord, type InsertDictionaryWord,
@@ -8,6 +9,9 @@ import {
   type TrailNode, type InsertTrailNode,
   type TrailEdge, type InsertTrailEdge,
   type PackManifest, type InsertPackManifest,
+  type TranslationCard, type InsertTranslationCard,
+  type ChatConversation, type InsertChatConversation,
+  type ChatMessage, type InsertChatMessage,
 } from "@shared/schema";
 import { eq, desc, ilike, or, and, sql } from "drizzle-orm";
 
@@ -38,6 +42,22 @@ export interface IStorage {
 
   recordPackManifest(manifest: InsertPackManifest): Promise<PackManifest>;
   listPackManifests(): Promise<PackManifest[]>;
+
+  createTranslationCard(card: InsertTranslationCard): Promise<TranslationCard>;
+  listTranslationCards(limit?: number): Promise<TranslationCard[]>;
+  getTranslationCard(id: number): Promise<TranslationCard | undefined>;
+  updateTranslationCard(id: number, patch: Partial<InsertTranslationCard>): Promise<TranslationCard | undefined>;
+  deleteTranslationCard(id: number): Promise<void>;
+
+  createChatConversation(c: InsertChatConversation): Promise<ChatConversation>;
+  getChatConversation(id: number): Promise<ChatConversation | undefined>;
+  listChatConversations(): Promise<ChatConversation[]>;
+  deleteChatConversation(id: number): Promise<void>;
+
+  addChatMessage(m: InsertChatMessage): Promise<ChatMessage>;
+  updateChatMessage(id: number, content: string): Promise<ChatMessage | undefined>;
+  deleteChatMessage(id: number): Promise<void>;
+  getChatMessages(conversationId: number): Promise<ChatMessage[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -71,7 +91,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addDictionaryWord(word: InsertDictionaryWord): Promise<DictionaryWord> {
-    const [entry] = await db.insert(dictionaryWords).values(word).returning();
+    // neon-http .returning() intermittently yields [] on this table — fall
+    // back to insert + fetch latest by id when that happens.
+    await db.insert(dictionaryWords).values(word);
+    const rows = await safeSelect(
+      db.select().from(dictionaryWords).orderBy(desc(dictionaryWords.id)).limit(1),
+    );
+    const entry = rows[0];
+    if (!entry) throw new Error("dictionary insert succeeded but row not found");
     return entry;
   }
 
@@ -157,6 +184,213 @@ export class DatabaseStorage implements IStorage {
   async listPackManifests(): Promise<PackManifest[]> {
     return await safeSelect(db.select().from(packManifests).orderBy(desc(packManifests.generatedAt)));
   }
+
+  async createTranslationCard(card: InsertTranslationCard): Promise<TranslationCard> {
+    // Use INSERT ... RETURNING * so we get back the exact inserted row in
+    // a single round trip. Raw db.execute() does not hit the broken
+    // drizzle-orm .returning() path that previously forced us to fall
+    // back on "ORDER BY id DESC LIMIT 1" (which was racy under load).
+    // The neon-http driver does not return RETURNING rows from a bare
+    // INSERT issued via db.execute(); wrap it in a CTE so the statement
+    // is parsed as a SELECT and the inserted row reaches us reliably.
+    const rows = await safeExecuteRows<TranslationCardRow>(
+      db.execute(sql`
+        WITH ins AS (
+        INSERT INTO translation_cards (
+          source_text, source_language, target_language, translated_text,
+          literal_text, grammar_notes, detected_verbs, detected_adjectives,
+          detected_adverbs, suggested_transforms, tags, saved,
+          conversation_id, journal_entry_id, status, locale
+        ) VALUES (
+          ${card.sourceText},
+          ${card.sourceLanguage ?? "auto"},
+          ${card.targetLanguage},
+          ${card.translatedText ?? ""},
+          ${card.literalText ?? null},
+          ${JSON.stringify(card.grammarNotes ?? null)}::jsonb,
+          ${JSON.stringify(card.detectedVerbs ?? [])}::jsonb,
+          ${JSON.stringify(card.detectedAdjectives ?? [])}::jsonb,
+          ${JSON.stringify(card.detectedAdverbs ?? [])}::jsonb,
+          ${JSON.stringify(card.suggestedTransforms ?? null)}::jsonb,
+          ${JSON.stringify(card.tags ?? [])}::jsonb,
+          ${card.saved ?? false},
+          ${card.conversationId == null ? sql`NULL` : card.conversationId},
+          ${card.journalEntryId == null ? sql`NULL` : card.journalEntryId},
+          ${card.status ?? "completed"},
+          ${card.locale ?? null}
+        )
+        RETURNING *
+        )
+        SELECT * FROM ins
+      `),
+    );
+    const row = rows[0];
+    if (!row) throw new Error("translation_cards insert returned no row");
+    return mapTranslationCardRow(row);
+  }
+
+  async listTranslationCards(limit: number = 100): Promise<TranslationCard[]> {
+    const rows = await safeExecuteRows<TranslationCardRow>(
+      db.execute(sql`SELECT * FROM translation_cards ORDER BY created_at DESC LIMIT ${limit}`),
+    );
+    return rows.map(mapTranslationCardRow);
+  }
+
+  async getTranslationCard(id: number): Promise<TranslationCard | undefined> {
+    const rows = await safeExecuteRows<TranslationCardRow>(
+      db.execute(sql`SELECT * FROM translation_cards WHERE id = ${id}`),
+    );
+    return rows[0] ? mapTranslationCardRow(rows[0]) : undefined;
+  }
+
+  async updateTranslationCard(id: number, patch: Partial<InsertTranslationCard>): Promise<TranslationCard | undefined> {
+    const sets: ReturnType<typeof sql>[] = [];
+    if (patch.sourceText !== undefined) sets.push(sql`source_text = ${patch.sourceText}`);
+    if (patch.sourceLanguage !== undefined) sets.push(sql`source_language = ${patch.sourceLanguage}`);
+    if (patch.targetLanguage !== undefined) sets.push(sql`target_language = ${patch.targetLanguage}`);
+    if (patch.translatedText !== undefined) sets.push(sql`translated_text = ${patch.translatedText}`);
+    if (patch.literalText !== undefined) sets.push(sql`literal_text = ${patch.literalText}`);
+    if (patch.grammarNotes !== undefined) sets.push(sql`grammar_notes = ${JSON.stringify(patch.grammarNotes)}::jsonb`);
+    if (patch.detectedVerbs !== undefined) sets.push(sql`detected_verbs = ${JSON.stringify(patch.detectedVerbs)}::jsonb`);
+    if (patch.detectedAdjectives !== undefined) sets.push(sql`detected_adjectives = ${JSON.stringify(patch.detectedAdjectives)}::jsonb`);
+    if (patch.detectedAdverbs !== undefined) sets.push(sql`detected_adverbs = ${JSON.stringify(patch.detectedAdverbs)}::jsonb`);
+    if (patch.suggestedTransforms !== undefined) sets.push(sql`suggested_transforms = ${JSON.stringify(patch.suggestedTransforms)}::jsonb`);
+    if (patch.tags !== undefined) sets.push(sql`tags = ${JSON.stringify(patch.tags)}::jsonb`);
+    if (patch.saved !== undefined) sets.push(sql`saved = ${patch.saved}`);
+    if (patch.conversationId !== undefined) sets.push(sql`conversation_id = ${patch.conversationId}`);
+    if (patch.journalEntryId !== undefined) sets.push(sql`journal_entry_id = ${patch.journalEntryId}`);
+    if (patch.status !== undefined) sets.push(sql`status = ${patch.status}`);
+    if (patch.locale !== undefined) sets.push(sql`locale = ${patch.locale}`);
+    if (sets.length === 0) return await this.getTranslationCard(id);
+    const setClause = sql.join(sets, sql`, `);
+    await db.execute(sql`UPDATE translation_cards SET ${setClause} WHERE id = ${id}`);
+    return await this.getTranslationCard(id);
+  }
+
+  async deleteTranslationCard(id: number): Promise<void> {
+    await db.execute(sql`DELETE FROM translation_cards WHERE id = ${id}`);
+  }
+
+  async createChatConversation(c: InsertChatConversation): Promise<ChatConversation> {
+    const rows = await safeExecuteRows<ChatConversation>(
+      db.execute(sql`
+        WITH ins AS (
+        INSERT INTO chat_conversations (seed_translation_card_id, locale, title)
+        VALUES (
+          ${c.seedTranslationCardId == null ? sql`NULL` : c.seedTranslationCardId},
+          ${c.locale ?? null},
+          ${c.title ?? "Conversation"}
+        )
+        RETURNING *
+        )
+        SELECT * FROM ins
+      `),
+    );
+    const row = rows[0];
+    if (!row) throw new Error("chat_conversations insert returned no row");
+    return row;
+  }
+
+  async getChatConversation(id: number): Promise<ChatConversation | undefined> {
+    const rows = await safeExecuteRows<ChatConversation>(
+      db.execute(sql`SELECT * FROM chat_conversations WHERE id = ${id}`),
+    );
+    return rows[0];
+  }
+
+  async listChatConversations(): Promise<ChatConversation[]> {
+    return await safeExecuteRows<ChatConversation>(
+      db.execute(sql`SELECT * FROM chat_conversations ORDER BY created_at DESC`),
+    );
+  }
+
+  async deleteChatConversation(id: number): Promise<void> {
+    await db.execute(sql`DELETE FROM chat_conversations WHERE id = ${id}`);
+  }
+
+  async addChatMessage(m: InsertChatMessage): Promise<ChatMessage> {
+    const rows = await safeExecuteRows<ChatMessage>(
+      db.execute(sql`
+        WITH ins AS (
+        INSERT INTO chat_messages (conversation_id, role, content)
+        VALUES (${m.conversationId}, ${m.role}, ${m.content})
+        RETURNING *
+        )
+        SELECT * FROM ins
+      `),
+    );
+    const row = rows[0];
+    if (!row) throw new Error("chat_messages insert returned no row");
+    return row;
+  }
+
+  async updateChatMessage(id: number, content: string): Promise<ChatMessage | undefined> {
+    const rows = await safeExecuteRows<ChatMessage>(
+      db.execute(sql`
+        WITH upd AS (
+          UPDATE chat_messages SET content = ${content} WHERE id = ${id} RETURNING *
+        )
+        SELECT * FROM upd
+      `),
+    );
+    return rows[0];
+  }
+
+  async deleteChatMessage(id: number): Promise<void> {
+    await db.execute(sql`DELETE FROM chat_messages WHERE id = ${id}`);
+  }
+
+  async getChatMessages(conversationId: number): Promise<ChatMessage[]> {
+    return await safeExecuteRows<ChatMessage>(
+      db.execute(sql`
+        SELECT * FROM chat_messages WHERE conversation_id = ${conversationId} ORDER BY created_at ASC
+      `),
+    );
+  }
+}
+
+type TranslationCardRow = {
+  id: number;
+  created_at: string | Date;
+  source_text: string;
+  source_language: string;
+  target_language: string;
+  translated_text: string;
+  literal_text: string | null;
+  grammar_notes: { term: string; note: string }[] | null;
+  detected_verbs: string[] | null;
+  detected_adjectives: string[] | null;
+  detected_adverbs: string[] | null;
+  suggested_transforms: { id: string; label: string }[] | null;
+  tags: string[] | null;
+  saved: boolean;
+  conversation_id: number | null;
+  journal_entry_id: number | null;
+  status: string;
+  locale: string | null;
+};
+
+function mapTranslationCardRow(row: TranslationCardRow): TranslationCard {
+  return {
+    id: row.id,
+    createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+    sourceText: row.source_text,
+    sourceLanguage: row.source_language,
+    targetLanguage: row.target_language,
+    translatedText: row.translated_text,
+    literalText: row.literal_text,
+    grammarNotes: row.grammar_notes,
+    detectedVerbs: row.detected_verbs ?? [],
+    detectedAdjectives: row.detected_adjectives ?? [],
+    detectedAdverbs: row.detected_adverbs ?? [],
+    suggestedTransforms: row.suggested_transforms,
+    tags: row.tags ?? [],
+    saved: row.saved,
+    conversationId: row.conversation_id,
+    journalEntryId: row.journal_entry_id,
+    status: row.status,
+    locale: row.locale,
+  };
 }
 
 export const storage = new DatabaseStorage();

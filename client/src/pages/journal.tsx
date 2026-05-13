@@ -4,12 +4,38 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Book, Sparkles, ArrowRight, Info, Heart, Lightbulb, Wind, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMutation } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Link, useSearch } from "wouter";
 import { useLocale } from "@/lib/locale-context";
 import { smartFetch } from "@/lib/api-fetch";
+import { listLocalCards } from "@/lib/translation-store";
+
+async function findLocalJournalArtifact(entryId: number): Promise<SeededJournalEntry | null> {
+  try {
+    const cards = await listLocalCards();
+    const card = cards.find((c) => c.journalEntryId === entryId && c.journalArtifact);
+    if (!card?.journalArtifact) return null;
+    return {
+      id: card.journalArtifact.id,
+      originalText: card.sourceText,
+      correctedText: card.journalArtifact.correctedText,
+      createdAt: card.journalArtifact.createdAt,
+      feedback: { literalText: card.literalText ?? null },
+    };
+  } catch {
+    return null;
+  }
+}
+
+type SeededJournalEntry = {
+  id: number;
+  originalText: string;
+  correctedText: string | null;
+  createdAt: string;
+  feedback?: { reflectionPrompt?: string; literalText?: string | null } | null;
+};
 
 type Feedback = {
   corrected: string;
@@ -91,6 +117,37 @@ export default function Journal() {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const { locale } = useLocale();
 
+  const search = useSearch();
+  const params = new URLSearchParams(search);
+  const focusedEntryId = params.get("entry");
+  const showReflectionPrompt = params.get("prompt") === "reflection";
+
+  const { data: focusedEntry } = useQuery<SeededJournalEntry | null>({
+    queryKey: ["journal-entry", focusedEntryId],
+    enabled: !!focusedEntryId,
+    queryFn: async () => {
+      // Try the network first, but always fall back to the IndexedDB
+      // mirror written when the user pressed "Save to Journal", so the
+      // reflection card and prompt remain readable with no network.
+      const idNum = parseInt(focusedEntryId!);
+      const local = await findLocalJournalArtifact(idNum);
+      try {
+        const res = await fetch(`/api/journal/entries/${focusedEntryId}`);
+        if (res.ok) return (await res.json()) as SeededJournalEntry;
+      } catch {
+        // fall through to local fallback
+      }
+      return local;
+    },
+  });
+
+  useEffect(() => {
+    if (focusedEntryId) {
+      const el = document.getElementById(`focused-entry-${focusedEntryId}`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [focusedEntryId, focusedEntry]);
+
   const analyzeMutation = useMutation({
     mutationFn: async (data: { text: string; tenseFocus: string; locale: string }) => {
       const r = await smartFetch<{ feedback: Feedback }>({
@@ -134,6 +191,43 @@ export default function Journal() {
           <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-2">Travel Journal</h1>
           <p className="text-muted-foreground text-sm md:text-base">Write in whatever mix of English and Spanish you know. We'll help you learn the rest.</p>
         </header>
+
+        {focusedEntry && (
+          <Card
+            id={`focused-entry-${focusedEntry.id}`}
+            className="p-4 md:p-6 mb-6 bg-primary/5 border-l-4 border-l-primary"
+            data-testid={`focused-entry-${focusedEntry.id}`}
+          >
+            <div className="flex items-center gap-2 mb-2 text-primary">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-xs font-bold uppercase tracking-wider">Saved from Translate</span>
+            </div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">You wrote</p>
+            <p className="text-sm text-muted-foreground italic mb-3">{focusedEntry.originalText}</p>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Spanish</p>
+            <p className="text-lg font-display text-foreground mb-4" data-testid="text-focused-corrected">
+              {focusedEntry.correctedText || focusedEntry.originalText}
+            </p>
+            {showReflectionPrompt && (
+              <div
+                className="bg-white rounded-lg p-3 border border-primary/20"
+                data-testid="reflection-prompt"
+              >
+                <p className="text-sm text-primary font-medium flex items-start gap-2">
+                  <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>Write one more sentence about this.</span>
+                </p>
+                <Textarea
+                  className="mt-2 min-h-[80px] resize-none text-sm"
+                  placeholder="Add another sentence in any mix of English and Spanish…"
+                  value={entries["reflection"] || ""}
+                  onChange={(e) => setEntries((prev) => ({ ...prev, reflection: e.target.value }))}
+                  data-testid="textarea-reflection"
+                />
+              </div>
+            )}
+          </Card>
+        )}
 
         <Card className="p-4 md:p-6 mb-6 bg-gradient-to-br from-secondary/5 to-primary/5 border-0">
           <div className="flex flex-col md:flex-row md:items-center gap-4">

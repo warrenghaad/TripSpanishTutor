@@ -436,7 +436,7 @@ Respond in JSON:
 export type TrailSummary = { summary: string; bullets: string[] };
 export async function summarizeTrail(
   trailName: string,
-  nodes: { kind: string; label: string; payload: any }[],
+  nodes: { kind: string; label: string; payload: unknown }[],
   locale?: string,
 ): Promise<TrailSummary> {
   const localeSegment = getLocalePromptSegment(locale);
@@ -512,6 +512,240 @@ Respond in JSON:
   } catch (error) {
     console.error("Error generating doors:", error);
     throw new Error("Failed to suggest doors");
+  }
+}
+
+export type RichTranslation = {
+  translatedText: string;
+  literalText?: string;
+  grammarNotes: { term: string; note: string }[];
+  detectedVerbs: string[];
+  detectedAdjectives: string[];
+  detectedAdverbs: string[];
+  suggestedTransforms: { id: string; label: string }[];
+  /** Resolved language of the user's input, especially relevant for auto-detect. */
+  resolvedSourceLanguage: "en" | "es";
+  /** Resolved target language. */
+  resolvedTargetLanguage: "en" | "es";
+};
+
+export async function translateRich(
+  text: string,
+  direction: "en-es" | "es-en" | "auto",
+  locale?: string,
+): Promise<RichTranslation> {
+  const localeSegment = getLocalePromptSegment(locale);
+  const dirInstr =
+    direction === "en-es"
+      ? "The user wrote English. Translate naturally to Spanish."
+      : direction === "es-en"
+      ? "The user wrote Spanish. Translate naturally to English."
+      : "Auto-detect the language. If Spanish, translate to English. If English, translate to Spanish. If mixed, translate the whole thing into the target language (Spanish if mostly English, English if mostly Spanish).";
+
+  const prompt = `You are a Spanish/English translator who also acts as a quick grammar coach.
+${localeSegment}
+
+${dirInstr}
+
+User text:
+"""
+${text}
+"""
+
+Return strict JSON:
+{
+  "translatedText": "natural translation",
+  "literalText": "literal/word-for-word version (only include if meaningfully different from natural; otherwise empty string)",
+  "grammarNotes": [{ "term": "the Spanish word or pattern", "note": "1 short sentence on what it does grammatically" }],
+  "detectedVerbs": ["spanish infinitive of every verb in the SPANISH side"],
+  "detectedAdjectives": ["adjectives in the SPANISH side, lemma form"],
+  "detectedAdverbs": ["adverbs in the SPANISH side"],
+  "suggestedTransforms": [
+    { "id": "past", "label": "Make it past tense" },
+    { "id": "future", "label": "Make it future tense" },
+    { "id": "casual", "label": "Make it more casual" },
+    { "id": "poetic", "label": "Make it more poetic" }
+  ],
+  "resolvedSourceLanguage": "en or es — the language of the user's input you actually translated FROM",
+  "resolvedTargetLanguage": "en or es — the language you translated INTO"
+}`;
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a precise translator and grammar coach. Always respond with valid JSON only." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.4,
+    });
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("No response");
+    const parsed = JSON.parse(content);
+    // Resolve direction: trust the model's self-report when given, otherwise
+    // derive from the user's chosen direction so an EN→ES card never gets
+    // labelled as ES→EN by accident.
+    const normalizeLang = (v: unknown): "en" | "es" | null => {
+      const s = typeof v === "string" ? v.trim().toLowerCase() : "";
+      if (s === "en" || s.startsWith("eng")) return "en";
+      if (s === "es" || s.startsWith("spa") || s === "español") return "es";
+      return null;
+    };
+    const fallbackSrc: "en" | "es" =
+      direction === "es-en" ? "es" : direction === "en-es" ? "en" : "en";
+    const fallbackTgt: "en" | "es" =
+      direction === "es-en" ? "en" : direction === "en-es" ? "es" : "es";
+    const resolvedSourceLanguage =
+      normalizeLang(parsed.resolvedSourceLanguage) ?? fallbackSrc;
+    let resolvedTargetLanguage =
+      normalizeLang(parsed.resolvedTargetLanguage) ?? fallbackTgt;
+    // The two must differ; if the model returned the same on both, flip target.
+    if (resolvedTargetLanguage === resolvedSourceLanguage) {
+      resolvedTargetLanguage = resolvedSourceLanguage === "en" ? "es" : "en";
+    }
+    return {
+      translatedText: parsed.translatedText || "",
+      literalText: parsed.literalText || undefined,
+      grammarNotes: Array.isArray(parsed.grammarNotes) ? parsed.grammarNotes : [],
+      detectedVerbs: Array.isArray(parsed.detectedVerbs) ? parsed.detectedVerbs : [],
+      detectedAdjectives: Array.isArray(parsed.detectedAdjectives) ? parsed.detectedAdjectives : [],
+      detectedAdverbs: Array.isArray(parsed.detectedAdverbs) ? parsed.detectedAdverbs : [],
+      suggestedTransforms: Array.isArray(parsed.suggestedTransforms) && parsed.suggestedTransforms.length
+        ? parsed.suggestedTransforms
+        : [
+            { id: "past", label: "Make it past tense" },
+            { id: "future", label: "Make it future tense" },
+            { id: "casual", label: "Make it more casual" },
+            { id: "poetic", label: "Make it more poetic" },
+          ],
+      resolvedSourceLanguage,
+      resolvedTargetLanguage,
+    };
+  } catch (e) {
+    console.error("translateRich failed:", e);
+    throw new Error("Rich translation failed");
+  }
+}
+
+export type SentenceTransformResult = {
+  transformedText: string;
+  translatedText: string;
+  note: string;
+};
+
+export async function transformSentence(
+  card: { sourceText: string; translatedText: string; sourceLanguage?: string | null; targetLanguage: string },
+  transform: string,
+  locale?: string,
+): Promise<SentenceTransformResult> {
+  const localeSegment = getLocalePromptSegment(locale);
+  // Identify which side of the card actually holds the Spanish text. For
+  // EN→ES cards the Spanish is `translatedText`; for ES→EN cards it is
+  // `sourceText`. Operating on the wrong side would tense-shift English.
+  const spanishIsSource = card.sourceLanguage === "es" || card.targetLanguage === "en";
+  const spanishText = spanishIsSource ? card.sourceText : card.translatedText;
+  const englishText = spanishIsSource ? card.translatedText : card.sourceText;
+  const layerInstructions: Record<string, string> = {
+    past: "Rewrite the Spanish sentence in the past tense (pretérito or imperfecto, choose what's natural).",
+    future: "Rewrite the Spanish sentence in the future tense (use ir + a + infinitive AND simple future, pick the more natural one).",
+    casual: "Rewrite the Spanish sentence in a more casual, conversational register, using locale-appropriate informalisms.",
+    poetic: "Rewrite the Spanish sentence in a more poetic, evocative register.",
+    subject: "Expand by making the subject richer and more specific.",
+    verb: "Expand by adding a more vivid or precise verb (or stacking verbs).",
+    object: "Expand by adding or enriching the object.",
+    adjective: "Expand by adding one descriptive adjective that fits naturally.",
+    adverb: "Expand by adding one adverb that adds nuance.",
+    place: "Expand by adding a place phrase (en…, a…, hacia…).",
+    time: "Expand by adding a time phrase (cuando…, ayer, mañana, mientras…).",
+    reason: "Expand by adding a reason clause (porque…, ya que…, para…).",
+    reflection: "Add a short reflective second clause that comments on the meaning.",
+  };
+  const instr = layerInstructions[transform] || `Apply this transformation: ${transform}`;
+  const prompt = `Transform this Spanish sentence.
+${localeSegment}
+
+English meaning: "${englishText}"
+Spanish: "${spanishText}"
+
+Task: ${instr}
+
+Return JSON:
+{
+  "transformedText": "the new Spanish sentence",
+  "translatedText": "natural English translation of it",
+  "note": "1 sentence explaining what changed grammatically"
+}`;
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You transform Spanish sentences for a learner. JSON only." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.6,
+    });
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("no response");
+    const parsed = JSON.parse(content);
+    return {
+      transformedText: parsed.transformedText || "",
+      translatedText: parsed.translatedText || "",
+      note: parsed.note || "",
+    };
+  } catch (e) {
+    console.error("transformSentence failed:", e);
+    throw new Error("Sentence transform failed");
+  }
+}
+
+export type SeededCardForPrompt = {
+  sourceText: string;
+  translatedText: string;
+  literalText?: string | null;
+  grammarNotes?: { term: string; note: string }[] | null;
+};
+
+export function buildSeededSystemPrompt(
+  card: SeededCardForPrompt,
+  locale?: string,
+): string {
+  const localeSegment = getLocalePromptSegment(locale);
+  const notes = Array.isArray(card.grammarNotes)
+    ? card.grammarNotes.map((g) => `- ${g.term}: ${g.note}`).join("\n")
+    : "";
+  return `You are Vallarta Voz, a warm Spanish learning companion.
+${localeSegment}
+
+The user is studying this specific sentence right now:
+- Original: "${card.sourceText}"
+- Translation: "${card.translatedText}"
+${card.literalText ? `- Literal: "${card.literalText}"` : ""}
+${notes ? `Grammar notes already shown:\n${notes}` : ""}
+
+Your first response MUST reference this sentence directly (don't start from zero). Help the user explore it: explain a verb, suggest a transformation, ask if they want to try a variation, or invite a related sentence. Keep it short, warm, encouraging, and practical.`;
+}
+
+export async function seededChatReply(
+  card: SeededCardForPrompt,
+  messages: { role: string; content: string }[],
+  locale?: string,
+): Promise<string> {
+  const system = buildSeededSystemPrompt(card, locale);
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: system },
+        ...messages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+      ],
+      temperature: 0.8,
+      max_tokens: 400,
+    });
+    return completion.choices[0].message.content || "Lo siento, didn't catch that — try again?";
+  } catch (e) {
+    console.error("seededChatReply failed:", e);
+    throw new Error("Seeded chat failed");
   }
 }
 

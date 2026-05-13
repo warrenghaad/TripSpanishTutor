@@ -18,11 +18,27 @@ export const db = drizzle(sql, { schema });
 export async function safeSelect<T>(p: Promise<T[]>): Promise<T[]> {
   try {
     return await p;
-  } catch (e: any) {
-    const msg = e?.message || "";
-    if (msg.includes("Cannot read properties of null") && msg.includes("map")) {
-      return [];
-    }
+  } catch (e) {
+    if (isEmptyResultDriverBug(e)) return [];
     throw e;
   }
+}
+
+// Same shim, but for raw `db.execute(sql\`...\`)` calls that we use to work
+// around drizzle-orm + neon-http arrays/.returning bugs on a few tables.
+export async function safeExecuteRows<T = Record<string, unknown>>(
+  p: Promise<{ rows?: T[] } | unknown>,
+): Promise<T[]> {
+  try {
+    const r = (await p) as { rows?: T[] } | undefined;
+    return r?.rows ?? [];
+  } catch (e) {
+    if (isEmptyResultDriverBug(e)) return [];
+    throw e;
+  }
+}
+
+function isEmptyResultDriverBug(e: unknown): boolean {
+  const msg = e instanceof Error ? e.message : String(e ?? "");
+  return msg.includes("Cannot read properties of null") && msg.includes("map");
 }

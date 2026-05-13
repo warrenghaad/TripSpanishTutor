@@ -12,12 +12,19 @@ import Situations from "@/pages/situations";
 import Journal from "@/pages/journal";
 import TripPackPage from "@/pages/trip-pack";
 import TrailsPage from "@/pages/trails";
+import TranslatePage from "@/pages/translate";
+import ChatPage from "@/pages/chat";
+import GrowPage from "@/pages/grow";
 import TranslatorPanel from "./components/translator-panel";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      <Route path="/" component={TranslatePage} />
+      <Route path="/home" component={Home} />
+      <Route path="/chat/:id" component={ChatPage} />
+      <Route path="/chat" component={ChatPage} />
+      <Route path="/grow/:id" component={GrowPage} />
       <Route path="/dictionary" component={Dictionary} />
       <Route path="/learn" component={Learn} />
       <Route path="/situations" component={Situations} />

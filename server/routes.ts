@@ -4,7 +4,9 @@ import { storage } from "./storage";
 import {
   analyzeSpanishText, chatWithAssistant, translateText, lookupWord, extractVocabulary,
   buildTripPack, summarizeTrail, nearbyDoors,
+  translateRich, transformSentence, seededChatReply,
 } from "./ai-service";
+import type { ChatConversation } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -172,12 +174,26 @@ export async function registerRoutes(
     try {
       const { spanish, english, partOfSpeech, conjugations, context, source } = req.body;
       if (!spanish || !english || !partOfSpeech) return res.status(400).json({ error: "Missing required fields" });
+      // Dedupe by case-insensitive Spanish lemma — return the existing row if present.
+      const existing = await storage.searchDictionaryWords(spanish);
+      const match = existing.find(w => w.spanish.toLowerCase().trim() === spanish.toLowerCase().trim());
+      if (match) {
+        return res.json({
+          ...match,
+          conjugations: match.conjugations ? JSON.parse(match.conjugations) : null,
+          deduped: true,
+        });
+      }
       const word = await storage.addDictionaryWord({
         spanish, english, partOfSpeech,
         conjugations: conjugations ? JSON.stringify(conjugations) : null,
         context: context || null, source: source || null,
       });
-      res.json({ ...word, conjugations: word.conjugations ? JSON.parse(word.conjugations) : null });
+      res.json({
+        ...word,
+        conjugations: word.conjugations ? JSON.parse(word.conjugations) : null,
+        deduped: false,
+      });
     } catch (error) {
       console.error("Error adding word:", error);
       res.status(500).json({ error: "Failed to add word" });
@@ -334,6 +350,191 @@ export async function registerRoutes(
     try {
       const list = await storage.listPackManifests();
       res.json(list);
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  // -------- Translation Cards (Translate surface) --------
+  app.post("/api/translate/rich", async (req, res) => {
+    try {
+      const { text, direction, locale } = req.body;
+      if (!text || !direction) return res.status(400).json({ error: "Missing text or direction" });
+      const result = await translateRich(text, direction, locale);
+      res.json(result);
+    } catch (e) {
+      console.error(e); res.status(500).json({ error: "Rich translation failed" });
+    }
+  });
+
+  app.post("/api/translate/transform", async (req, res) => {
+    try {
+      const { cardId, transform, locale } = req.body;
+      if (!cardId || !transform) return res.status(400).json({ error: "Missing cardId or transform" });
+      const card = await storage.getTranslationCard(parseInt(cardId));
+      if (!card) return res.status(404).json({ error: "Card not found" });
+      const result = await transformSentence(
+        {
+          sourceText: card.sourceText,
+          translatedText: card.translatedText,
+          sourceLanguage: card.sourceLanguage,
+          targetLanguage: card.targetLanguage,
+        },
+        transform,
+        locale || card.locale || undefined,
+      );
+      res.json(result);
+    } catch (e) {
+      console.error(e); res.status(500).json({ error: "Transform failed" });
+    }
+  });
+
+  app.get("/api/translation-cards", async (_req, res) => {
+    try {
+      const cards = await storage.listTranslationCards();
+      res.json(cards);
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.post("/api/translation-cards", async (req, res) => {
+    try {
+      const card = await storage.createTranslationCard(req.body);
+      res.json(card);
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed to create card" }); }
+  });
+
+  app.get("/api/translation-cards/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const card = await storage.getTranslationCard(id);
+      if (!card) return res.status(404).json({ error: "Not found" });
+      res.json(card);
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.patch("/api/translation-cards/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const card = await storage.updateTranslationCard(id, req.body);
+      if (!card) return res.status(404).json({ error: "Not found" });
+      res.json(card);
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.delete("/api/translation-cards/:id", async (req, res) => {
+    try {
+      await storage.deleteTranslationCard(parseInt(req.params.id));
+      res.json({ success: true });
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  // -------- Chat conversations & seeded chat --------
+  app.post("/api/chat/seeded", async (req, res) => {
+    try {
+      const { cardId, conversationId, messages, locale } = req.body;
+      if (!cardId) return res.status(400).json({ error: "Missing cardId" });
+      const card = await storage.getTranslationCard(parseInt(cardId));
+      if (!card) return res.status(404).json({ error: "Card not found" });
+
+      let conv: ChatConversation | undefined;
+      if (conversationId) {
+        conv = await storage.getChatConversation(parseInt(conversationId));
+      }
+      if (!conv) {
+        conv = await storage.createChatConversation({
+          seedTranslationCardId: card.id,
+          locale: locale || card.locale || null,
+          title: `Chat about: ${card.sourceText.slice(0, 40)}`,
+        });
+        await storage.updateTranslationCard(card.id, { conversationId: conv.id });
+      }
+
+      const inMessages: { role: string; content: string }[] = Array.isArray(messages) ? messages : [];
+      // Persist any new user messages
+      const existing = await storage.getChatMessages(conv.id);
+      for (let i = existing.length; i < inMessages.length; i++) {
+        const m = inMessages[i];
+        if (m && (m.role === "user" || m.role === "assistant")) {
+          await storage.addChatMessage({ conversationId: conv.id, role: m.role, content: m.content });
+        }
+      }
+
+      const reply = await seededChatReply(
+        {
+          sourceText: card.sourceText,
+          translatedText: card.translatedText,
+          literalText: card.literalText,
+          grammarNotes: Array.isArray(card.grammarNotes)
+            ? (card.grammarNotes as { term: string; note: string }[])
+            : null,
+        },
+        inMessages,
+        locale || card.locale || undefined,
+      );
+      await storage.addChatMessage({ conversationId: conv.id, role: "assistant", content: reply });
+      res.json({ reply, conversationId: conv.id });
+    } catch (e) {
+      console.error(e); res.status(500).json({ error: "Seeded chat failed" });
+    }
+  });
+
+  app.get("/api/chat/conversations", async (_req, res) => {
+    try {
+      const conversations = await storage.listChatConversations();
+      res.json(conversations);
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.get("/api/chat/conversations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const conv = await storage.getChatConversation(id);
+      if (!conv) return res.status(404).json({ error: "Not found" });
+      const messages = await storage.getChatMessages(id);
+      res.json({ conversation: conv, messages });
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.delete("/api/chat/conversations/:id", async (req, res) => {
+    try {
+      await storage.deleteChatConversation(parseInt(req.params.id));
+      res.json({ success: true });
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.get("/api/chat/conversations/:id/messages", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const messages = await storage.getChatMessages(id);
+      res.json(messages);
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.post("/api/chat/conversations/:id/messages", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const { role, content } = req.body || {};
+      if (!role || !content) return res.status(400).json({ error: "Missing role or content" });
+      if (role !== "user" && role !== "assistant" && role !== "system") {
+        return res.status(400).json({ error: "Invalid role" });
+      }
+      const msg = await storage.addChatMessage({ conversationId, role, content });
+      res.json(msg);
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.patch("/api/chat/messages/:id", async (req, res) => {
+    try {
+      const { content } = req.body || {};
+      if (typeof content !== "string") return res.status(400).json({ error: "Missing content" });
+      const msg = await storage.updateChatMessage(parseInt(req.params.id), content);
+      if (!msg) return res.status(404).json({ error: "Not found" });
+      res.json(msg);
+    } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.delete("/api/chat/messages/:id", async (req, res) => {
+    try {
+      await storage.deleteChatMessage(parseInt(req.params.id));
+      res.json({ success: true });
     } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
   });
 
