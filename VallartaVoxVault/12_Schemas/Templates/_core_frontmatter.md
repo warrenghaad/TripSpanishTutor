@@ -56,9 +56,15 @@ app_relevance:             # high | medium | low | none
 |---|---|---|
 | `ChatImport.md` | `chat_import` | `03_Chats/` |
 | `Trail.md` | `trail` | `04_Trails/` |
-| `ProjectPack.md` | `project_pack` | `08_ProjectPacks/` |
-| `DailyAnalysis.md` | `daily_analysis` | `03_DailyDebriefs/` *(or `02_Daily/` if structure is consolidated)* |
+| `ProjectPack.md` | `project_pack` | `08_ProjectPacks/<slug>/` |
+| `DailyAnalysis.md` | `daily_analysis` *(alias `daily_debrief`)* | `03_DailyDebriefs/` |
 | `WordLensEntry.md` | `word_lens_entry` | `05_WordLens/` |
 | `AtelierResource.md` | `atelier_resource` | `06_Atelier/<creator>/` |
 
+Pre-day briefings use a different template (`daily_prep` type → `02_DailyPrep/`); see the existing `02_DailyPrep/_template.md`.
+
 Start with these six. Resist the urge to build more until the workflow demands them.
+
+## Canonical contract
+
+The single source of truth for routing, schemas, and constraints is `[[LLM Output Contract]]` in `01_Constitution/`. Paste that document at the top of any LLM prompt whose output should land in this vault.

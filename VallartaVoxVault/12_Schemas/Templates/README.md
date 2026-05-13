@@ -4,7 +4,14 @@ Schemas and note templates that govern the rest of the vault.
 
 ## Files
 
-- **[[card.schema.json]]** — JSON Schema for content cards. Every card in `08_ProjectPacks/**/*.json` must validate against this. Enforced by `scripts/validate-json.mjs`.
+- **[[_core_frontmatter]]** — universal frontmatter every note opens with, and the type → folder table.
+- **[[ChatImport]]**, **[[Trail]]**, **[[ProjectPack]]**, **[[DailyAnalysis]]**, **[[WordLensEntry]]**, **[[AtelierResource]]** — the six core templates.
+- **[[card.schema.json]]** — JSON Schema for card packs (Shape A). Enforced by `scripts/validate-json.mjs`.
+- **[[scene_pack.schema.json]]** — JSON Schema for scene packs (Shape B).
+
+## Canonical contract
+
+For LLM-generated output that must drop straight into this vault, see **[[LLM Output Contract]]** in `01_Constitution/`. That document is the single source of truth for vault layout, frontmatter, schemas, and constraints.
 
 ## Note frontmatter conventions
 
