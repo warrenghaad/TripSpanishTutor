@@ -9,56 +9,19 @@ import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { listLocalCards, saveLocalCard, type LocalTranslationCard } from "@/lib/translation-store";
 
-type GoldenSections = {
-  meaning?: string;
-  literal?: string;
-  natural?: string;
-  grammarSkeleton?: string;
-  practiceMove?: string;
-  saveableCard?: string;
-};
+import type { GoldenSections } from "@shared/learn";
 
-type SaveableCard = { front?: string; back?: string; note?: string };
-
-type AirportEntry = {
-  slug: string;
-  title: string;
-  tags: string[];
-  sections: GoldenSections;
-  saveable?: SaveableCard;
-  sourcePath: string;
-};
-
-type AtelierEntry = {
-  slug: string;
-  author: string;
-  work?: string;
-  title: string;
-  excerpt?: string;
-  sections: GoldenSections;
-  saveable?: SaveableCard;
-  sourcePath: string;
-};
-
-type BridgeEntry = {
-  slug: string;
-  pairId: string;
-  travel: GoldenSections;
-  literary: GoldenSections;
-  travelSaveable?: SaveableCard;
-  literarySaveable?: SaveableCard;
-  sourcePath: string;
-};
-
-type EmptyHint = { template: string; folder: string; message: string };
-
-type LearnModes = {
-  generatedAt: string;
-  airport: { entries: AirportEntry[]; empty: EmptyHint };
-  borges: { authors: { name: string; entries: AtelierEntry[] }[]; empty: EmptyHint };
-  bridge: { entries: BridgeEntry[]; empty: EmptyHint };
-  errors: { file: string; message: string; line?: number }[];
-};
+// Shape of `GET /api/learn/modes` lives in `shared/learn.ts` so the client
+// and server can't drift on the vault contract. Aliases below preserve the
+// terse local names used throughout this file.
+import type {
+  LearnModes,
+  AirportEntry,
+  AtelierEntry,
+  BridgeEntry,
+  SaveableCard,
+  LearnEmptyHint as EmptyHint,
+} from "@shared/learn";
 
 type Mode = "airport" | "borges" | "bridge";
 

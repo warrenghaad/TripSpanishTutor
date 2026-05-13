@@ -5,29 +5,20 @@ import {
   PACKS_DIR, RESEARCH_DIR, VAULT_ROOT, parseFile,
 } from "./loader";
 import type { AirportEntry, AtelierEntry, BridgeEntry, ParsedFile } from "./types";
+import type { LearnModes, LearnAuthorGroup, LearnEmptyHint } from "@shared/learn";
 
 const ATELIER_DIR = path.join(VAULT_ROOT, "06_Atelier");
 
 const LEARN_WATCH_DIRS = [RESEARCH_DIR, PACKS_DIR, ATELIER_DIR];
 
-export type LearnAuthorGroup = {
-  name: string;
-  entries: AtelierEntry[];
-};
-
-export type LearnEmptyHint = {
-  template: string;
-  folder: string;
-  message: string;
-};
-
-export type LearnModes = {
-  generatedAt: string;
-  airport: { entries: AirportEntry[]; empty: LearnEmptyHint };
-  borges: { authors: LearnAuthorGroup[]; empty: LearnEmptyHint };
-  bridge: { entries: BridgeEntry[]; empty: LearnEmptyHint };
-  errors: { file: string; message: string; line?: number }[];
-};
+// LearnModes and friends are declared in `shared/learn.ts` so the client
+// and server agree on the shape served by `GET /api/learn/modes`. Re-export
+// here for legacy imports that still pull from this module.
+export type {
+  LearnModes,
+  LearnAuthorGroup,
+  LearnEmptyHint,
+} from "@shared/learn";
 
 const TODAY_PLACEHOLDER = "<today>";
 
