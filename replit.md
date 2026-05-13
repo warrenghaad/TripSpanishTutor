@@ -73,6 +73,7 @@ Preferred communication style: Simple, everyday language.
 - `/client` - React frontend application
 - `/shared` - Shared TypeScript types and schemas (database schema, validation)
 - `/db` - Database client configuration
+- `/VallartaVoxVault` - **Canonical content tree.** Mirrors the user's offline Obsidian vault one-to-one (twelve numbered folders: `00_Inbox`, `01_Constitution`, `02_DailyPrep`, `03_DailyDebriefs`, `04_Trails`, `05_WordLens`, `06_Atelier/<Author>`, `07_CreativeWriting`, `08_ProjectPacks`, `09_Grammar`, `10_Flashcards`, `11_Research`, `12_Schemas/Templates`). Perplexity drops research into `11_Research/YYYY-MM-DD/`. The app's day-pack builder reads from there and writes to `08_ProjectPacks/`. Content rules live in `01_Constitution/SPEC.md`; folder map in `01_Constitution/VAULT.md`; learner profile in `01_Constitution/learner-profile.md`. Three modes drive `/learn`: **airport**, **atelier** (Borges/Neruda/Cortázar/Paz/Rulfo + murals/music/film), **bridge**.
 
 **Design Rationale**: Express provides a minimal, flexible foundation. TypeScript across the stack ensures type safety. The custom build process optimizes for production deployment while maintaining excellent DX in development.
 
