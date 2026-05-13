@@ -21,8 +21,10 @@
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { randomBytes } from "node:crypto";
 
-const REPO_ROOT = path.resolve(new URL("..", import.meta.url).pathname);
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const WORDLENS_DIR = path.join(REPO_ROOT, "VallartaVoxVault", "05_WordLens");
 
 const args = process.argv.slice(2);
@@ -101,21 +103,29 @@ function isoDate(d = new Date()) {
 }
 
 function renderNote(row) {
-  const lemma = row.lemma?.trim() || slug(row.spanish);
-  if (!lemma) throw new Error(`empty lemma for row: ${JSON.stringify(row)}`);
+  const rawLemma = (row.lemma?.trim() || row.spanish).trim();
+  const fileSlug = slug(rawLemma);
+  if (!fileSlug) {
+    throw new Error(`could not derive a safe filename slug from lemma "${rawLemma}"`);
+  }
+  // Defense in depth: ensure no directory traversal slipped through slug().
+  if (fileSlug.includes("/") || fileSlug.includes("\\") || fileSlug.startsWith(".")) {
+    throw new Error(`refusing unsafe filename slug "${fileSlug}" for lemma "${rawLemma}"`);
+  }
   const today = isoDate();
   const ts = timestamp();
+  const id = `vv-word-${ts}-${randomBytes(2).toString("hex")}`;
   const tags = ["vallarta-vox", "wordlens", "flashcards"];
   const fm = [
     "---",
-    `id: vv-word-${ts}`,
+    `id: ${id}`,
     "type: word_lens_entry",
     "status: active",
     `created: ${today}`,
     `updated: ${today}`,
     `spanish: ${quote(row.spanish)}`,
     `english: ${quote(row.english)}`,
-    `lemma: ${quote(lemma)}`,
+    `lemma: ${quote(rawLemma)}`,
     `part_of_speech: ${quote(row.part_of_speech || "")}`,
     `register: ${quote(row.register || "")}`,
     `region: ${quote(row.region || "")}`,
@@ -175,7 +185,7 @@ function renderNote(row) {
     "",
   ].join("\n");
 
-  return { lemma, content: fm + body };
+  return { lemma: fileSlug, content: fm + body };
 }
 
 function quote(v) {

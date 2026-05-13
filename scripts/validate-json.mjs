@@ -4,8 +4,9 @@
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const REPO_ROOT = path.resolve(new URL("..", import.meta.url).pathname);
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const VAULT_DIR = path.join(REPO_ROOT, "VallartaVoxVault");
 const SCHEMA_PATH = path.join(VAULT_DIR, "12_Schemas/Templates/card.schema.json");
 
