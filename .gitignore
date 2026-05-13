@@ -4,3 +4,18 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Obsidian per-machine config — lives inside the vault root on each laptop.
+# We track the vault content (the twelve numbered folders) but NOT each
+# machine's themes, hotkeys, plugins, workspace layout. See
+# docs/obsidian-sync.md.
+.obsidian/
+VallartaVoxVault/.obsidian/
+**/.obsidian/
+
+# Obsidian Git plugin's own working files.
+.obsidian-git-data/
+
+# Obsidian trash (when "Move to .trash folder" deletion mode is used).
+.trash/
+VallartaVoxVault/.trash/

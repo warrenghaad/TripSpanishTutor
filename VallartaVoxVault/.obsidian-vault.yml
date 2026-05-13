@@ -1,0 +1,65 @@
+# VallartaVoxVault — machine-readable vault contract
+#
+# This file declares that the directory containing it is the root of an
+# Obsidian vault. Tools (vault-doctor.sh, future agents, the app's content
+# loader) should read this to understand the canonical layout instead of
+# hard-coding folder names elsewhere.
+#
+# See docs/obsidian-sync.md for setup and ../01_Constitution/VAULT.md for
+# folder purposes.
+
+vault_name: VallartaVoxVault
+schema_version: 1
+
+# The twelve canonical top-level folders inside the vault. Anything tracked
+# under VallartaVoxVault/ that is not under one of these folders should be
+# treated as a stray by vault-doctor.sh.
+folders:
+  - 00_Inbox
+  - 01_Constitution
+  - 02_DailyPrep
+  - 03_DailyDebriefs
+  - 04_Trails
+  - 05_WordLens
+  - 06_Atelier
+  - 07_CreativeWriting
+  - 08_ProjectPacks
+  - 09_Grammar
+  - 10_Flashcards
+  - 11_Research
+  - 12_Schemas
+
+# Subfolders allowed inside 06_Atelier/ — by author or medium.
+atelier_subfolders:
+  - Borges
+  - Neruda
+  - Cortazar
+  - Paz
+  - Rulfo
+  - Murals_PV
+  - Music
+  - Film
+
+# Subfolders allowed inside 12_Schemas/.
+schema_subfolders:
+  - Templates
+  - prompts
+
+# Frontmatter contract — see 01_Constitution/SPEC.md for full schema.
+frontmatter:
+  required_fields: [kind, date]
+  recommended_fields: [locale, mode, tags, source, status]
+  modes: [airport, atelier, bridge]
+  kinds:
+    - airport-scenelet
+    - atelier-entry
+    - bridge-note
+    - vocab-pack
+    - grammar-note
+    - day-pack
+    - daily-prep
+    - daily-debrief
+    - wordlens-entry
+    - flashcard
+  kind_aliases:
+    borges-line: atelier-entry  # legacy name; treat as atelier-entry with author=Borges

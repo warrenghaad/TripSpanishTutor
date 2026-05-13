@@ -1,0 +1,27 @@
+# Normalize line endings across machines (laptop ↔ Replit container).
+# Without this, Windows checkouts can produce CRLF diffs that cause spurious
+# Obsidian Git merge conflicts. See docs/obsidian-sync.md.
+
+* text=auto eol=lf
+
+# Treat markdown explicitly as text — Obsidian Git uses git's diff/merge
+# machinery, which works far better when files are known-text.
+*.md      text eol=lf
+*.markdown text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.txt     text eol=lf
+
+# Keep shell scripts LF only (would break under CRLF).
+*.sh      text eol=lf
+
+# Binaries — leave alone.
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.webp    binary
+*.pdf     binary
+*.mp3     binary
+*.mp4     binary
+*.zip     binary

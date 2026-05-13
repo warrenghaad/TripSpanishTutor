@@ -32,3 +32,7 @@ The vault organizes meaning around three modes (declared in each file's frontmat
 - **Perplexity** — the research forge: source-backed content, drafts, regional variants. Drops into `11_Research/`.
 - **App (Replit/GitHub)** — the runtime body: serves packs, handles dictionary/conjugation, saves trails, supports offline. Reads from the vault, writes to `04_Trails/`, `05_WordLens/`, `08_ProjectPacks/`, `09_Grammar/`, `10_Flashcards/`.
 - **You (Obsidian)** — append observations, debriefs, creative writing. Two-way synced with git.
+
+## Sync
+
+This vault is a subfolder of the GitHub repo `warrenghaad/TripSpanishTutor`. Sync runs through the **Obsidian Git** community plugin: pull every 5 minutes, auto-commit-and-push every 10. Setup and conflict-handling instructions are in [`docs/obsidian-sync.md`](../../docs/obsidian-sync.md). The machine-readable folder contract lives at [`../.obsidian-vault.yml`](../.obsidian-vault.yml). To sanity-check the vault, run `bash scripts/vault-doctor.sh` from the repo root.
