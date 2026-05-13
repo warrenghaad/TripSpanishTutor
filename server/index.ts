@@ -95,13 +95,17 @@ app.use((req, res, next) => {
       log(`serving on port ${port}`);
       // Vault → day-pack sync. In dev, watch the research dir; in prod, sync once at boot.
       try {
+        const { primeLearnCache, watchLearnVault } = await import("./vault/learn");
         if (process.env.NODE_ENV === "production") {
           const { runBootSync } = await import("./vault/watcher");
           await runBootSync();
+          await primeLearnCache();
         } else {
           const { runBootSync, startVaultWatcher } = await import("./vault/watcher");
           await runBootSync();
+          await primeLearnCache();
           startVaultWatcher();
+          watchLearnVault();
         }
       } catch (e: any) {
         log(`vault module init failed: ${e?.message || e}`, "vault");

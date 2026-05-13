@@ -1,11 +1,14 @@
 import fs from "fs/promises";
 import path from "path";
+import chokidar from "chokidar";
 import {
   PACKS_DIR, RESEARCH_DIR, VAULT_ROOT, parseFile,
 } from "./loader";
 import type { AirportEntry, AtelierEntry, BridgeEntry, ParsedFile } from "./types";
 
 const ATELIER_DIR = path.join(VAULT_ROOT, "06_Atelier");
+
+const LEARN_WATCH_DIRS = [RESEARCH_DIR, PACKS_DIR, ATELIER_DIR];
 
 export type LearnAuthorGroup = {
   name: string;
@@ -97,6 +100,47 @@ function authorFromAtelierPath(relPath: string, fmAuthor?: string): string {
   const parts = relPath.split(path.sep);
   if (parts[0] === "06_Atelier" && parts[1]) return parts[1];
   return "Unknown";
+}
+
+// --- Boot-time cache + watcher invalidation -----------------------------
+//
+// /learn is the highest-traffic surface of the app and its content lives in
+// VallartaVoxVault on disk. Re-walking 06_Atelier + 08_ProjectPacks +
+// 11_Research on every request would punish offline robustness and add
+// latency. Instead we build the LearnModes payload once at server boot
+// (via `primeLearnCache`) and re-build it whenever a watched vault file
+// changes (via `watchLearnVault`). All `getLearnModes()` callers serve the
+// cached snapshot — `loadLearnModes()` is the underlying builder, kept
+// exported for the sync path used by the watcher / boot sync.
+let cached: LearnModes | null = null;
+let inflight: Promise<LearnModes> | null = null;
+let rebuildTimer: NodeJS.Timeout | null = null;
+
+async function rebuild(): Promise<LearnModes> {
+  cached = await loadLearnModes();
+  return cached;
+}
+
+export async function getLearnModes(): Promise<LearnModes> {
+  if (cached) return cached;
+  if (!inflight) inflight = rebuild().finally(() => { inflight = null; });
+  return inflight;
+}
+
+export async function primeLearnCache(): Promise<void> {
+  await rebuild();
+}
+
+export function watchLearnVault(): void {
+  const watcher = chokidar.watch(LEARN_WATCH_DIRS, {
+    ignoreInitial: true,
+    awaitWriteFinish: { stabilityThreshold: 300, pollInterval: 100 },
+  });
+  const trigger = () => {
+    if (rebuildTimer) clearTimeout(rebuildTimer);
+    rebuildTimer = setTimeout(() => { void rebuild().catch(() => { /* swallow; keep stale cache */ }); }, 500);
+  };
+  watcher.on("add", trigger).on("change", trigger).on("unlink", trigger);
 }
 
 export async function loadLearnModes(): Promise<LearnModes> {

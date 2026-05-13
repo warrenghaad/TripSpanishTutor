@@ -409,15 +409,17 @@ export async function registerRoutes(
   //
   // GET /api/learn/modes
   //   Returns content for the /learn page grouped into the three project
-  //   modes — airport, borges (atelier authors), bridge — by reading the
-  //   VallartaVoxVault recursively. Each mode includes an `empty` hint that
-  //   tells the user exactly which template + folder to drop a file into to
-  //   populate it. Read fresh on every request — small enough to be cheap
-  //   and always in sync with the latest vault state.
+  //   modes — airport, borges (atelier authors), bridge. The grouped
+  //   payload is built once at server boot (`primeLearnCache`) and
+  //   refreshed by a chokidar watcher on 06_Atelier / 08_ProjectPacks /
+  //   11_Research, so this handler always serves a static in-memory
+  //   snapshot — no per-request disk walk. Each mode includes an `empty`
+  //   hint that tells the user exactly which template + folder to drop a
+  //   file into to populate it.
   app.get("/api/learn/modes", async (_req, res) => {
     try {
-      const { loadLearnModes } = await import("./vault/learn");
-      const modes = await loadLearnModes();
+      const { getLearnModes } = await import("./vault/learn");
+      const modes = await getLearnModes();
       res.json(modes);
     } catch (e: any) {
       console.error("learn modes error:", e);
