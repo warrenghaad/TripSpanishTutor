@@ -117,21 +117,32 @@ function leadExcerpt(body: string): string | undefined {
     : cleaned;
 }
 
-function authorFromAtelierPath(relPath: string, fmAuthor?: string): string {
-  if (fmAuthor) return fmAuthor;
-  // 06_Atelier/<Author>/...
-  const parts = relPath.split(path.sep);
-  if (parts[0] === "06_Atelier" && parts[1]) return parts[1];
-  return "Unknown";
+// Normalize an author string to its canonical literary key (case-insensitive,
+// diacritic-insensitive) so "borges", "BORGES", "Cortázar", "cortazar" all
+// land in the same author tab and pass the literary whitelist.
+function normalizeAuthor(raw: string): string | null {
+  const folded = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+  return AUTHOR_CANONICAL.get(folded) ?? null;
 }
 
-// Literary authors only — `06_Atelier/` also holds FilmMurals_PV / Music
-// subdirectories which surface under their own modes (future work), not in
-// the Borges literary-atelier card. Anything else parsed as `atelier-entry`
-// without a literary author is dropped from /learn's Borges section.
-const LITERARY_AUTHORS = new Set([
-  "Borges", "Neruda", "Cortazar", "Cortázar", "Paz", "Rulfo",
+const AUTHOR_CANONICAL = new Map<string, string>([
+  ["borges", "Borges"],
+  ["neruda", "Neruda"],
+  ["cortazar", "Cortázar"],
+  ["paz", "Paz"],
+  ["rulfo", "Rulfo"],
 ]);
+
+function authorFromAtelierPath(relPath: string, fmAuthor?: string): string | null {
+  if (fmAuthor) {
+    const n = normalizeAuthor(fmAuthor);
+    if (n) return n;
+  }
+  // 06_Atelier/<Author>/...
+  const parts = relPath.split(path.sep);
+  if (parts[0] === "06_Atelier" && parts[1]) return normalizeAuthor(parts[1]);
+  return null;
+}
 
 function parseSaveableCard(body: string): { front?: string; back?: string; note?: string } {
   const m = body.match(/^##\s+Saveable Card\s*$([\s\S]*?)(?=^##\s+|\s*$(?![\s\S]))/m);
@@ -212,7 +223,9 @@ export async function loadLearnModes(): Promise<LearnModes> {
     }
     if (kind === "atelier-entry") {
       const author = authorFromAtelierPath(p.relPath, p.frontmatter.author);
-      if (!LITERARY_AUTHORS.has(author)) continue;
+      // Skip non-literary atelier content (FilmMurals_PV / Music subdirs)
+      // — those surface under their own modes, not the Borges card.
+      if (!author) continue;
       const entry: AtelierEntry = {
         slug: p.slug,
         author,
@@ -255,18 +268,13 @@ export async function loadLearnModes(): Promise<LearnModes> {
     }
   }
 
-  // Stable author ordering: known canonical first, others alphabetical.
-  const canonical = ["Borges", "Neruda", "Cortazar", "Cortázar", "Paz", "Rulfo"];
+  // Stable author ordering — canonical literary list, in order.
+  const canonical = ["Borges", "Neruda", "Cortázar", "Paz", "Rulfo"];
   const authors: LearnAuthorGroup[] = [];
   for (const name of canonical) {
     if (atelierByAuthor.has(name)) {
       authors.push({ name, entries: atelierByAuthor.get(name)! });
-      atelierByAuthor.delete(name);
     }
-  }
-  const remaining = Array.from(atelierByAuthor.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-  for (const [name, entries] of remaining) {
-    authors.push({ name, entries });
   }
 
   return {

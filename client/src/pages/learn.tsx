@@ -114,7 +114,7 @@ function EmptyState({ hint }: { hint: EmptyHint }) {
   );
 }
 
-function SaveCardButton({ slug, savePayload, alreadySaved }: { slug: string; savePayload: { source: string; translated: string; literal?: string; tag: string }; alreadySaved: boolean }) {
+function SaveCardButton({ slug, savePayload, alreadySaved }: { slug: string; savePayload: { source: string; translated: string; literal?: string; note?: string; tag: string }; alreadySaved: boolean }) {
   const qc = useQueryClient();
   const [savedLocal, setSavedLocal] = useState(false);
   const saved = alreadySaved || savedLocal;
@@ -126,7 +126,9 @@ function SaveCardButton({ slug, savePayload, alreadySaved }: { slug: string; sav
         targetLanguage: "en",
         translatedText: savePayload.translated,
         literalText: savePayload.literal,
-        grammarNotes: [],
+        // Preserve the vault's `## Saveable Card` note so study context
+        // doesn't get dropped on the way into the practice store.
+        grammarNotes: savePayload.note ? [{ term: "note", note: savePayload.note }] : [],
         detectedVerbs: [],
         detectedAdjectives: [],
         detectedAdverbs: [],
@@ -200,12 +202,12 @@ function EntryCard({ slug, title, subtitle, tags, excerpt, sections, sourcePath,
 // Prefer the explicit `## Saveable Card` block (front/back/note) when the
 // vault file provides one — that's the spec's canonical practice card.
 // Fall back to Natural/Meaning/Literal heuristics for older files.
-function fromSaveable(s: SaveableCard | undefined, fallback: { source: string; translated: string; literal?: string; note?: string }) {
+function fromSaveable(s: SaveableCard | undefined, fallback: { source: string; translated: string; literal?: string }) {
   return {
     source: s?.front || fallback.source,
     translated: s?.back || fallback.translated,
     literal: fallback.literal,
-    note: s?.note || fallback.note,
+    note: s?.note,
   };
 }
 function airportSavePayload(e: AirportEntry) {
@@ -214,7 +216,7 @@ function airportSavePayload(e: AirportEntry) {
     translated: e.sections.meaning || e.title,
     literal: e.sections.literal,
   });
-  return { ...base, tag: "airport" };
+  return { ...base, tag: "airport" } as const;
 }
 function atelierSavePayload(e: AtelierEntry) {
   const base = fromSaveable(e.saveable, {
@@ -222,7 +224,7 @@ function atelierSavePayload(e: AtelierEntry) {
     translated: e.sections.meaning || e.title,
     literal: e.sections.literal,
   });
-  return { ...base, tag: `atelier-${e.author.toLowerCase()}` };
+  return { ...base, tag: `atelier-${e.author.toLowerCase()}` } as const;
 }
 function bridgeSavePayload(e: BridgeEntry, side: "travel" | "literary") {
   const s = side === "travel" ? e.travel : e.literary;
@@ -232,7 +234,7 @@ function bridgeSavePayload(e: BridgeEntry, side: "travel" | "literary") {
     translated: s.meaning || e.pairId,
     literal: s.literal,
   });
-  return { ...base, tag: `bridge-${side}` };
+  return { ...base, tag: `bridge-${side}` } as const;
 }
 
 export default function Learn() {
