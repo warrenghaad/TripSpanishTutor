@@ -50,7 +50,7 @@ export type LearnAuthorGroup = { name: string; entries: AtelierEntry[] };
 export type LearnModes = {
   generatedAt: string;
   airport: { entries: AirportEntry[]; empty: LearnEmptyHint };
-  borges: { authors: LearnAuthorGroup[]; empty: LearnEmptyHint };
+  atelier: { authors: LearnAuthorGroup[]; empty: LearnEmptyHint };
   bridge: { entries: BridgeEntry[]; empty: LearnEmptyHint };
   errors: { file: string; message: string; line?: number; column?: number }[];
 };

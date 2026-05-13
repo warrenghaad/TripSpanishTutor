@@ -23,7 +23,7 @@ import type {
   LearnEmptyHint as EmptyHint,
 } from "@shared/learn";
 
-type Mode = "airport" | "borges" | "bridge";
+type Mode = "airport" | "atelier" | "bridge";
 
 const MODE_META: Record<Mode, { label: string; tagline: string; icon: typeof Plane; accent: string }> = {
   airport: {
@@ -32,8 +32,8 @@ const MODE_META: Record<Mode, { label: string; tagline: string; icon: typeof Pla
     icon: Plane,
     accent: "from-sky-500/10 to-sky-500/0 border-sky-500/30 text-sky-700",
   },
-  borges: {
-    label: "Borges",
+  atelier: {
+    label: "Atelier",
     tagline: "Literary high-density grammar — Borges, Neruda, Cortázar, Paz, Rulfo.",
     icon: BookOpen,
     accent: "from-amber-500/10 to-amber-500/0 border-amber-500/30 text-amber-800",
@@ -217,7 +217,7 @@ export default function Learn() {
 
   const counts = useMemo(() => ({
     airport: data?.airport.entries.length ?? 0,
-    borges: data?.borges.authors.reduce((a, g) => a + g.entries.length, 0) ?? 0,
+    atelier: data?.atelier.authors.reduce((a, g) => a + g.entries.length, 0) ?? 0,
     bridge: data?.bridge.entries.length ?? 0,
   }), [data]);
 
@@ -230,8 +230,8 @@ export default function Learn() {
   const [authorTab, setAuthorTab] = useState<string | null>(null);
   const activeAuthor = useMemo(() => {
     if (!data) return null;
-    if (authorTab && data.borges.authors.find((a) => a.name === authorTab)) return authorTab;
-    return data.borges.authors[0]?.name ?? null;
+    if (authorTab && data.atelier.authors.find((a) => a.name === authorTab)) return authorTab;
+    return data.atelier.authors[0]?.name ?? null;
   }, [authorTab, data]);
 
   return (
@@ -244,7 +244,7 @@ export default function Learn() {
 
         {/* Three mode cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="mode-cards">
-          {(["airport", "borges", "bridge"] as Mode[]).map((m) => {
+          {(["airport", "atelier", "bridge"] as Mode[]).map((m) => {
             const meta = MODE_META[m];
             const Icon = meta.icon;
             const isActive = mode === m;
@@ -322,14 +322,14 @@ export default function Learn() {
                 </div>
               )}
 
-              {mode === "borges" && (
+              {mode === "atelier" && (
                 <div className="space-y-4">
-                  {data.borges.authors.length === 0 ? (
-                    <EmptyState hint={data.borges.empty} />
+                  {data.atelier.authors.length === 0 ? (
+                    <EmptyState hint={data.atelier.empty} />
                   ) : (
                     <Tabs value={activeAuthor || undefined} onValueChange={setAuthorTab}>
                       <TabsList className="bg-background border-b border-border w-full justify-start rounded-none h-auto p-0 gap-4 overflow-x-auto">
-                        {data.borges.authors.map((g) => (
+                        {data.atelier.authors.map((g) => (
                           <TabsTrigger
                             key={g.name}
                             value={g.name}
@@ -343,10 +343,10 @@ export default function Learn() {
                           </TabsTrigger>
                         ))}
                       </TabsList>
-                      {data.borges.authors.map((g) => (
+                      {data.atelier.authors.map((g) => (
                         <TabsContent key={g.name} value={g.name} className="space-y-4 mt-4">
                           {g.entries.length === 0 ? (
-                            <EmptyState hint={data.borges.empty} />
+                            <EmptyState hint={data.atelier.empty} />
                           ) : (
                             g.entries.map((e) => (
                               <EntryCard

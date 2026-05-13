@@ -409,7 +409,7 @@ export async function registerRoutes(
   //
   // GET /api/learn/modes
   //   Returns content for the /learn page grouped into the three project
-  //   modes — airport, borges (atelier authors), bridge. The grouped
+  //   modes — airport, atelier (literary authors), bridge. The grouped
   //   payload is built once at server boot (`primeLearnCache`) and
   //   refreshed by a chokidar watcher on 06_Atelier / 08_ProjectPacks /
   //   11_Research, so this handler always serves a static in-memory

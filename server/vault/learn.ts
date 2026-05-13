@@ -22,16 +22,16 @@ export type {
 
 const TODAY_PLACEHOLDER = "<today>";
 
-const EMPTY_HINTS: Record<"airport" | "borges" | "bridge", LearnEmptyHint> = {
+const EMPTY_HINTS: Record<"airport" | "atelier" | "bridge", LearnEmptyHint> = {
   airport: {
     template: "airport-scenelet",
     folder: `11_Research/${TODAY_PLACEHOLDER}/`,
     message: "Drop an `airport-scenelet` from `12_Schemas/Templates/` into `11_Research/<today>/` to fill this section.",
   },
-  borges: {
+  atelier: {
     template: "atelier-entry",
     folder: "06_Atelier/<Author>/",
-    message: "Drop an `atelier-entry` (with `author: Borges`) into `06_Atelier/Borges/` or `11_Research/<today>/` to fill this section.",
+    message: "Drop an `atelier-entry` into `06_Atelier/<Author>/` (Borges, Neruda, Cortázar, Paz, Rulfo) or `11_Research/<today>/` to fill this section.",
   },
   bridge: {
     template: "bridge-note",
@@ -221,7 +221,7 @@ export async function loadLearnModes(): Promise<LearnModes> {
     if (kind === "atelier-entry") {
       const author = authorFromAtelierPath(p.relPath, p.frontmatter.author);
       // Skip non-literary atelier content (FilmMurals_PV / Music subdirs)
-      // — those surface under their own modes, not the Borges card.
+      // — those surface under their own modes, not the Atelier card.
       if (!author) continue;
       const entry: AtelierEntry = {
         slug: p.slug,
@@ -277,7 +277,7 @@ export async function loadLearnModes(): Promise<LearnModes> {
   return {
     generatedAt: new Date().toISOString(),
     airport: { entries: airport, empty: EMPTY_HINTS.airport },
-    borges: { authors, empty: EMPTY_HINTS.borges },
+    atelier: { authors, empty: EMPTY_HINTS.atelier },
     bridge: { entries: bridge, empty: EMPTY_HINTS.bridge },
     errors,
   };
