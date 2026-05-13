@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpanishWorkbookCard",
+  "type": "object",
+  "required": ["id", "type", "title", "spanish", "english", "tags"],
+  "properties": {
+    "id": { "type": "string" },
+    "type": {
+      "type": "string",
+      "enum": ["phrase", "verb", "noun", "adjective", "listening", "literary_bridge", "repair", "voice", "grammar"]
+    },
+    "title": { "type": "string" },
+    "spanish": { "type": "string" },
+    "english": { "type": "string" },
+    "literal": { "type": "string" },
+    "grammar": { "type": "array", "items": { "type": "string" } },
+    "when_to_use": { "type": "string" },
+    "practice": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "source_notes": { "type": "array", "items": { "type": "string" } }
+  }
+}
