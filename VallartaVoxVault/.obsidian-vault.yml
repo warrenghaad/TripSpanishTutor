@@ -11,6 +11,10 @@
 vault_name: VallartaVoxVault
 schema_version: 1
 
+# Vault root, relative to this file. The vault root IS the directory
+# containing this file — explicit so machine readers don't have to infer.
+vault_root: .
+
 # The twelve canonical top-level folders inside the vault. Anything tracked
 # under VallartaVoxVault/ that is not under one of these folders should be
 # treated as a stray by vault-doctor.sh.

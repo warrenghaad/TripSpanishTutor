@@ -47,23 +47,36 @@ echo "vault-doctor: scanning $VAULT/"
 echo
 
 # ---- 1. Strays ----
-echo "[1/3] Stray files (inside $VAULT/ but outside the twelve canonical folders):"
+# Use git-tracked paths so we only flag files that are actually committed,
+# not local-only scratch files. Falls back to find(1) if not in a git repo.
+echo "[1/3] Stray tracked files (inside $VAULT/ but outside the twelve canonical folders):"
 strays=0
-# List everything one level deep under VAULT, ignoring the contract files.
-while IFS= read -r entry; do
-  base=$(basename "$entry")
-  case "$base" in
-    .obsidian-vault.yml|.gitkeep|README.md|.obsidian|.trash) continue ;;
+
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  list_cmd="git ls-files -- $VAULT"
+else
+  echo "  (not a git repo — falling back to filesystem scan)"
+  list_cmd="find $VAULT -type f"
+fi
+
+while IFS= read -r path; do
+  # Strip the leading VAULT/ prefix.
+  rel="${path#$VAULT/}"
+  # The top-level segment under the vault.
+  top="${rel%%/*}"
+  # Files allowed at the vault root.
+  case "$top" in
+    .obsidian-vault.yml|README.md) continue ;;
   esac
   is_canonical=0
   for c in "${CANONICAL[@]}"; do
-    if [ "$base" = "$c" ]; then is_canonical=1; break; fi
+    if [ "$top" = "$c" ]; then is_canonical=1; break; fi
   done
   if [ $is_canonical -eq 0 ]; then
-    echo "  - $entry"
+    echo "  - $path"
     strays=$((strays + 1))
   fi
-done < <(find "$VAULT" -mindepth 1 -maxdepth 1)
+done < <($list_cmd)
 [ $strays -eq 0 ] && echo "  (none)"
 echo
 

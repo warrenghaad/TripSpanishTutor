@@ -34,6 +34,18 @@ The vault is **a subfolder of the repo clone** (`VallartaVoxVault/`), not the wh
 
 ---
 
+## First-time setup checklist
+
+Tick each item before you assume sync is working. Detailed steps follow below.
+
+- [ ] GitHub Personal Access Token (PAT) created with `repo` scope and saved somewhere safe.
+- [ ] Repo cloned to the laptop (default branch confirmed as **`main`** — `git branch --show-current` should print `main`).
+- [ ] Obsidian opened with `VallartaVoxVault/` as the vault root (not the repo root).
+- [ ] Obsidian Git plugin installed, enabled, and configured (intervals + commit template).
+- [ ] First manual pull and push round-trip succeeded (you can see the push in the GitHub Actions / commits page).
+- [ ] You know how to handle a conflict (open the file, pick a version, save, push) — see the **Conflict handling** section below.
+- [ ] You know what to do after being offline for days — see the **If the laptop has been offline for days** section below.
+
 ## First-time setup (laptop)
 
 Do this once, on the machine where Obsidian lives.
