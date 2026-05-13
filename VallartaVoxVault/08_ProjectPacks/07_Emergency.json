@@ -1,0 +1,54 @@
+{
+  "pack": "emergency",
+  "vault_path": "08_ProjectPacks/07_Emergency.json",
+  "scenelets": [
+    {
+      "type": "scenelet",
+      "id": "emergency_medical",
+      "scene": "Medical emergency",
+      "phrases": [
+        { "es": "¡Necesito ayuda!", "en": "I need help!" },
+        { "es": "Llame a una ambulancia, por favor.", "en": "Please call an ambulance." },
+        { "es": "Me duele mucho aquí.", "en": "It hurts a lot here." },
+        { "es": "Soy alérgico/a a la penicilina.", "en": "I'm allergic to penicillin." },
+        { "es": "¿Dónde está el hospital más cercano?", "en": "Where is the nearest hospital?" },
+        { "es": "Necesito un médico.", "en": "I need a doctor." }
+      ],
+      "register": "urgent-clear",
+      "notes": "Short, declarative. Skip pleasantries. Speed matters."
+    },
+    {
+      "type": "scenelet",
+      "id": "emergency_police",
+      "scene": "Reporting a theft or problem to police",
+      "phrases": [
+        { "es": "Me robaron la cartera.", "en": "My wallet was stolen." },
+        { "es": "Me robaron el teléfono.", "en": "My phone was stolen." },
+        { "es": "¿Dónde está la delegación más cercana?", "en": "Where is the nearest police station?" },
+        { "es": "Necesito hacer una denuncia.", "en": "I need to file a report." },
+        { "es": "¿Puede ayudarme, por favor?", "en": "Can you help me, please?" }
+      ],
+      "register": "formal-urgent"
+    }
+  ],
+  "phrase_cards": [
+    { "es": "socorro", "en": "help (urgent cry)", "lemma": "socorro", "notes": "More urgent than 'ayuda' in true emergency" },
+    { "es": "auxilio", "en": "help / assistance (urgent)", "lemma": "auxilio" },
+    { "es": "urgencias", "en": "emergency room", "lemma": "urgencias" },
+    { "es": "la cruz roja", "en": "the Red Cross", "lemma": "cruz" },
+    { "es": "una denuncia", "en": "a police report", "lemma": "denuncia" },
+    { "es": "el seguro", "en": "insurance", "lemma": "seguro" }
+  ],
+  "emergency_numbers": {
+    "mexico_general": "911",
+    "puerto_vallarta_police": "322-290-0513",
+    "red_cross_pv": "322-222-1533",
+    "tourist_assistance_pv": "078"
+  },
+  "register_map": {
+    "type": "register_map",
+    "context": "Emergency (Mexico)",
+    "key_note": "911 is now unified in Mexico for police, fire, and ambulance. Say your location clearly first.",
+    "location_phrase": "Estoy en [street/landmark], en Puerto Vallarta. (I'm at [location], in Puerto Vallarta.)"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "pack": "hotel",
+  "vault_path": "08_ProjectPacks/04_Hotel.json",
+  "scenelets": [
+    {
+      "type": "scenelet",
+      "id": "hotel_checkin",
+      "scene": "Checking in at the front desk",
+      "phrases": [
+        { "es": "Tengo una reservación a nombre de...", "en": "I have a reservation under the name of..." },
+        { "es": "¿A qué hora es el check-out?", "en": "What time is check-out?" },
+        { "es": "¿Está incluido el desayuno?", "en": "Is breakfast included?" },
+        { "es": "¿Hay wifi en la habitación?", "en": "Is there wifi in the room?" },
+        { "es": "¿Me puede dar una habitación con vista al mar?", "en": "Can I have a room with an ocean view?" }
+      ],
+      "register": "formal-neutral",
+      "notes": "Hotel front desks in PV are accustomed to English, but Spanish earns warmth and occasional upgrades."
+    },
+    {
+      "type": "scenelet",
+      "id": "hotel_problem",
+      "scene": "Reporting a problem in the room",
+      "phrases": [
+        { "es": "El aire acondicionado no funciona.", "en": "The air conditioning isn't working." },
+        { "es": "No hay agua caliente.", "en": "There's no hot water." },
+        { "es": "¿Pueden mandar a alguien a revisarlo?", "en": "Can you send someone to check it?" },
+        { "es": "¿Me pueden cambiar de habitación?", "en": "Can I be moved to another room?" }
+      ],
+      "register": "formal-neutral",
+      "notes": "Use the subjunctive mandar / cambiar forms when making requests — they signal politeness naturally."
+    },
+    {
+      "type": "scenelet",
+      "id": "hotel_checkout",
+      "scene": "Checking out",
+      "phrases": [
+        { "es": "Quisiera hacer el check-out.", "en": "I'd like to check out." },
+        { "es": "¿Puede revisar la cuenta?", "en": "Could you review the bill?" },
+        { "es": "Creo que hay un cargo equivocado.", "en": "I think there's an incorrect charge." },
+        { "es": "¿Pueden guardar mi maleta unas horas?", "en": "Can you hold my bag for a few hours?" }
+      ],
+      "register": "formal-neutral"
+    }
+  ],
+  "phrase_cards": [
+    { "es": "habitación", "en": "room", "lemma": "habitación" },
+    { "es": "recepción", "en": "front desk / reception", "lemma": "recepción" },
+    { "es": "llave / tarjeta de acceso", "en": "key / key card", "lemma": "llave" },
+    { "es": "toallas", "en": "towels", "lemma": "toalla" },
+    { "es": "almohada", "en": "pillow", "lemma": "almohada" },
+    { "es": "el cargo", "en": "the charge (on a bill)", "lemma": "cargo" },
+    { "es": "servicio a la habitación", "en": "room service", "lemma": "servicio" }
+  ],
+  "authority_exchange": {
+    "type": "authority_exchange",
+    "id": "hotel_billing_dispute",
+    "scenario": "Disputing a charge at checkout",
+    "lines": [
+      { "role": "learner", "es": "Disculpe, veo un cargo de quinientos pesos que no reconozco.", "en": "Excuse me, I see a charge of five hundred pesos I don't recognize." },
+      { "role": "staff", "es": "Un momento, lo reviso. ¿Fue del minibar?", "en": "One moment, I'll check. Was it from the minibar?" },
+      { "role": "learner", "es": "No usé el minibar. Estoy seguro.", "en": "I didn't use the minibar. I'm sure of it." },
+      { "role": "staff", "es": "Tiene razón, fue un error. Lo eliminamos.", "en": "You're right, it was an error. We'll remove it." }
+    ],
+    "register_note": "Stay confident but not aggressive. 'Estoy seguro' (I'm sure) carries weight without hostility."
+  },
+  "register_map": {
+    "type": "register_map",
+    "context": "Hotel (Puerto Vallarta)",
+    "formal_triggers": ["front desk", "concierge", "billing"],
+    "informal_triggers": ["pool staff", "bellhop small talk"],
+    "warmth_move": "Saying 'muy amables' (so kind) or 'qué buena atención' (great service) to staff creates loyalty for your whole stay."
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "pack": "directions",
+  "vault_path": "08_ProjectPacks/06_Directions.json",
+  "scenelets": [
+    {
+      "type": "scenelet",
+      "id": "directions_ask",
+      "scene": "Asking for directions",
+      "phrases": [
+        { "es": "Disculpe, ¿sabe cómo llegar al Malecón?", "en": "Excuse me, do you know how to get to the Malecón?" },
+        { "es": "¿Está lejos de aquí?", "en": "Is it far from here?" },
+        { "es": "¿Puedo ir caminando?", "en": "Can I walk there?" },
+        { "es": "¿Me puede repetir eso más despacio?", "en": "Could you repeat that more slowly?" }
+      ],
+      "register": "neutral",
+      "notes": "Mexicans give directions generously but sometimes with landmark-based references ('junto a la farmacia', 'frente al banco') rather than street names."
+    },
+    {
+      "type": "scenelet",
+      "id": "directions_receive",
+      "scene": "Understanding directions given to you",
+      "key_vocabulary": [
+        { "es": "a la derecha", "en": "to the right" },
+        { "es": "a la izquierda", "en": "to the left" },
+        { "es": "recto / derecho", "en": "straight ahead" },
+        { "es": "a dos cuadras", "en": "two blocks away" },
+        { "es": "en la esquina", "en": "on the corner" },
+        { "es": "cruzando la calle", "en": "across the street" },
+        { "es": "frente a", "en": "in front of / across from" },
+        { "es": "junto a", "en": "next to" },
+        { "es": "detrás de", "en": "behind" }
+      ],
+      "repair_phrase": "Perdón, ¿puede señalar en el mapa? (Can you point on the map?)"
+    }
+  ],
+  "phrase_cards": [
+    { "es": "cuadra", "en": "city block", "lemma": "cuadra", "notes": "Mexico: cuadra. Spain: manzana." },
+    { "es": "esquina", "en": "corner (of street)", "lemma": "esquina" },
+    { "es": "semáforo", "en": "traffic light", "lemma": "semáforo", "notes": "Key landmark word for directions" },
+    { "es": "cruce / crucero", "en": "intersection", "lemma": "cruce" },
+    { "es": "subir / bajar", "en": "go up / go down (hills)", "lemma": "subir/bajar", "notes": "PV is hilly — these come up a lot" }
+  ],
+  "register_map": {
+    "type": "register_map",
+    "context": "Directions (Puerto Vallarta)",
+    "informal_triggers": ["any pedestrian, shop owner, local"],
+    "pv_note": "Puerto Vallarta is organized around the Malecón (waterfront) as the main orientation axis. 'Hacia el mar' (toward the sea) and 'hacia la sierra' (toward the mountains) are useful cardinal substitutes.",
+    "key_repair_phrase": "No encontré la calle. ¿Hay otra referencia? (I couldn't find the street. Is there another landmark?)"
+  }
+}

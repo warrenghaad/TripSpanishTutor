@@ -1,0 +1,74 @@
+{
+  "pack": "airport",
+  "vault_path": "08_ProjectPacks/01_Airport.json",
+  "scenelets": [
+    {
+      "type": "scenelet",
+      "id": "airport_checkin",
+      "scene": "Checking in at the counter",
+      "phrases": [
+        { "es": "Quisiera facturar esta maleta.", "en": "I'd like to check this bag." },
+        { "es": "¿Hay cargo por exceso de equipaje?", "en": "Is there a fee for overweight baggage?" },
+        { "es": "¿Puedo elegir asiento de ventana?", "en": "Can I choose a window seat?" },
+        { "es": "Aquí tiene mi pasaporte.", "en": "Here is my passport." }
+      ],
+      "register": "formal-neutral",
+      "notes": "Use usted with counter staff. Smile first — Mexicans read warmth before words."
+    },
+    {
+      "type": "scenelet",
+      "id": "airport_security",
+      "scene": "Going through security",
+      "phrases": [
+        { "es": "¿Necesito quitarme los zapatos?", "en": "Do I need to take off my shoes?" },
+        { "es": "Tengo una laptop en la mochila.", "en": "I have a laptop in my backpack." },
+        { "es": "¿Adónde va esta fila?", "en": "Where does this line go?" }
+      ],
+      "register": "neutral",
+      "notes": "Short, clear sentences. Do not over-explain. Officers are task-focused."
+    },
+    {
+      "type": "scenelet",
+      "id": "airport_gate",
+      "scene": "At the gate / boarding",
+      "phrases": [
+        { "es": "¿Ya están abordando?", "en": "Are they boarding yet?" },
+        { "es": "¿Cuál es la puerta de salida?", "en": "What is the departure gate?" },
+        { "es": "¿Hay retraso?", "en": "Is there a delay?" },
+        { "es": "Perdón, ¿este asiento está ocupado?", "en": "Excuse me, is this seat taken?" }
+      ],
+      "register": "neutral",
+      "notes": "Gate agents switch to English easily — stay in Spanish anyway for practice."
+    }
+  ],
+  "phrase_cards": [
+    { "es": "vuelo", "en": "flight", "lemma": "vuelo", "notes": "el vuelo — noun" },
+    { "es": "sala de espera", "en": "waiting area / lounge", "lemma": "sala", "notes": "" },
+    { "es": "tarjeta de embarque", "en": "boarding pass", "lemma": "tarjeta", "notes": "also: pase de abordar (Mexico)" },
+    { "es": "equipaje de mano", "en": "carry-on luggage", "lemma": "equipaje", "notes": "" },
+    { "es": "escala", "en": "layover / stopover", "lemma": "escala", "notes": "hacer escala = to have a layover" },
+    { "es": "aduanas", "en": "customs", "lemma": "aduanas", "notes": "see also Pack 02" }
+  ],
+  "authority_exchange": {
+    "type": "authority_exchange",
+    "id": "airport_lost_bag",
+    "scenario": "Lost bag at baggage claim",
+    "lines": [
+      { "role": "learner", "es": "Disculpe, mi maleta no apareció.", "en": "Excuse me, my bag didn't come out." },
+      { "role": "agent", "es": "¿Tiene el talón de equipaje?", "en": "Do you have your baggage claim tag?" },
+      { "role": "learner", "es": "Sí, aquí está. Vuelo de la Ciudad de México.", "en": "Yes, here it is. Flight from Mexico City." },
+      { "role": "agent", "es": "Vamos a buscarlo en el sistema.", "en": "We'll look for it in the system." },
+      { "role": "learner", "es": "Gracias, ¿cuánto tiempo puede tardar?", "en": "Thank you, how long might it take?" }
+    ],
+    "register_note": "Stay calm, use usted, avoid humor in this context — convey competence."
+  },
+  "register_map": {
+    "type": "register_map",
+    "context": "Airport (Mexico)",
+    "formal_triggers": ["customs officer", "airline counter staff", "security personnel"],
+    "neutral_triggers": ["fellow passengers", "gate agents", "airport shops"],
+    "informal_triggers": ["taxi driver waiting outside — see Pack 04"],
+    "key_courtesy_phrase": "Con permiso. (Excuse me / May I pass.)",
+    "regional_note": "Mexican airports favor indirect politeness. Demanding tone lands badly even if grammatically correct."
+  }
+}

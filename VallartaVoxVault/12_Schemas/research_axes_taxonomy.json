@@ -1,0 +1,192 @@
+{
+  "project_id": "trip-spanish-tutor",
+  "version": "voice-research-space-v1",
+  "center": {
+    "name": "learner_voice",
+    "definition": "The learner's recognizable identity in Spanish: humor, curiosity, metaphoric thinking, precision, warmth, literary/artistic taste, and practical social presence.",
+    "not_the_center": [
+      "poetry alone",
+      "Borges alone",
+      "travel phrases alone",
+      "generic beginner Spanish"
+    ]
+  },
+  "balancing_rule": {
+    "max_default_weight_per_axis": 0.18,
+    "exception": "A single axis may dominate only when the learner explicitly asks for a focused session.",
+    "default_distribution": "balanced, rotating, voice-centered"
+  },
+  "research_axes": [
+    {
+      "id": "live_situations",
+      "label": "Live situations and travel phenomenology",
+      "weight": 0.13,
+      "research_questions": [
+        "What will the learner need to say in actual places?",
+        "What might people ask him?",
+        "What repair phrases preserve dignity under pressure?"
+      ],
+      "app_outputs": [
+        "scenelets",
+        "phrase cards",
+        "listening cards",
+        "offline packs"
+      ]
+    },
+    {
+      "id": "etymology",
+      "label": "Etymology and word history",
+      "weight": 0.11,
+      "research_questions": [
+        "Where does this word come from?",
+        "What cognates and false friends help or trap the learner?",
+        "What history is hiding in ordinary vocabulary?"
+      ],
+      "app_outputs": [
+        "word-history cards",
+        "cognate maps",
+        "false-friend warnings"
+      ]
+    },
+    {
+      "id": "language_love",
+      "label": "Language about language",
+      "weight": 0.1,
+      "research_questions": [
+        "How can the learner ask about words?",
+        "How can he explain that he has the idea but not the word?",
+        "How can Spanish become a place of curiosity?"
+      ],
+      "app_outputs": [
+        "meta-language phrasebook",
+        "question cards",
+        "conversation repair cards"
+      ]
+    },
+    {
+      "id": "music",
+      "label": "Music, rhythm, listening, lyric speech",
+      "weight": 0.1,
+      "research_questions": [
+        "How do people talk about songs in Spanish?",
+        "What vocabulary describes rhythm, lyrics, voice, feeling, genre?",
+        "How can songs train listening and memory?"
+      ],
+      "app_outputs": [
+        "music conversation cards",
+        "listening drills",
+        "song reaction phrases"
+      ]
+    },
+    {
+      "id": "visual_art",
+      "label": "Visual art, image, color, composition",
+      "weight": 0.1,
+      "research_questions": [
+        "How can the learner talk about paintings, colors, symbols, composition?",
+        "How can visual thinking become Spanish speech?"
+      ],
+      "app_outputs": [
+        "museum phrase cards",
+        "image description drills",
+        "art vocabulary maps"
+      ]
+    },
+    {
+      "id": "literature_poetry",
+      "label": "Latin American literature and poetry",
+      "weight": 0.12,
+      "research_questions": [
+        "What grammar and vocabulary does this text reveal?",
+        "How does the text help the learner speak as himself?",
+        "What conversational bridge can come from the reading?"
+      ],
+      "app_outputs": [
+        "literary lab cards",
+        "author modules",
+        "poem-line grammar analysis",
+        "personal echo prompts"
+      ]
+    },
+    {
+      "id": "humor_wordplay",
+      "label": "Humor, irony, wordplay, social play",
+      "weight": 0.09,
+      "research_questions": [
+        "How can the learner be funny in beginner Spanish?",
+        "How does he recover from a bad joke?",
+        "What wordplay is safe and useful?"
+      ],
+      "app_outputs": [
+        "joke repair cards",
+        "pun notes",
+        "tone markers"
+      ]
+    },
+    {
+      "id": "philosophy_identity",
+      "label": "Philosophy, perception, memory, identity",
+      "weight": 0.09,
+      "research_questions": [
+        "How can beginner Spanish carry adult thought?",
+        "What are short structures for real questions about time, memory, solitude, beauty?"
+      ],
+      "app_outputs": [
+        "thought cards",
+        "journal prompts",
+        "conversation questions"
+      ]
+    },
+    {
+      "id": "grammar_structure",
+      "label": "Grammar as structure",
+      "weight": 0.09,
+      "research_questions": [
+        "What grammar pattern is alive inside this phrase?",
+        "How can the learner transform it?"
+      ],
+      "app_outputs": [
+        "grammar skeletons",
+        "transformation drills",
+        "verb cards"
+      ]
+    },
+    {
+      "id": "journal_self_expression",
+      "label": "Journal and self-expression",
+      "weight": 0.07,
+      "research_questions": [
+        "What does the learner want to say today?",
+        "How can one sentence become a paragraph?"
+      ],
+      "app_outputs": [
+        "journal scaffolds",
+        "translation cards",
+        "voice memory"
+      ]
+    }
+  ],
+  "card_principle": "Every card should route back to learner voice: usable phrase, literal meaning, grammar skeleton, voice note, practice transformation, optional cultural/literary/art/music/etymology bridge.",
+  "sample_voice_sentences": [
+    {
+      "es": "Tengo la idea, pero me falta la palabra exacta.",
+      "en": "I have the idea, but I am missing the exact word.",
+      "axis": "language_love"
+    },
+    {
+      "es": "Lo puedo decir simple, pero la idea no es simple.",
+      "en": "I can say it simply, but the idea is not simple.",
+      "axis": "philosophy_identity"
+    },
+    {
+      "es": "Me gusta como suena esa palabra.",
+      "en": "I like how that word sounds.",
+      "axis": "music_language"
+    },
+    {
+      "es": "La imagen me parece rara, pero verdadera.",
+      "en": "The image seems strange to me, but true.",
+      "axis": "visual_art"
+    }
+  ]
+}

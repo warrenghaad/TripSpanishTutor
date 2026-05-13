@@ -1,0 +1,57 @@
+{
+  "pack": "polite_refusal",
+  "vault_path": "08_ProjectPacks/09_PoliteRefusal.json",
+  "scenelets": [
+    {
+      "type": "scenelet",
+      "id": "refusal_vendor",
+      "scene": "Declining street vendors or aggressive sales",
+      "phrases": [
+        { "es": "No, gracias.", "en": "No, thank you." },
+        { "es": "Estoy bien, gracias.", "en": "I'm okay, thanks." },
+        { "es": "Ahorita no, gracias.", "en": "Not right now, thanks." },
+        { "es": "Ya tengo uno, gracias.", "en": "I already have one, thanks." },
+        { "es": "Lo voy a pensar.", "en": "I'll think about it." }
+      ],
+      "register": "neutral-warm",
+      "notes": "'No gracias' alone with eye contact and a slight smile is sufficient and respected. Avoid elaborate explanations — they invite further pitch."
+    },
+    {
+      "type": "scenelet",
+      "id": "refusal_invitation",
+      "scene": "Declining a social invitation gracefully",
+      "phrases": [
+        { "es": "Qué amable, pero hoy no puedo.", "en": "How kind, but I can't today." },
+        { "es": "Tengo compromiso.", "en": "I have a prior commitment." },
+        { "es": "Otra vez será.", "en": "Another time." },
+        { "es": "Me encantaría, pero tengo planes.", "en": "I'd love to, but I have plans." }
+      ],
+      "register": "warm-formal"
+    },
+    {
+      "type": "scenelet",
+      "id": "refusal_food",
+      "scene": "Declining food or drink politely",
+      "phrases": [
+        { "es": "Gracias, ya estoy satisfecho/a.", "en": "Thank you, I'm already full." },
+        { "es": "No tomo alcohol, gracias.", "en": "I don't drink alcohol, thank you." },
+        { "es": "Qué rico se ve, pero ya no puedo más.", "en": "It looks delicious, but I really can't eat more." }
+      ],
+      "register": "warm",
+      "notes": "In Mexican hospitality culture, refusing food can feel like a slight. Acknowledge the food warmly before declining."
+    }
+  ],
+  "phrase_cards": [
+    { "es": "no, gracias", "en": "no, thank you", "lemma": "gracias", "notes": "The full stop of refusal — complete and gracious" },
+    { "es": "ya estoy bien", "en": "I'm already fine / I'm good", "lemma": "bien" },
+    { "es": "tengo compromiso", "en": "I have a commitment / prior engagement", "lemma": "compromiso" },
+    { "es": "otra vez será", "en": "another time", "lemma": "vez", "notes": "Soft, warm close to any refusal" }
+  ],
+  "register_map": {
+    "type": "register_map",
+    "context": "Polite Refusal (Mexico)",
+    "cultural_note": "Mexicans generally don't take 'no' as cold — they take abruptness as cold. Warm the refusal with a word of appreciation first.",
+    "irony_safe": false,
+    "warmth_move": "Lead with a compliment: 'qué amable' or 'qué generoso' before the refusal lands."
+  }
+}
