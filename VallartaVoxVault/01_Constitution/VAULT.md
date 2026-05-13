@@ -5,7 +5,7 @@ Read this first if you are ChatGPT, Perplexity, or a new collaborator orienting 
 | Folder | What lives here | Read this when… |
 |---|---|---|
 | `00_Inbox/` | Bear drops, voice-memo transcripts, quick captures, half-formed thoughts | …the user mentions raw, undigested input. |
-| `01_Constitution/` | System rules (`SPEC.md`), folder map (`VAULT.md` — this file), founding vision (`project-space.md`), learner profile (`learner-profile.md`) | …you need ground truth. |
+| `01_Constitution/` | System rules (`SPEC.md`), folder map (`VAULT.md` — this file), founding vision (`project-space.md`), learner profile (`learner-profile.md`), the engine (`CUBE.md`, `PRISM.md`) | …you need ground truth. |
 | `02_DailyPrep/` | Pre-day briefings — what to read, what phrases to warm up, what art to look at | …user is heading into a day and wants a focus. |
 | `03_DailyDebriefs/` | Post-day offloads, reflections, what worked / what didn't | …user is processing a finished day. |
 | `04_Trails/` | Saved "spelunks" — chains of connected lookups across the app or desktop | …user references a trail they walked. |
@@ -25,6 +25,10 @@ The vault organizes meaning around three modes (declared in each file's frontmat
 - **`airport`** — phenomenology of travel: orientation, signs, asking, listening under pressure, motion, need.
 - **`atelier`** — literary + cultural Spanish: poems, prose, murals, music, film. The `06_Atelier/` folder lives here.
 - **`bridge`** — paired travel ↔ literary lines that share grammar or image (e.g. "Voy a la puerta" ↔ Borges's "la puerta").
+
+## The Cube and the Prism
+
+The conceptual engine of the vault. The **Cube** ([`CUBE.md`](CUBE.md)) is the geometry every sentence inhabits — 8 faces (Perception, Generation, Variation, Depth, Situation, Memory, Spoken-Form, Learning), typed edges (Structural, Transformational, Situational, Influential), vertices, and 3 axes (Vertical complexity, Lateral register, Depth). The **Prism** ([`PRISM.md`](PRISM.md)) is how the Cube refracts under the writer's attention right now — the live computation that selects the next prompt. The operational rule is in [`../12_Schemas/prompts/cube-emergence-rule.md`](../12_Schemas/prompts/cube-emergence-rule.md). The theoretical audit (with citations to PCIC, CAF, Lantolf & Poehner, Bull & Kay, Paz, Bloom, Boden, Murray, Dogme ELT, and the 2024–2025 KG-based adaptive learning literature) lives at repo root as `CUBE-prism-vox.md`.
 
 ## Builder roles
 
