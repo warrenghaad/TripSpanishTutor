@@ -58,6 +58,8 @@ export type AtelierEntry = {
   author: string;
   work?: string;
   title: string;
+  /** Lead text above the first `## Meaning` heading — typically the quoted literary line. */
+  excerpt?: string;
   sections: GoldenSections;
   sourcePath: string;
 };

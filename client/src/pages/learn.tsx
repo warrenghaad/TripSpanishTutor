@@ -31,6 +31,7 @@ type AtelierEntry = {
   author: string;
   work?: string;
   title: string;
+  excerpt?: string;
   sections: GoldenSections;
   sourcePath: string;
 };
@@ -147,11 +148,12 @@ function SaveCardButton({ slug, savePayload, alreadySaved }: { slug: string; sav
   );
 }
 
-function EntryCard({ slug, title, subtitle, tags, sections, sourcePath, savePayload, alreadySaved }: {
+function EntryCard({ slug, title, subtitle, tags, excerpt, sections, sourcePath, savePayload, alreadySaved }: {
   slug: string;
   title: string;
   subtitle?: string;
   tags?: string[];
+  excerpt?: string;
   sections: GoldenSections;
   sourcePath: string;
   savePayload: { source: string; translated: string; literal?: string; tag: string };
@@ -175,6 +177,14 @@ function EntryCard({ slug, title, subtitle, tags, sections, sourcePath, savePayl
         </div>
         <SaveCardButton slug={slug} savePayload={savePayload} alreadySaved={alreadySaved} />
       </div>
+      {excerpt && (
+        <blockquote
+          className="border-l-4 border-amber-500/40 pl-4 py-2 italic text-foreground/90 bg-amber-500/5 rounded-r whitespace-pre-wrap text-sm"
+          data-testid={`text-excerpt-${slug}`}
+        >
+          {excerpt}
+        </blockquote>
+      )}
       <GoldenView s={sections} />
       <p className="text-[10px] font-mono text-muted-foreground/70 pt-1 border-t border-border/40">{sourcePath}</p>
     </Card>
@@ -361,6 +371,7 @@ export default function Learn() {
                                 slug={e.slug}
                                 title={e.title}
                                 subtitle={[e.author, e.work].filter(Boolean).join(" — ")}
+                                excerpt={e.excerpt}
                                 sections={e.sections}
                                 sourcePath={e.sourcePath}
                                 savePayload={atelierSavePayload(e)}
@@ -428,7 +439,7 @@ export default function Learn() {
             </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {practiceCards.slice(0, 6).map((c) => (
+              {practiceCards.map((c) => (
                 <Card key={c.id} className="p-3 hover:border-primary/40 transition-colors" data-testid={`card-practice-${c.id}`}>
                   <p className="text-xs text-muted-foreground italic mb-1 line-clamp-1">{c.sourceText}</p>
                   <p className="text-sm font-display text-foreground mb-2 line-clamp-2">{c.translatedText}</p>
@@ -447,13 +458,6 @@ export default function Learn() {
                 </Card>
               ))}
             </div>
-          )}
-          {practiceCards.length > 6 && (
-            <Link href="/">
-              <Button variant="link" size="sm" className="mt-2" data-testid="link-all-practice">
-                See all {practiceCards.length} <ArrowRight className="w-3 h-3 ml-1" />
-              </Button>
-            </Link>
           )}
         </section>
       </div>

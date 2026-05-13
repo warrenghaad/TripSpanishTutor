@@ -94,6 +94,19 @@ async function loadAll(roots: string[]): Promise<{ parsed: ParsedFile[]; errors:
   return { parsed, errors };
 }
 
+function leadExcerpt(body: string): string | undefined {
+  const before = body.split(/^##\s+/m)[0] || "";
+  const trimmed = before.trim();
+  if (!trimmed) return undefined;
+  // Strip a leading "> " from each line so the excerpt renders as plain prose;
+  // the UI will style it as a pull-quote.
+  return trimmed
+    .split("\n")
+    .map((l) => l.replace(/^>\s?/, ""))
+    .join("\n")
+    .trim() || undefined;
+}
+
 function authorFromAtelierPath(relPath: string, fmAuthor?: string): string {
   if (fmAuthor) return fmAuthor;
   // 06_Atelier/<Author>/...
@@ -173,6 +186,7 @@ export async function loadLearnModes(): Promise<LearnModes> {
         author,
         work: p.frontmatter.work,
         title: titleFromSlug(p.slug),
+        excerpt: leadExcerpt(p.body),
         sections: p.sections,
         sourcePath: p.relPath,
       };
