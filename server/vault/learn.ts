@@ -108,16 +108,18 @@ export async function loadLearnModes(): Promise<LearnModes> {
 
   for (const p of parsed) {
     const kind = p.frontmatter.kind;
+    // Airport: any file whose kind is airport-scenelet OR whose mode is
+    // explicitly tagged "airport" (e.g. day-pack airport sections, future
+    // airport-flavored kinds). The shape we render is the same Golden
+    // sections, so we accept anything tagged for the mode.
     if (kind === "airport-scenelet" || p.frontmatter.mode === "airport") {
-      if (kind === "airport-scenelet") {
-        airport.push({
-          slug: p.slug,
-          title: titleFromSlug(p.slug),
-          tags: p.frontmatter.tags || [],
-          sections: p.sections,
-          sourcePath: p.relPath,
-        });
-      }
+      airport.push({
+        slug: p.slug,
+        title: titleFromSlug(p.slug),
+        tags: p.frontmatter.tags || [],
+        sections: p.sections,
+        sourcePath: p.relPath,
+      });
       continue;
     }
     if (kind === "atelier-entry") {
@@ -135,7 +137,16 @@ export async function loadLearnModes(): Promise<LearnModes> {
       atelierByAuthor.set(author, list);
       continue;
     }
-    if (kind === "bridge-note" && p.bridgeHalves) {
+    if (kind === "bridge-note") {
+      if (!p.bridgeHalves) {
+        // Don't silently drop a malformed bridge-note: surface to the UI so
+        // the user knows their template is missing one of the two halves.
+        errors.push({
+          file: p.relPath,
+          message: "bridge-note is missing `# Travel Half` and/or `# Literary Half` sections",
+        });
+        continue;
+      }
       bridge.push({
         slug: p.slug,
         pairId: p.frontmatter.pair_id || p.slug,

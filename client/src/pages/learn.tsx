@@ -107,9 +107,10 @@ function EmptyState({ hint }: { hint: EmptyHint }) {
   );
 }
 
-function SaveCardButton({ slug, savePayload }: { slug: string; savePayload: { source: string; translated: string; literal?: string; tag: string } }) {
+function SaveCardButton({ slug, savePayload, alreadySaved }: { slug: string; savePayload: { source: string; translated: string; literal?: string; tag: string }; alreadySaved: boolean }) {
   const qc = useQueryClient();
-  const [saved, setSaved] = useState(false);
+  const [savedLocal, setSavedLocal] = useState(false);
+  const saved = alreadySaved || savedLocal;
   const m = useMutation({
     mutationFn: async () => {
       await saveLocalCard({
@@ -129,7 +130,7 @@ function SaveCardButton({ slug, savePayload }: { slug: string; savePayload: { so
       });
     },
     onSuccess: () => {
-      setSaved(true);
+      setSavedLocal(true);
       qc.invalidateQueries({ queryKey: ["learn-practice-cards"] });
     },
   });
@@ -146,7 +147,7 @@ function SaveCardButton({ slug, savePayload }: { slug: string; savePayload: { so
   );
 }
 
-function EntryCard({ slug, title, subtitle, tags, sections, sourcePath, savePayload }: {
+function EntryCard({ slug, title, subtitle, tags, sections, sourcePath, savePayload, alreadySaved }: {
   slug: string;
   title: string;
   subtitle?: string;
@@ -154,6 +155,7 @@ function EntryCard({ slug, title, subtitle, tags, sections, sourcePath, savePayl
   sections: GoldenSections;
   sourcePath: string;
   savePayload: { source: string; translated: string; literal?: string; tag: string };
+  alreadySaved: boolean;
 }) {
   return (
     <Card className="p-5 space-y-4 hover:border-primary/40 transition-colors" data-testid={`card-entry-${slug}`}>
@@ -171,7 +173,7 @@ function EntryCard({ slug, title, subtitle, tags, sections, sourcePath, savePayl
             </div>
           )}
         </div>
-        <SaveCardButton slug={slug} savePayload={savePayload} />
+        <SaveCardButton slug={slug} savePayload={savePayload} alreadySaved={alreadySaved} />
       </div>
       <GoldenView s={sections} />
       <p className="text-[10px] font-mono text-muted-foreground/70 pt-1 border-t border-border/40">{sourcePath}</p>
@@ -225,6 +227,12 @@ export default function Learn() {
     borges: data?.borges.authors.reduce((a, g) => a + g.entries.length, 0) ?? 0,
     bridge: data?.bridge.entries.length ?? 0,
   }), [data]);
+
+  const savedTagSet = useMemo(() => {
+    const s = new Set<string>();
+    for (const c of practiceCards) for (const t of c.tags || []) s.add(t);
+    return s;
+  }, [practiceCards]);
 
   const [authorTab, setAuthorTab] = useState<string | null>(null);
   const activeAuthor = useMemo(() => {
@@ -314,6 +322,7 @@ export default function Learn() {
                         sections={e.sections}
                         sourcePath={e.sourcePath}
                         savePayload={airportSavePayload(e)}
+                        alreadySaved={savedTagSet.has(e.slug)}
                       />
                     ))
                   )}
@@ -355,6 +364,7 @@ export default function Learn() {
                                 sections={e.sections}
                                 sourcePath={e.sourcePath}
                                 savePayload={atelierSavePayload(e)}
+                                alreadySaved={savedTagSet.has(e.slug)}
                               />
                             ))
                           )}
@@ -380,14 +390,14 @@ export default function Learn() {
                           <div className="space-y-3 p-4 rounded-lg bg-sky-500/5 border border-sky-500/20">
                             <div className="flex items-center justify-between">
                               <p className="text-xs font-bold uppercase tracking-wider text-sky-700 flex items-center gap-1"><Plane className="w-3 h-3" /> Travel</p>
-                              <SaveCardButton slug={`${e.slug}-travel`} savePayload={bridgeSavePayload(e, "travel")} />
+                              <SaveCardButton slug={`${e.slug}-travel`} savePayload={bridgeSavePayload(e, "travel")} alreadySaved={savedTagSet.has(`${e.slug}-travel`)} />
                             </div>
                             <GoldenView s={e.travel} />
                           </div>
                           <div className="space-y-3 p-4 rounded-lg bg-amber-500/5 border border-amber-500/20">
                             <div className="flex items-center justify-between">
                               <p className="text-xs font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1"><BookOpen className="w-3 h-3" /> Literary</p>
-                              <SaveCardButton slug={`${e.slug}-literary`} savePayload={bridgeSavePayload(e, "literary")} />
+                              <SaveCardButton slug={`${e.slug}-literary`} savePayload={bridgeSavePayload(e, "literary")} alreadySaved={savedTagSet.has(`${e.slug}-literary`)} />
                             </div>
                             <GoldenView s={e.literary} />
                           </div>
