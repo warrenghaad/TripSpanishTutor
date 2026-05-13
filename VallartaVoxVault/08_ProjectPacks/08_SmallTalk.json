@@ -1,0 +1,51 @@
+{
+  "pack": "small_talk",
+  "vault_path": "08_ProjectPacks/08_SmallTalk.json",
+  "scenelets": [
+    {
+      "type": "scenelet",
+      "id": "smalltalk_greetings",
+      "scene": "Opening exchanges — greetings",
+      "phrases": [
+        { "es": "¿Cómo le va?", "en": "How's it going? (formal)" },
+        { "es": "¿Qué tal?", "en": "How's it going? (informal)" },
+        { "es": "¿Cómo está usted?", "en": "How are you? (formal)" },
+        { "es": "Mucho gusto en conocerle.", "en": "A pleasure to meet you." },
+        { "es": "¿De dónde es usted?", "en": "Where are you from?" },
+        { "es": "Soy de los Estados Unidos.", "en": "I'm from the United States." }
+      ],
+      "register": "neutral-warm",
+      "notes": "Mexican greetings are warm and often physical — handshakes, cheek kisses in casual contexts. Match the energy of your interlocutor."
+    },
+    {
+      "type": "scenelet",
+      "id": "smalltalk_weather_place",
+      "scene": "Talking about weather and place",
+      "phrases": [
+        { "es": "¡Qué calor hace hoy!", "en": "It's so hot today!" },
+        { "es": "Me encanta este lugar.", "en": "I love this place." },
+        { "es": "Es la primera vez que vengo a Vallarta.", "en": "It's my first time coming to Vallarta." },
+        { "es": "¿Cuánto tiempo lleva viviendo aquí?", "en": "How long have you been living here?" }
+      ],
+      "register": "informal-warm"
+    }
+  ],
+  "smalltalk_prompts": [
+    { "type": "smalltalk_prompt", "prompt_es": "¿Es usted de aquí?", "prompt_en": "Are you from here?", "expected_exchange": "short, opens local knowledge" },
+    { "type": "smalltalk_prompt", "prompt_es": "¿Qué recomienda no perderme en Vallarta?", "prompt_en": "What do you recommend I not miss in Vallarta?", "expected_exchange": "invites local expertise — very well received" },
+    { "type": "smalltalk_prompt", "prompt_es": "¿Le gusta su trabajo?", "prompt_en": "Do you like your work?", "expected_exchange": "genuine interest — humanizes the exchange" }
+  ],
+  "phrase_cards": [
+    { "es": "qué padre", "en": "how cool (Mexico)", "lemma": "padre", "notes": "Mexico-specific; do not use in Spain" },
+    { "es": "chido / chida", "en": "cool / nice (Mexico, informal)", "lemma": "chido" },
+    { "es": "órale", "en": "okay / wow / let's go (Mexico)", "lemma": "órale", "notes": "Context-dependent; affirming, agreeing, or expressing surprise" },
+    { "es": "ahorita", "en": "in a moment / right now (ambiguous)", "lemma": "ahorita", "notes": "The famously elastic Mexican time word. Could mean now, soon, or eventually." },
+    { "es": "mande", "en": "pardon? / yes? (Mexico, polite)", "lemma": "mandar", "notes": "Response to being called or not hearing something" }
+  ],
+  "register_map": {
+    "type": "register_map",
+    "context": "Small Talk (Mexico / Puerto Vallarta)",
+    "warmth_move": "Mexicans value warmth, indirect communication, and dignity. Asking about someone's family, hometown, or job with genuine curiosity is never intrusive — it's welcome.",
+    "taboo_note": "Avoid opening with politics or price-of-living complaints. Lead with appreciation for place and food."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "pack": "taxi",
+  "vault_path": "08_ProjectPacks/03_Taxi.json",
+  "scenelets": [
+    {
+      "type": "scenelet",
+      "id": "taxi_hail",
+      "scene": "Getting into a taxi",
+      "phrases": [
+        { "es": "¿Está libre?", "en": "Are you free / available?" },
+        { "es": "¿Me lleva al centro, por favor?", "en": "Can you take me downtown, please?" },
+        { "es": "¿Cuánto cobra hasta el Malecón?", "en": "How much do you charge to the Malecón?" },
+        { "es": "¿Usa taxímetro o precio fijo?", "en": "Do you use a meter or a fixed price?" }
+      ],
+      "register": "informal-warm",
+      "notes": "Puerto Vallarta taxis often use fixed zones. Confirm price before you get in. Friendly tone opens negotiation."
+    },
+    {
+      "type": "scenelet",
+      "id": "taxi_en_route",
+      "scene": "During the ride — small talk",
+      "phrases": [
+        { "es": "¿Hace mucho que trabaja aquí?", "en": "Have you been working here long?" },
+        { "es": "¿De dónde es usted?", "en": "Where are you from?" },
+        { "es": "Es mi primera vez en Vallarta.", "en": "It's my first time in Vallarta." },
+        { "es": "¿Qué recomienda para cenar?", "en": "What do you recommend for dinner?" }
+      ],
+      "register": "informal-warm",
+      "notes": "Taxi drivers are an excellent local intelligence source. They know events, restaurants, and what to avoid. Curiosity lands well."
+    },
+    {
+      "type": "scenelet",
+      "id": "taxi_arrival",
+      "scene": "Paying and getting out",
+      "phrases": [
+        { "es": "Aquí está bien, gracias.", "en": "Here is fine, thanks." },
+        { "es": "¿Tiene cambio de doscientos?", "en": "Do you have change for two hundred?" },
+        { "es": "Quédese con el cambio.", "en": "Keep the change." },
+        { "es": "Fue un placer. ¡Hasta luego!", "en": "It was a pleasure. Goodbye!" }
+      ],
+      "register": "informal-warm",
+      "notes": "Tipping taxi drivers is not obligatory in Mexico but appreciated. Rounding up or 'quédese con el cambio' is graceful."
+    }
+  ],
+  "phrase_cards": [
+    { "es": "taxímetro", "en": "taxi meter", "lemma": "taxímetro" },
+    { "es": "el cambio", "en": "change (money)", "lemma": "cambio" },
+    { "es": "la vuelta", "en": "change (money, colloquial Mexico)", "lemma": "vuelta", "notes": "more common than 'cambio' in PV" },
+    { "es": "el Malecón", "en": "the seafront boardwalk (PV landmark)", "lemma": "malecón" },
+    { "es": "la zona romántica", "en": "Romantic Zone (PV neighborhood)", "lemma": "zona" },
+    { "es": "me lleva", "en": "take me (literally: carry me)", "lemma": "llevar", "notes": "muy mexicano — use it" }
+  ],
+  "authority_exchange": {
+    "type": "authority_exchange",
+    "id": "taxi_negotiation",
+    "scenario": "Driver quotes high price",
+    "lines": [
+      { "role": "driver", "es": "Son trescientos pesos.", "en": "That's three hundred pesos." },
+      { "role": "learner", "es": "¿No puede ser un poco menos? Vi que la zona vale doscientos.", "en": "Could it be a little less? I saw the zone price is two hundred." },
+      { "role": "driver", "es": "Bueno, doscientos cincuenta.", "en": "Okay, two-fifty." },
+      { "role": "learner", "es": "Trato hecho.", "en": "Deal." }
+    ],
+    "register_note": "Tone matters more than grammar here. Calm, amused, not aggressive. Mexicans respond to dignified negotiation."
+  },
+  "register_map": {
+    "type": "register_map",
+    "context": "Taxi (Puerto Vallarta)",
+    "formal_triggers": ["airport authorized taxi booths"],
+    "informal_triggers": ["street hails", "ride-share-style apps"],
+    "key_safety_note": "Use Uber or official airport taxi stands when arriving late. Confirm you're in the right taxi — check plate or app match.",
+    "warmth_move": "Compliment the music or say 'qué bonita ciudad' — opens drivers up."
+  }
+}

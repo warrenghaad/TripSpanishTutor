@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VallartaVoxScenePack",
+  "description": "Schema for travel scene packs that the app reads offline (08_ProjectPacks/NN_Scene.json).",
+  "type": "object",
+  "required": ["pack", "vault_path", "scenelets"],
+  "properties": {
+    "pack": { "type": "string" },
+    "vault_path": { "type": "string" },
+    "scenelets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "id", "scene"],
+        "properties": {
+          "type": { "type": "string", "const": "scenelet" },
+          "id": { "type": "string" },
+          "scene": { "type": "string" },
+          "phrases": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["es", "en"],
+              "properties": {
+                "es": { "type": "string" },
+                "en": { "type": "string" }
+              }
+            }
+          },
+          "key_vocabulary": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["es", "en"],
+              "properties": {
+                "es": { "type": "string" },
+                "en": { "type": "string" }
+              }
+            }
+          },
+          "register": { "type": "string" },
+          "notes": { "type": "string" },
+          "repair_phrase": { "type": "string" }
+        }
+      }
+    },
+    "phrase_cards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["es", "en"],
+        "properties": {
+          "es": { "type": "string" },
+          "en": { "type": "string" },
+          "lemma": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "authority_exchange": {
+      "type": "object",
+      "required": ["type", "id", "scenario", "lines"],
+      "properties": {
+        "type": { "type": "string", "const": "authority_exchange" },
+        "id": { "type": "string" },
+        "scenario": { "type": "string" },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["role", "es", "en"],
+            "properties": {
+              "role": { "type": "string" },
+              "es": { "type": "string" },
+              "en": { "type": "string" }
+            }
+          }
+        },
+        "register_note": { "type": "string" }
+      }
+    },
+    "register_map": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "const": "register_map" },
+        "context": { "type": "string" },
+        "formal_triggers": { "type": "array", "items": { "type": "string" } },
+        "neutral_triggers": { "type": "array", "items": { "type": "string" } },
+        "informal_triggers": { "type": "array", "items": { "type": "string" } },
+        "key_courtesy_phrase": { "type": "string" },
+        "key_repair_phrase": { "type": "string" },
+        "key_safety_note": { "type": "string" },
+        "key_insight": { "type": "string" },
+        "warmth_move": { "type": "string" },
+        "regional_note": { "type": "string" },
+        "cultural_note": { "type": "string" },
+        "taboo_note": { "type": "string" },
+        "street_food_note": { "type": "string" },
+        "literary_note": { "type": "string" },
+        "irony_safe": { "type": "boolean" },
+        "pv_note": { "type": "string" },
+        "location_phrase": { "type": "string" },
+        "key_note": { "type": "string" }
+      }
+    },
+    "smalltalk_prompts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string" },
+          "prompt_es": { "type": "string" },
+          "prompt_en": { "type": "string" },
+          "expected_exchange": { "type": "string" }
+        }
+      }
+    },
+    "emergency_numbers": { "type": "object" }
+  }
+}

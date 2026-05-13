@@ -1,0 +1,61 @@
+{
+  "pack": "repair_phrases",
+  "vault_path": "08_ProjectPacks/10_RepairPhrases.json",
+  "scenelets": [
+    {
+      "type": "scenelet",
+      "id": "repair_comprehension",
+      "scene": "You didn't understand",
+      "phrases": [
+        { "es": "No entendí bien. ¿Podría repetirlo?", "en": "I didn't understand well. Could you repeat it?" },
+        { "es": "¿Puede hablar más despacio, por favor?", "en": "Could you speak more slowly, please?" },
+        { "es": "¿Cómo se dice eso en español?", "en": "How do you say that in Spanish?" },
+        { "es": "¿Qué significa esa palabra?", "en": "What does that word mean?" },
+        { "es": "¿Puede escribirlo?", "en": "Could you write it down?" }
+      ],
+      "register": "neutral",
+      "notes": "Using repair phrases in Spanish (not just switching to English) signals commitment and earns patience from interlocutors."
+    },
+    {
+      "type": "scenelet",
+      "id": "repair_production",
+      "scene": "You're searching for a word",
+      "phrases": [
+        { "es": "¿Cómo se llama...?", "en": "What is it called...?" },
+        { "es": "Es una cosa que sirve para...", "en": "It's a thing used for..." },
+        { "es": "No sé la palabra exacta, pero...", "en": "I don't know the exact word, but..." },
+        { "es": "¿Me entiende?", "en": "Do you understand me?" },
+        { "es": "Algo así.", "en": "Something like that." }
+      ],
+      "register": "neutral",
+      "notes": "Circumlocution — talking around a word — is a core fluency skill. Practice it early."
+    },
+    {
+      "type": "scenelet",
+      "id": "repair_meta",
+      "scene": "Meta-language: talking about your Spanish",
+      "phrases": [
+        { "es": "Estoy aprendiendo español.", "en": "I'm learning Spanish." },
+        { "es": "Mi español no es muy bueno todavía.", "en": "My Spanish isn't very good yet." },
+        { "es": "¿Lo dije bien?", "en": "Did I say it correctly?" },
+        { "es": "¿Me puede corregir si me equivoco?", "en": "Can you correct me if I make a mistake?" }
+      ],
+      "register": "warm-humble",
+      "notes": "Asking to be corrected is rare and well-received. It signals genuine investment and usually produces a generous teacher."
+    }
+  ],
+  "phrase_cards": [
+    { "es": "repetir", "en": "to repeat", "lemma": "repetir" },
+    { "es": "despacio", "en": "slowly", "lemma": "despacio" },
+    { "es": "¿mande?", "en": "pardon? / could you repeat? (Mexico)", "lemma": "mandar", "notes": "Very Mexican — more polite than '¿qué?'" },
+    { "es": "¿cómo?", "en": "what? / pardon? (neutral)", "lemma": "cómo" },
+    { "es": "algo así", "en": "something like that", "lemma": "algo", "notes": "Universal repair closer" },
+    { "es": "no sé la palabra", "en": "I don't know the word", "lemma": "saber" }
+  ],
+  "register_map": {
+    "type": "register_map",
+    "context": "Repair (universal)",
+    "key_insight": "Repair phrases are not failure markers — they are fluency infrastructure. Knowing 5 repair phrases in Spanish extends your effective range 10x.",
+    "literary_note": "Cortázar wrote characters who thrived in linguistic indeterminacy. The learner who masters repair is living that — navigating meaning in motion."
+  }
+}

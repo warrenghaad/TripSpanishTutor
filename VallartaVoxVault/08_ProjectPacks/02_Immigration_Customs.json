@@ -1,0 +1,61 @@
+{
+  "pack": "immigration_customs",
+  "vault_path": "08_ProjectPacks/02_Immigration_Customs.json",
+  "scenelets": [
+    {
+      "type": "scenelet",
+      "id": "immigration_officer",
+      "scene": "At the immigration window",
+      "phrases": [
+        { "es": "Vengo por turismo.", "en": "I'm here as a tourist." },
+        { "es": "Me voy a quedar dos semanas.", "en": "I'm staying two weeks." },
+        { "es": "Me hospedo en un hotel en el centro.", "en": "I'm staying at a hotel downtown." },
+        { "es": "Aquí está mi forma migratoria.", "en": "Here is my immigration form." }
+      ],
+      "register": "formal",
+      "notes": "Answer only what is asked. Short, factual sentences. Officers are not interested in personality here."
+    },
+    {
+      "type": "scenelet",
+      "id": "customs_declaration",
+      "scene": "Customs declaration",
+      "phrases": [
+        { "es": "No traigo nada que declarar.", "en": "I have nothing to declare." },
+        { "es": "Traigo algunos regalos personales.", "en": "I'm carrying some personal gifts." },
+        { "es": "¿Puedo pasar?", "en": "May I pass?" },
+        { "es": "¿Qué se necesita declarar?", "en": "What do I need to declare?" }
+      ],
+      "register": "formal",
+      "notes": "The red/green light system: verde = go through, rojo = inspection. Prepare for rojo calmly."
+    }
+  ],
+  "phrase_cards": [
+    { "es": "pasaporte", "en": "passport", "lemma": "pasaporte" },
+    { "es": "turismo", "en": "tourism / tourist visit", "lemma": "turismo" },
+    { "es": "declarar", "en": "to declare", "lemma": "declarar", "notes": "no tengo nada que declarar" },
+    { "es": "visa / visado", "en": "visa", "lemma": "visa", "notes": "Mexico uses visa; Spain uses visado" },
+    { "es": "aduana", "en": "customs", "lemma": "aduana" },
+    { "es": "migración", "en": "immigration", "lemma": "migración" },
+    { "es": "permiso de entrada", "en": "entry permit", "lemma": "permiso" }
+  ],
+  "authority_exchange": {
+    "type": "authority_exchange",
+    "id": "customs_bag_check",
+    "scenario": "Random bag inspection at customs",
+    "lines": [
+      { "role": "officer", "es": "¿Puede abrir su maleta, por favor?", "en": "Can you open your suitcase, please?" },
+      { "role": "learner", "es": "Claro que sí.", "en": "Of course." },
+      { "role": "officer", "es": "¿Qué trae aquí?", "en": "What do you have here?" },
+      { "role": "learner", "es": "Ropa, artículos personales, y algunos libros.", "en": "Clothes, personal items, and some books." },
+      { "role": "officer", "es": "Está bien. Puede pasar.", "en": "That's fine. You may go." }
+    ],
+    "register_note": "Never joke at customs. Calm cooperation reads as respect."
+  },
+  "register_map": {
+    "type": "register_map",
+    "context": "Immigration & Customs (Mexico)",
+    "formal_triggers": ["all uniformed officials"],
+    "key_repair_phrase": "No entendí bien. ¿Podría repetirlo, por favor? (I didn't understand well. Could you repeat that, please?)",
+    "regional_note": "Mexico City (Benito Juárez) and Puerto Vallarta (Gustavo Díaz Ordaz) immigration officers are generally professional and accustomed to tourists. Patience and calm work well."
+  }
+}

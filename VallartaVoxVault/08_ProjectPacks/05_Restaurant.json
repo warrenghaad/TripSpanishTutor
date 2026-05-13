@@ -1,0 +1,75 @@
+{
+  "pack": "restaurant",
+  "vault_path": "08_ProjectPacks/05_Restaurant.json",
+  "scenelets": [
+    {
+      "type": "scenelet",
+      "id": "restaurant_arrival",
+      "scene": "Arriving and being seated",
+      "phrases": [
+        { "es": "¿Tiene mesa para dos personas?", "en": "Do you have a table for two?" },
+        { "es": "Tenemos reservación.", "en": "We have a reservation." },
+        { "es": "¿Podemos sentarnos afuera?", "en": "Can we sit outside?" },
+        { "es": "¿Cuánto tiempo de espera hay?", "en": "How long is the wait?" }
+      ],
+      "register": "neutral-warm"
+    },
+    {
+      "type": "scenelet",
+      "id": "restaurant_ordering",
+      "scene": "Ordering food and drink",
+      "phrases": [
+        { "es": "¿Qué recomienda usted?", "en": "What do you recommend?" },
+        { "es": "¿Cuál es el platillo del día?", "en": "What's the dish of the day?" },
+        { "es": "Voy a pedir el pescado.", "en": "I'll have the fish." },
+        { "es": "¿Me puede traer la carta de vinos?", "en": "Could you bring me the wine list?" },
+        { "es": "Sin picante, por favor.", "en": "Without spice, please." },
+        { "es": "¿Tiene opciones vegetarianas?", "en": "Do you have vegetarian options?" }
+      ],
+      "register": "neutral-warm",
+      "notes": "Asking '¿qué recomienda?' is not just practical — it's a social invitation. Servers often light up."
+    },
+    {
+      "type": "scenelet",
+      "id": "restaurant_bill",
+      "scene": "Paying the bill",
+      "phrases": [
+        { "es": "La cuenta, por favor.", "en": "The check, please." },
+        { "es": "¿Está incluido el servicio?", "en": "Is service included?" },
+        { "es": "¿Puedo pagar con tarjeta?", "en": "Can I pay by card?" },
+        { "es": "Estuvo delicioso.", "en": "It was delicious." }
+      ],
+      "register": "neutral-warm",
+      "notes": "In Mexico, 'propina' (tip) of 10–15% is standard. 'Estuvo delicioso' at the end is a small gift to the staff."
+    }
+  ],
+  "phrase_cards": [
+    { "es": "la carta / el menú", "en": "the menu", "lemma": "carta", "notes": "Both used; carta is more traditional" },
+    { "es": "el platillo", "en": "the dish / plate", "lemma": "platillo", "notes": "Mexican preference; not 'plato'" },
+    { "es": "la cuenta", "en": "the bill", "lemma": "cuenta" },
+    { "es": "la propina", "en": "the tip", "lemma": "propina" },
+    { "es": "picante", "en": "spicy", "lemma": "picante" },
+    { "es": "sin / con", "en": "without / with", "lemma": "sin/con", "notes": "Core modifier pair — sin gluten, con limón, etc." },
+    { "es": "para llevar", "en": "to go / takeaway", "lemma": "llevar" },
+    { "es": "de lo mismo", "en": "the same again", "lemma": "mismo", "notes": "When reordering a drink — social and fluent" }
+  ],
+  "authority_exchange": {
+    "type": "authority_exchange",
+    "id": "restaurant_wrong_order",
+    "scenario": "Wrong dish arrives",
+    "lines": [
+      { "role": "learner", "es": "Perdón, creo que se equivocaron. Yo pedí el camarón, no el pollo.", "en": "Excuse me, I think there's a mix-up. I ordered shrimp, not chicken." },
+      { "role": "server", "es": "Mil disculpas, ahorita se lo traigo.", "en": "I'm so sorry, I'll bring it right away." },
+      { "role": "learner", "es": "No hay prisa, gracias.", "en": "No rush, thank you." }
+    ],
+    "register_note": "'No hay prisa' (no rush) is a gracious power move — it de-escalates and signals ease."
+  },
+  "register_map": {
+    "type": "register_map",
+    "context": "Restaurant (Mexico / Puerto Vallarta)",
+    "formal_triggers": ["fine dining", "hotel restaurants"],
+    "informal_triggers": ["taquerías", "street food", "fondas"],
+    "street_food_note": "At a taquería: '¿Cuánto es?' (How much is it?) and 'uno de pastor' (one pastor taco) are all you need.",
+    "warmth_move": "Complimenting a specific dish by name ('el ceviche estuvo increíble') is remembered."
+  }
+}
