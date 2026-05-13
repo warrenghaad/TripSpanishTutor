@@ -78,13 +78,19 @@ async function loadAll(roots: string[]): Promise<{ parsed: ParsedFile[]; errors:
     for (const f of files) {
       if (seen.has(f)) continue;
       seen.add(f);
+      const rel = path.relative(VAULT_ROOT, f);
+      // Generated day-packs land at `08_ProjectPacks/YYYY-MM-DD.md` and are
+      // assembled output, not spec-frontmatter content. Skip them silently
+      // so they don't pollute the parse-error list in the UI. Spec-compliant
+      // pack source notes still live under `08_ProjectPacks/sources/...`.
+      if (/^08_ProjectPacks[\\/][0-9]{4}-[0-9]{2}-[0-9]{2}\.md$/.test(rel)) continue;
       try {
         const p = await parseFile(f);
         if (p.frontmatter.status === "draft") continue;
         parsed.push(p);
       } catch (e: any) {
         errors.push({
-          file: path.relative(VAULT_ROOT, f),
+          file: rel,
           message: e?.message || String(e),
           line: e?.line,
         });
