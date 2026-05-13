@@ -181,6 +181,7 @@ For Priority-1 scene-category packs (e.g. `01_Airport.json`, `05_Restaurant.json
 - Voice-first: usable Spanish before explanation. Adult intelligence preserved; beginner-accessible.
 - `word_lens_entry` notes must include the `flashcards` tag plus inline `front::back` lines so the Spaced Repetition plugin picks them up.
 - Questions are sacred. If unsure, append to `00_Inbox/Questions To Ask Later.md`. Never silently drop content.
+- **Curriculum balance:** unless the human scopes the request to a single axis, distribute output across the ten research axes in `[[Research Axes]]` (canonical source: `12_Schemas/research_axes_taxonomy.json`). Max 0.18 of output per axis by default. Every card must route back to learner voice per the card principle in that doc.
 
 ---
 
