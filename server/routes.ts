@@ -354,6 +354,19 @@ export async function registerRoutes(
   });
 
   // -------- Vault-sourced daily packs --------
+  //
+  // GET /api/packs/daily/:date
+  //   Assembles the day-pack for `:date` (YYYY-MM-DD) by reading
+  //   `VallartaVoxVault/11_Research/<date>/` recursively. Returns the typed
+  //   `DailyPack` JSON (airport / atelier / bridge / vocab / grammar arrays,
+  //   personalization, sources actually assembled, and any per-file parse
+  //   errors with `{ file, message, line }`).
+  //
+  //   Note: files marked `status: integrated` are physically moved to
+  //   `08_ProjectPacks/<date>/sources/` by `POST /api/packs/sync`. After a
+  //   sync, those files are no longer assembled by this endpoint — the
+  //   rendered markdown pack at `08_ProjectPacks/<date>.md` is the canonical
+  //   record. This is intentional: `integrated` is the terminal state.
   app.get("/api/packs/daily/:date", async (req, res) => {
     try {
       const date = req.params.date;
@@ -369,6 +382,18 @@ export async function registerRoutes(
     }
   });
 
+  // POST /api/packs/sync
+  //   Walks every dated folder under `11_Research/`, assembles a day-pack,
+  //   writes/overwrites `08_ProjectPacks/<date>.md`, records a manifest row
+  //   per pack, and moves `status: integrated` source files into
+  //   `08_ProjectPacks/<date>/sources/` (recursively, preserving subpaths).
+  //
+  //   Response shape: `SyncReport`
+  //     { built:   number,           // packs newly written
+  //       updated: number,           // packs overwritten
+  //       skipped: number,           // dated folders with zero parseable files
+  //       errors:  { file, message, line? }[],  // per-file parse failures
+  //       dates:   string[] }        // every date the sync touched
   app.post("/api/packs/sync", async (_req, res) => {
     try {
       const { syncAllDailyPacks } = await import("./vault/sync");

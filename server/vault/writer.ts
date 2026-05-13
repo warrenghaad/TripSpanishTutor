@@ -31,8 +31,17 @@ export function renderDailyPackMarkdown(pack: DailyPack): string {
   lines.push("> To change the day pack, edit the source files in `11_Research/" + pack.date + "/`.");
   lines.push("");
 
-  if (pack.personalization.learnerProfileExcerpt) {
+  if (
+    pack.personalization.learnerProfileExcerpt ||
+    pack.personalization.recentWords.length ||
+    pack.personalization.recentGrammar.length
+  ) {
     lines.push("## Personalization");
+    if (pack.personalization.learnerProfileExcerpt) {
+      lines.push("### Learner profile");
+      lines.push(pack.personalization.learnerProfileExcerpt);
+      lines.push("");
+    }
     if (pack.personalization.recentWords.length) {
       lines.push("- Recent words: " + pack.personalization.recentWords.map((w) => w.word).join(", "));
     }
