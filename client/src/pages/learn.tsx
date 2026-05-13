@@ -18,11 +18,14 @@ type GoldenSections = {
   saveableCard?: string;
 };
 
+type SaveableCard = { front?: string; back?: string; note?: string };
+
 type AirportEntry = {
   slug: string;
   title: string;
   tags: string[];
   sections: GoldenSections;
+  saveable?: SaveableCard;
   sourcePath: string;
 };
 
@@ -33,6 +36,7 @@ type AtelierEntry = {
   title: string;
   excerpt?: string;
   sections: GoldenSections;
+  saveable?: SaveableCard;
   sourcePath: string;
 };
 
@@ -41,6 +45,8 @@ type BridgeEntry = {
   pairId: string;
   travel: GoldenSections;
   literary: GoldenSections;
+  travelSaveable?: SaveableCard;
+  literarySaveable?: SaveableCard;
   sourcePath: string;
 };
 
@@ -191,30 +197,42 @@ function EntryCard({ slug, title, subtitle, tags, excerpt, sections, sourcePath,
   );
 }
 
-function airportSavePayload(e: AirportEntry) {
+// Prefer the explicit `## Saveable Card` block (front/back/note) when the
+// vault file provides one — that's the spec's canonical practice card.
+// Fall back to Natural/Meaning/Literal heuristics for older files.
+function fromSaveable(s: SaveableCard | undefined, fallback: { source: string; translated: string; literal?: string; note?: string }) {
   return {
-    source: e.sections.natural || e.sections.literal || e.title,
-    translated: e.sections.meaning || e.title,
-    literal: e.sections.literal,
-    tag: "airport",
+    source: s?.front || fallback.source,
+    translated: s?.back || fallback.translated,
+    literal: fallback.literal,
+    note: s?.note || fallback.note,
   };
 }
-function atelierSavePayload(e: AtelierEntry) {
-  return {
+function airportSavePayload(e: AirportEntry) {
+  const base = fromSaveable(e.saveable, {
     source: e.sections.natural || e.sections.literal || e.title,
     translated: e.sections.meaning || e.title,
     literal: e.sections.literal,
-    tag: `atelier-${e.author.toLowerCase()}`,
-  };
+  });
+  return { ...base, tag: "airport" };
+}
+function atelierSavePayload(e: AtelierEntry) {
+  const base = fromSaveable(e.saveable, {
+    source: e.sections.natural || e.sections.literal || e.title,
+    translated: e.sections.meaning || e.title,
+    literal: e.sections.literal,
+  });
+  return { ...base, tag: `atelier-${e.author.toLowerCase()}` };
 }
 function bridgeSavePayload(e: BridgeEntry, side: "travel" | "literary") {
   const s = side === "travel" ? e.travel : e.literary;
-  return {
+  const sc = side === "travel" ? e.travelSaveable : e.literarySaveable;
+  const base = fromSaveable(sc, {
     source: s.natural || s.literal || e.pairId,
     translated: s.meaning || e.pairId,
     literal: s.literal,
-    tag: `bridge-${side}`,
-  };
+  });
+  return { ...base, tag: `bridge-${side}` };
 }
 
 export default function Learn() {

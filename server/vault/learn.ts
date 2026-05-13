@@ -115,6 +115,26 @@ function authorFromAtelierPath(relPath: string, fmAuthor?: string): string {
   return "Unknown";
 }
 
+// Literary authors only — `06_Atelier/` also holds FilmMurals_PV / Music
+// subdirectories which surface under their own modes (future work), not in
+// the Borges literary-atelier card. Anything else parsed as `atelier-entry`
+// without a literary author is dropped from /learn's Borges section.
+const LITERARY_AUTHORS = new Set([
+  "Borges", "Neruda", "Cortazar", "Cortázar", "Paz", "Rulfo",
+]);
+
+function parseSaveableCard(body: string): { front?: string; back?: string; note?: string } {
+  const m = body.match(/^##\s+Saveable Card\s*$([\s\S]*?)(?=^##\s+|\s*$(?![\s\S]))/m);
+  if (!m) return {};
+  const block = m[1];
+  const pick = (label: string): string | undefined => {
+    const re = new RegExp(`^[-*]\\s*\\*\\*${label}:?\\*\\*\\s*(.+?)\\s*$`, "im");
+    const mm = block.match(re);
+    return mm ? mm[1].trim() : undefined;
+  };
+  return { front: pick("front"), back: pick("back"), note: pick("note") };
+}
+
 // --- Boot-time cache + watcher invalidation -----------------------------
 //
 // /learn is the highest-traffic surface of the app and its content lives in
@@ -175,12 +195,14 @@ export async function loadLearnModes(): Promise<LearnModes> {
         title: titleFromSlug(p.slug),
         tags: p.frontmatter.tags || [],
         sections: p.sections,
+        saveable: parseSaveableCard(p.body),
         sourcePath: p.relPath,
       });
       continue;
     }
     if (kind === "atelier-entry") {
       const author = authorFromAtelierPath(p.relPath, p.frontmatter.author);
+      if (!LITERARY_AUTHORS.has(author)) continue;
       const entry: AtelierEntry = {
         slug: p.slug,
         author,
@@ -188,6 +210,7 @@ export async function loadLearnModes(): Promise<LearnModes> {
         title: titleFromSlug(p.slug),
         excerpt: leadExcerpt(p.body),
         sections: p.sections,
+        saveable: parseSaveableCard(p.body),
         sourcePath: p.relPath,
       };
       const list = atelierByAuthor.get(author) || [];
@@ -205,11 +228,17 @@ export async function loadLearnModes(): Promise<LearnModes> {
         });
         continue;
       }
+      // For bridge notes the body has nested halves; extract a saveable
+      // card from each half-block independently if present.
+      const travelBlock = p.body.match(/^#\s+Travel Half\s*$([\s\S]*?)(?=^#\s+Literary Half|$(?![\s\S]))/m)?.[1] || "";
+      const literaryBlock = p.body.match(/^#\s+Literary Half\s*$([\s\S]*)/m)?.[1] || "";
       bridge.push({
         slug: p.slug,
         pairId: p.frontmatter.pair_id || p.slug,
         travel: p.bridgeHalves.travel,
         literary: p.bridgeHalves.literary,
+        travelSaveable: parseSaveableCard(travelBlock),
+        literarySaveable: parseSaveableCard(literaryBlock),
         sourcePath: p.relPath,
       });
       continue;

@@ -45,11 +45,18 @@ export type ParsedFile = {
   bridgeHalves?: { travel: GoldenSections; literary: GoldenSections };
 };
 
+export type SaveableCard = {
+  front?: string;
+  back?: string;
+  note?: string;
+};
+
 export type AirportEntry = {
   slug: string;
   title: string;
   tags: string[];
   sections: GoldenSections;
+  saveable?: SaveableCard;
   sourcePath: string;
 };
 
@@ -61,6 +68,7 @@ export type AtelierEntry = {
   /** Lead text above the first `## Meaning` heading — typically the quoted literary line. */
   excerpt?: string;
   sections: GoldenSections;
+  saveable?: SaveableCard;
   sourcePath: string;
 };
 
@@ -69,6 +77,8 @@ export type BridgeEntry = {
   pairId: string;
   travel: GoldenSections;
   literary: GoldenSections;
+  travelSaveable?: SaveableCard;
+  literarySaveable?: SaveableCard;
   sourcePath: string;
 };
 
