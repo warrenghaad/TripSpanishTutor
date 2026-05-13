@@ -28,6 +28,9 @@ async function main() {
   const packs = [];
   const allCards = [];
   const typeCounts = {};
+  const scenePacks = [];
+  const allScenelets = [];
+  const allPhraseCards = [];
 
   for (const file of files) {
     const raw = await fs.readFile(file, "utf8");
@@ -38,26 +41,43 @@ async function main() {
       console.error(`✘ invalid JSON: ${path.relative(REPO_ROOT, file)}: ${err.message}`);
       process.exit(1);
     }
-    if (!Array.isArray(pack?.cards)) continue;
-
     const rel = path.relative(REPO_ROOT, file);
-    const packMeta = {
-      pack_id: pack.pack_id ?? path.basename(file, ".json"),
-      title: pack.title ?? null,
-      version: pack.version ?? null,
-      vault_path: pack.vault_path ?? path.dirname(rel),
-      source_file: rel,
-      card_count: pack.cards.length,
-    };
-    packs.push(packMeta);
 
-    for (const card of pack.cards) {
-      allCards.push({
-        pack_id: packMeta.pack_id,
-        ...card,
-      });
-      const t = card.type ?? "unknown";
-      typeCounts[t] = (typeCounts[t] ?? 0) + 1;
+    // Shape A — card pack
+    if (Array.isArray(pack?.cards)) {
+      const packMeta = {
+        pack_id: pack.pack_id ?? path.basename(file, ".json"),
+        title: pack.title ?? null,
+        version: pack.version ?? null,
+        vault_path: pack.vault_path ?? path.dirname(rel),
+        source_file: rel,
+        card_count: pack.cards.length,
+      };
+      packs.push(packMeta);
+      for (const card of pack.cards) {
+        allCards.push({ pack_id: packMeta.pack_id, ...card });
+        const t = card.type ?? "unknown";
+        typeCounts[t] = (typeCounts[t] ?? 0) + 1;
+      }
+      continue;
+    }
+
+    // Shape B — scene pack
+    if (Array.isArray(pack?.scenelets)) {
+      const meta = {
+        pack: pack.pack ?? path.basename(file, ".json"),
+        vault_path: pack.vault_path ?? rel,
+        source_file: rel,
+        scenelet_count: pack.scenelets.length,
+        phrase_card_count: Array.isArray(pack.phrase_cards) ? pack.phrase_cards.length : 0,
+        has_authority_exchange: !!pack.authority_exchange,
+        has_register_map: !!pack.register_map,
+      };
+      scenePacks.push(meta);
+      for (const s of pack.scenelets) allScenelets.push({ pack: meta.pack, ...s });
+      if (Array.isArray(pack.phrase_cards)) {
+        for (const p of pack.phrase_cards) allPhraseCards.push({ pack: meta.pack, ...p });
+      }
     }
   }
 

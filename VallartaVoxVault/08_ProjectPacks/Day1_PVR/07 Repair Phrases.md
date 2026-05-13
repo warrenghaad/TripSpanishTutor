@@ -88,7 +88,7 @@ Practice:
 - ¿Qué significa "ahorita"?
 - ¿Qué significa "mande"?
 
-Voice note: *ahorita* in Mexico can mean *right now* or *eventually*. Ask. Save the answer in [[10 Questions To Ask Later]].
+Voice note: *ahorita* in Mexico can mean *right now* or *eventually*. Ask. Save the answer in [[10 Day 1 Question Catcher]].
 
 ---
 

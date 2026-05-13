@@ -36,7 +36,7 @@ tags:
 
 ## Words I caught
 
-<!-- New words heard in the wild. Promote each to [[05 WordLens]] later. -->
+<!-- New words heard in the wild. Promote each to [[05_WordLens/README|05 WordLens]] later. -->
 
 -
 

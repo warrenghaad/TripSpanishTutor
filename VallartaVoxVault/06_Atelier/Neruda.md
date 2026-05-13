@@ -29,7 +29,7 @@ Pick a small thing in your day (a taxi, a key, the airport floor). Write 5 lines
 4. Name what it gives you: *me das + [noun].*
 5. Close with a question: *¿qué serías sin mí?*
 
-Drop the result in [[07 Creative Writing]].
+Drop the result in [[07_CreativeWriting/README|07 Creative Writing]].
 
 ## Constraint
 

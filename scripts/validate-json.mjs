@@ -41,10 +41,16 @@ function validatePack(pack, filePath, schema, errors) {
     errors.push(`${rel}: top-level must be a JSON object`);
     return;
   }
+  // Scene pack (shape B): scenelets + phrase_cards, validate lightly.
+  if (Array.isArray(pack.scenelets)) {
+    if (!pack.pack) errors.push(`${rel}: scene pack missing required \"pack\" field`);
+    return;
+  }
+  // Taxonomy / config / other typed JSON: ignore if not card-pack shaped.
   if (!Array.isArray(pack.cards)) {
-    // skip non-pack json (e.g. config files), only flag if it looks pack-shaped
-    if ("pack_id" in pack || "version" in pack) {
-      errors.push(`${rel}: has pack metadata but missing \"cards\" array`);
+    // Only flag as broken if it claims to be a card pack but is missing cards.
+    if ("pack_id" in pack && !("project_id" in pack)) {
+      errors.push(`${rel}: has pack_id but missing \"cards\" array`);
     }
     return;
   }

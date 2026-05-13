@@ -26,5 +26,5 @@ Format suggestion:
 
 When an item earns it, promote it to:
 - [[Voice Recovery Phrases]] if it's voice
-- [[09 Grammar]] if it teaches a pattern
-- [[05 WordLens]] if it's a single word worth keeping
+- [[09_Grammar/README|09 Grammar]] if it teaches a pattern
+- [[05_WordLens/README|05 WordLens]] if it's a single word worth keeping

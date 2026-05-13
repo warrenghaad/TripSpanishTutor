@@ -31,7 +31,7 @@ Pick a small action (washing your hands, ordering a coffee, finding your gate). 
 4. Cuidado con ...
 5. Al final, ...
 
-Drop the result in [[07 Creative Writing]].
+Drop the result in [[07_CreativeWriting/README|07 Creative Writing]].
 
 ## Related
 
