@@ -1,0 +1,136 @@
+{
+  "version": "offline-workbook-v1",
+  "workbook_unit": {
+    "id": "objects",
+    "title": "Objects",
+    "subtitle": "Nouns, articles, adjectives, and attention to ordinary things.",
+    "motifs": [
+      "object",
+      "salt",
+      "bread",
+      "cup",
+      "passport"
+    ],
+    "spanish_targets": [
+      "articles",
+      "adjective agreement",
+      "tener",
+      "estar en"
+    ],
+    "spread_ids": [
+      "objects.cup.morning"
+    ]
+  },
+  "workbook_spread": {
+    "id": "objects.cup.morning",
+    "unit_id": "objects",
+    "title": "La taza guarda la manana",
+    "anchor": {
+      "type": "object",
+      "label": "a cup on a table",
+      "copyright_status": "original_or_user_observed"
+    },
+    "motif": "ordinary object as memory vessel",
+    "spanish_seed": [
+      {
+        "es": "la taza",
+        "en": "the cup",
+        "note": "feminine noun"
+      },
+      {
+        "es": "la mesa",
+        "en": "the table",
+        "note": "feminine noun"
+      },
+      {
+        "es": "guarda",
+        "en": "it keeps / stores",
+        "note": "present tense of guardar"
+      },
+      {
+        "es": "mi manana",
+        "en": "my morning",
+        "note": "possessive + noun"
+      }
+    ],
+    "geometry_lens": {
+      "concept": "container",
+      "explanation": "The object holds a moment. A noun becomes a small boundary around experience."
+    },
+    "commentary": "Use an ordinary object to build Spanish that keeps the learner's day from vanishing.",
+    "activity": {
+      "type": "write_and_expand",
+      "prompt": "Choose one object near you. Write five noun phrases, adding one detail each time.",
+      "starter_steps": [
+        "mi taza",
+        "mi taza negra",
+        "mi taza negra en la mesa",
+        "mi taza negra con cafe",
+        "mi taza negra guarda mi manana"
+      ]
+    },
+    "personal_echo": {
+      "prompt": "Write one sentence that makes the object feel like part of your day.",
+      "example_es": "Mi taza no es importante, pero guarda mi manana.",
+      "example_en": "My cup is not important, but it keeps my morning."
+    },
+    "saveable_card": {
+      "phrase": "Mi taza guarda mi manana.",
+      "grammar_pattern": "mi + noun + verb + object",
+      "identity_note": "The learner uses simple Spanish without shrinking the thought."
+    },
+    "actions": [
+      "translate",
+      "chat_about_this",
+      "grow_sentence",
+      "make_past",
+      "make_future",
+      "save_to_journal",
+      "save_as_question"
+    ],
+    "tags": [
+      "objects",
+      "identity",
+      "articles",
+      "adjectives",
+      "offline"
+    ]
+  },
+  "ask_later_question": {
+    "id": "local-generated-id",
+    "createdAt": "ISO_TIMESTAMP",
+    "source": "offline_workbook",
+    "spreadId": "objects.cup.morning",
+    "question": "Why does guardar work better than tener here?",
+    "tags": [
+      "grammar",
+      "verb_choice",
+      "identity"
+    ],
+    "status": "queued_for_llm"
+  },
+  "offline_pattern": {
+    "id": "pattern.me-siento",
+    "triggers": [
+      "i feel",
+      "me siento",
+      "feel tired",
+      "feel strange"
+    ],
+    "response": {
+      "title": "Say how you feel",
+      "spanish": "Me siento cansado.",
+      "literal": "I feel myself tired.",
+      "natural": "I feel tired.",
+      "grammar": [
+        "me siento = I feel",
+        "adjective agrees with the speaker",
+        "add porque for a reason"
+      ],
+      "practice": [
+        "Me siento cansado porque viaje mucho.",
+        "Me siento raro pero despierto."
+      ]
+    }
+  }
+}
