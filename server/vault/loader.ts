@@ -59,8 +59,18 @@ const BaseFrontmatterSchema = z.object({
   pair_id: z.string().optional(),
 }).passthrough();
 
-// Per-kind required-field refinements.
+// Per-kind required-field refinements (per SPEC.md §3).
+// Kinds whose Perplexity-authored research files require both `locale` and `mode`.
+const MODE_AND_LOCALE_KINDS: VaultKind[] = ["airport-scenelet", "atelier-entry", "bridge-note", "vocab-pack", "grammar-note"];
+// Kinds that require `locale` only (mode optional or N/A).
+const LOCALE_ONLY_KINDS: VaultKind[] = ["day-pack", "daily-prep", "wordlens-entry"];
 const FrontmatterSchema = BaseFrontmatterSchema.superRefine((fm, ctx) => {
+  if (MODE_AND_LOCALE_KINDS.includes(fm.kind)) {
+    if (!fm.locale) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["locale"], message: `${fm.kind} requires \`locale\`` });
+    if (!fm.mode) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["mode"], message: `${fm.kind} requires \`mode\`` });
+  } else if (LOCALE_ONLY_KINDS.includes(fm.kind)) {
+    if (!fm.locale) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["locale"], message: `${fm.kind} requires \`locale\`` });
+  }
   if (fm.kind === "atelier-entry" && !fm.author) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["author"], message: "atelier-entry requires `author`" });
   }
