@@ -98,13 +98,13 @@ export type DailyPack = {
   vocab: VocabPackEntry[];
   grammar: GrammarNoteEntry[];
   sources: { path: string; kind: VaultKind; status: string }[];
-  errors: { file: string; message: string }[];
+  errors: { file: string; message: string; line?: number; column?: number }[];
 };
 
 export type SyncReport = {
   built: number;
   updated: number;
   skipped: number;
-  errors: { file: string; message: string }[];
+  errors: { file: string; message: string; line?: number; column?: number }[];
   dates: string[];
 };

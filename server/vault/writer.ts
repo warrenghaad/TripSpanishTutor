@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { PACKS_DIR, RESEARCH_DIR, VAULT_ROOT, parseFile } from "./loader";
+import { PACKS_DIR, RESEARCH_DIR, VAULT_ROOT, parseFile, listResearchFilesForDate } from "./loader";
 import type { DailyPack, GoldenSections } from "./types";
 
 function fmtSections(s: GoldenSections, prefix = "###"): string {
@@ -102,7 +102,8 @@ export function renderDailyPackMarkdown(pack: DailyPack): string {
   if (pack.errors.length) {
     lines.push("## Skipped (parse errors)");
     for (const e of pack.errors) {
-      lines.push(`- \`${e.file}\` — ${e.message}`);
+      const loc = e.line ? `:${e.line}` : "";
+      lines.push(`- \`${e.file}${loc}\` — ${e.message}`);
     }
     lines.push("");
   }
@@ -120,29 +121,28 @@ export async function writeDailyPackFile(pack: DailyPack): Promise<"built" | "up
   return existed ? "updated" : "built";
 }
 
-/** Move integrated source files under 08_ProjectPacks/<date>/sources/. */
+/**
+ * Move integrated source files under 08_ProjectPacks/<date>/sources/.
+ * Walks 11_Research/<date>/ recursively (matching the loader) so files in
+ * subfolders also get relocated when status:integrated is set. Preserves the
+ * subpath under 11_Research/<date>/ when moving.
+ */
 export async function moveIntegratedSources(date: string): Promise<{ moved: string[] }> {
   const moved: string[] = [];
-  const srcDir = path.join(RESEARCH_DIR, date);
-  let entries: import("fs").Dirent[];
-  try {
-    entries = await fs.readdir(srcDir, { withFileTypes: true });
-  } catch {
-    return { moved };
-  }
-  const destDir = path.join(PACKS_DIR, date, "sources");
-  for (const e of entries) {
-    if (!e.isFile() || !e.name.endsWith(".md")) continue;
-    const abs = path.join(srcDir, e.name);
+  const srcRoot = path.join(RESEARCH_DIR, date);
+  const destRoot = path.join(PACKS_DIR, date, "sources");
+  const files = await listResearchFilesForDate(date);
+  for (const abs of files) {
     try {
       const p = await parseFile(abs);
       if (p.frontmatter.status !== "integrated") continue;
-      await fs.mkdir(destDir, { recursive: true });
-      const dest = path.join(destDir, e.name);
+      const relUnderDate = path.relative(srcRoot, abs);
+      const dest = path.join(destRoot, relUnderDate);
+      await fs.mkdir(path.dirname(dest), { recursive: true });
       await fs.rename(abs, dest);
       moved.push(path.relative(VAULT_ROOT, dest));
     } catch {
-      /* ignore — bad frontmatter handled elsewhere */
+      /* parse errors handled by the loader path */
     }
   }
   return { moved };
