@@ -1,4 +1,15 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { apiUrl } from "@/lib/api-base";
+
+// Resolve any `/api/...` path against the configured backend base URL.
+// On the web this is a no-op (relative URLs work fine). Inside the
+// Capacitor iOS shell the page is served from `capacitor://localhost`,
+// so relative `/api/...` would 404 — apiUrl() rewrites those to the
+// deployed backend URL stored in @capacitor/preferences.
+async function resolve(url: string): Promise<string> {
+  if (url.startsWith("/api/") || url === "/api") return apiUrl(url);
+  return url;
+}
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -12,7 +23,7 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  const res = await fetch(await resolve(url), {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
@@ -29,7 +40,8 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    const url = queryKey.join("/") as string;
+    const res = await fetch(await resolve(url), {
       credentials: "include",
     });
 

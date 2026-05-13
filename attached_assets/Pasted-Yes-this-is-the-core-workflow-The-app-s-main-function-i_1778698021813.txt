@@ -1,0 +1,238 @@
+Yes — this is the core workflow. The app’s “main function” is not simply translation, tutoring, journaling, or offline caching; it is the loop that turns lived Spanish encounters into reusable intelligence for the next encounter, without making you feel evaluated or managed.
+
+## Reflected design thread
+
+You are building a two-surface system: the app is the explorable Spanish world, and the LLM is the companion/tool you invoke when you want conversation, analysis, translation, rehearsal, or deeper interpretation. The app should not become a chat wrapper, and the chat should not swallow the whole product; each surface has a different job.
+
+The permanent workflow is:
+
+1. Before going out, the system creates a scoped **ProjectPack** for the actual outing.
+2. While out, you use offline/exploratory tools: translator, search bar, phrase lookup, trails, WordLens, cached variants.
+3. During use, the app captures signals: questions, failed phrases, surprises, saved words, trails, and repair moments.
+4. When you return, you offload the day into an LLM chat that feels like someone asking, “How did your day go?”
+5. The analysis converts what actually happened into better future packs, trails, and language territory.
+
+That is the whole game because the app learns from lived use rather than from artificial lessons.
+
+## The three objects
+
+The design thread clarified that there are three first-class memory objects, each with a different purpose.
+
+```json
+{
+  "core_objects": {
+    "Trail": {
+      "meaning": "what I explored",
+      "stores": [
+        "nodes visited",
+        "edges followed",
+        "branches",
+        "saved words",
+        "questions",
+        "nearby doors"
+      ],
+      "purpose": "turn rabbit holes into durable language memory"
+    },
+    "ProjectPack": {
+      "meaning": "what I may need tonight",
+      "stores": [
+        "outing context",
+        "likely phrases",
+        "likely replies",
+        "tone",
+        "fallbacks",
+        "recent trails",
+        "cached question-response snippets"
+      ],
+      "purpose": "scope offline intelligence to the immediate situation"
+    },
+    "DailyAnalysis": {
+      "meaning": "what actually mattered",
+      "stores": [
+        "raw notes",
+        "phrases I needed",
+        "things I heard",
+        "translation gaps",
+        "repair moments",
+        "unexpected needs",
+        "items to promote into future packs"
+      ],
+      "purpose": "convert lived experience into better future context"
+    }
+  }
+}
+```
+
+The Trail is the memory object, the ProjectPack is the situational scope object, and the DailyAnalysis is the learning/conversion object. This separation matters because it lets curiosity, immediate need, and lived evidence coexist without becoming a graded curriculum.
+
+## Pre-cache reframe
+
+Pre-cache intelligence is not just “download some phrases before I leave.” It is the system asking: given who you are, what you have recently explored, where you are going, what you may want to say, and what you usually fail to anticipate, what should be locally available before you lose connectivity or social bandwidth ?
+
+The important part is that pre-cache is scoped to actual performance and immediate need. It should include obvious travel phrases, but also the less obvious high-frequency things you probably would not think to request ahead of time: small clarifications, softeners, bookstore-owner questions, repair phrases, casual warmth, and ways to say your real thoughts in simpler Spanish.
+
+So the pack is not a lesson. It is a stocked field kit.
+
+```json
+{
+  "project_pack": {
+    "outing": "bookstore / cafe / evening walk",
+    "context": {
+      "place_type": "bookstore",
+      "purpose": ["browse", "ask recommendations", "small talk"],
+      "tone": ["curious", "warm", "not over-formal"],
+      "user_voice": ["thoughtful", "playful", "literary", "precise"]
+    },
+    "cached_intelligence": {
+      "likely_phrases": [
+        "Estoy buscando algo de literatura mexicana.",
+        "¿Qué me recomienda si me gusta la prosa más rara o filosófica?",
+        "Solo estoy mirando, gracias."
+      ],
+      "likely_replies": [
+        "¿Busca algo en particular?",
+        "Tenemos autores locales aquí.",
+        "Ese está muy recomendado."
+      ],
+      "fallbacks": [
+        "¿Puede decirlo más despacio?",
+        "Creo que entiendo, pero no sé cómo responder todavía.",
+        "¿Cómo se diría eso de una forma más natural?"
+      ],
+      "nearby_doors": [
+        "recomendar",
+        "hojear",
+        "edición",
+        "raro",
+        "cotidiano",
+        "ensayo",
+        "cuento"
+      ]
+    }
+  }
+}
+```
+
+## End-of-day analysis
+
+The return-to-hotel LLM chat should not feel like homework. It should feel like someone intelligent asking about your day, letting you write messy English, fragments, attempted Spanish, remembered phrases, confusions, emotions, and scenes.
+
+The analysis pass should extract what you needed repeatedly, what surprised you, what you avoided saying, what you heard but could not parse, and what should be promoted into the next ProjectPack. This is crucial because your most important translation needs may be the ones you would never manually add to a phrasebook.
+
+```json
+{
+  "daily_analysis": {
+    "raw_offload": "I went to a bookstore and wanted to ask for weird Mexican short stories but froze...",
+    "extracted_needs": [
+      "asking for recommendations",
+      "describing taste in books",
+      "softening uncertainty",
+      "saying I am just browsing",
+      "asking whether an author is local"
+    ],
+    "missed_translations": [
+      "I like books that feel ordinary but strange",
+      "I am not looking for anything specific",
+      "Do people here read this author?"
+    ],
+    "heard_phrases": [
+      "¿Busca algo en especial?",
+      "Ese autor se vende mucho",
+      "Tenemos una sección de autores jaliscienses"
+    ],
+    "promote_to_next_pack": [
+      "bookstore small talk",
+      "literary taste vocabulary",
+      "regional author questions",
+      "polite browsing phrases"
+    ]
+  }
+}
+```
+
+This is the learning engine: anticipated need versus actual need. The app improves because your day teaches it what matters next.
+
+## Offline surface
+
+The offline mode should mainly be exploratory, but it still needs a practice affordance. Your persistent search/practice bar is the right center of gravity because it can support lookup, translation attempts, curiosity capture, cached answers, conjugation, phrase variants, and queued questions from one surface.
+
+A good rule is: offline chat should not pretend to be full LLM chat. It should behave like a compact local response layer: dropdown answers, cached examples, phrase variants, saved translations, similar prior questions, and “queue this for later analysis” when the local system is not enough.
+
+```json
+{
+  "offline_input_bar": {
+    "roles": [
+      "search cached Spanish resources",
+      "enter practice phrase",
+      "ask a local question",
+      "capture curiosity",
+      "queue unresolved question",
+      "open WordLens",
+      "resume Trail"
+    ],
+    "ui_behavior": {
+      "persistent": true,
+      "response_style": "dropdown",
+      "does_not_take_over_screen": true,
+      "local_first": true,
+      "queues_for_later_llm": true
+    }
+  }
+}
+```
+
+So the offline app remains alive, but not fake. It gives local intelligence now and saves the unresolved richness for the hotel debrief.
+
+## Permanent workflow
+
+Here is the design thread in its most compressed form:
+
+```json
+{
+  "permanent_workflow": {
+    "before_outing": {
+      "object": "ProjectPack",
+      "question": "What might I need tonight?",
+      "inputs": [
+        "destination",
+        "purpose",
+        "recent trails",
+        "recent analyses",
+        "known weak spots",
+        "personal voice"
+      ],
+      "output": "scoped offline intelligence"
+    },
+    "during_outing": {
+      "object": "Trail + QueuedQuestions",
+      "question": "What am I exploring or needing right now?",
+      "inputs": [
+        "searches",
+        "translations",
+        "practice attempts",
+        "saved words",
+        "failed phrases",
+        "heard phrases"
+      ],
+      "output": "lived language trace"
+    },
+    "after_outing": {
+      "object": "DailyAnalysis",
+      "question": "What actually mattered today?",
+      "inputs": [
+        "raw English offload",
+        "attempted Spanish",
+        "trails",
+        "queued questions",
+        "project pack",
+        "field notes"
+      ],
+      "output": "better future packs and richer learner context"
+    }
+  }
+}
+```
+
+This is why it has been hard to make permanent: it is not one feature. It is a closed loop across three time horizons — before, during, and after the lived situation. If that loop works, the app becomes a personal expressive companion rather than a generic translator, tutor, or phrasebook.
+
+Sources

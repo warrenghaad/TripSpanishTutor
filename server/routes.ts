@@ -427,6 +427,49 @@ export async function registerRoutes(
     }
   });
 
+  // -------- Vault browser (read-only) --------
+  //
+  // Backs the in-app /vault tab and the iOS Capacitor shell. The tree is
+  // built once at boot (`primeVaultBrowserCache`) and refreshed by a
+  // chokidar watcher; file reads are constrained to VAULT_ROOT.
+  //
+  // Optional auth: set the `VAULT_API_KEY` env var to require an
+  // `X-Vault-Key` header on every vault request. When unset, the
+  // endpoints are open (useful in dev, NOT recommended for a public
+  // deploy that exposes private notes).
+  const requireVaultKey = (req: any, res: any, next: any) => {
+    const expected = process.env.VAULT_API_KEY;
+    if (!expected) return next();
+    const provided = req.header("x-vault-key");
+    if (provided && provided === expected) return next();
+    return res.status(401).json({ error: "Unauthorized" });
+  };
+  app.get("/api/vault/tree", requireVaultKey, async (_req, res) => {
+    try {
+      const { getVaultTree } = await import("./vault/browse");
+      const tree = await getVaultTree();
+      res.json(tree);
+    } catch (e: any) {
+      console.error("vault tree error:", e);
+      res.status(500).json({ error: e?.message || "Failed to load vault tree" });
+    }
+  });
+
+  app.get("/api/vault/file", requireVaultKey, async (req, res) => {
+    try {
+      const rel = String(req.query.path || "");
+      const { resolveVaultFile } = await import("./vault/browse");
+      const abs = await resolveVaultFile(rel);
+      if (!abs) return res.status(404).json({ error: "File not found" });
+      const fs = await import("fs/promises");
+      const content = await fs.readFile(abs, "utf-8");
+      res.json({ path: rel, content });
+    } catch (e: any) {
+      console.error("vault file error:", e);
+      res.status(500).json({ error: e?.message || "Failed to load vault file" });
+    }
+  });
+
   // -------- Translation Cards (Translate surface) --------
   app.post("/api/translate/rich", async (req, res) => {
     try {

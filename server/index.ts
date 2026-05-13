@@ -22,6 +22,31 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+// CORS for the Capacitor iOS shell. The webview serves pages from
+// `capacitor://localhost` (and `http://localhost` on some configs), so
+// API requests to the deployed Replit backend are cross-origin and need
+// explicit allow headers. Same-origin browser traffic is unaffected.
+const ALLOWED_ORIGINS = new Set([
+  "capacitor://localhost",
+  "ionic://localhost",
+  "http://localhost",
+  "http://localhost:5000",
+]);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Vary", "Origin");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Vault-Key");
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(204);
+    }
+  }
+  next();
+});
+
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -48,7 +73,11 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
+      // Redact response bodies for vault file reads — they contain raw
+      // markdown that may include private notes / drafts. The status +
+      // duration is enough for debugging.
+      const isVaultFile = path.startsWith("/api/vault/file");
+      if (capturedJsonResponse && !isVaultFile) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
@@ -96,16 +125,20 @@ app.use((req, res, next) => {
       // Vault → day-pack sync. In dev, watch the research dir; in prod, sync once at boot.
       try {
         const { primeLearnCache, watchLearnVault } = await import("./vault/learn");
+        const { primeVaultBrowserCache, watchVaultBrowser } = await import("./vault/browse");
         if (process.env.NODE_ENV === "production") {
           const { runBootSync } = await import("./vault/watcher");
           await runBootSync();
           await primeLearnCache();
+          await primeVaultBrowserCache();
         } else {
           const { runBootSync, startVaultWatcher } = await import("./vault/watcher");
           await runBootSync();
           await primeLearnCache();
+          await primeVaultBrowserCache();
           startVaultWatcher();
           watchLearnVault();
+          watchVaultBrowser();
         }
       } catch (e: any) {
         log(`vault module init failed: ${e?.message || e}`, "vault");

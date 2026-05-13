@@ -15,6 +15,7 @@ import TrailsPage from "@/pages/trails";
 import TranslatePage from "@/pages/translate";
 import ChatPage from "@/pages/chat";
 import GrowPage from "@/pages/grow";
+import VaultPage from "@/pages/vault";
 import TranslatorPanel from "./components/translator-panel";
 
 function Router() {
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/journal" component={Journal} />
       <Route path="/trip-pack" component={TripPackPage} />
       <Route path="/trails" component={TrailsPage} />
+      <Route path="/vault" component={VaultPage} />
       <Route component={NotFound} />
     </Switch>
   );
