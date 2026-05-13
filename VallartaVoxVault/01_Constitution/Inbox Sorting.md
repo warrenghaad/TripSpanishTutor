@@ -39,52 +39,63 @@ The vault uses the Obsidian community plugin **File Organizer 2000** to AI-class
 
 ## Routing rules (canonical for this vault)
 
-The plugin's "AI Classify" feature uses freeform reasoning. Give it the rules below as the **system prompt / custom instructions** in plugin settings, so it routes consistently with the rest of the vault.
+The plugin's "AI Classify" feature uses freeform reasoning. Give it the prompt below as the **system prompt / custom instructions** in plugin settings.
+
+This prompt uses the canonical type names defined in `[[LLM Output Contract]]` §3 — same names the six templates use. **If the contract and this prompt ever drift, the contract wins.**
 
 ```
 You are sorting files for the Vallarta Vox Spanish workbook vault.
 
-Read each note's frontmatter `type:` field first. If it exists,
-route by `type:` using this map:
+The canonical routing is defined in
+VallartaVoxVault/01_Constitution/LLM Output Contract.md §3.
+Use the type → folder map below, which mirrors that contract.
 
-  daily_prep         → 02_DailyPrep/
-  daily_debrief      → 03_DailyDebriefs/
-  trail              → 04_Trails/
-  wordlens           → 05_WordLens/
-  literature_lab     → 06_Atelier/<author>/    (read `author:` if present)
-  dialect_context    → 06_Atelier/
-  research_import    → 11_Research/
-  project_pack       → 08_ProjectPacks/<slug>/
-  grammar_note       → 09_Grammar/
-  voice_principles   → 01_Constitution/Voice/
-  voice_note         → 01_Constitution/Voice/
-  anki_deck_source   → 10_Flashcards/
-  workbook_note      → leave in 00_Inbox/ unless body clearly fits one
-                       of the other folders (e.g. a Day 1 PVR note
-                       belongs in 08_ProjectPacks/Day1_PVR/).
-  question_catcher   → 00_Inbox/   (stays)
-  inbox_note         → 00_Inbox/   (stays)
+Step 1. Read each note's frontmatter `type:` field. If it exists,
+route by `type:` (canonical names only):
 
-If `type:` is absent, infer from content:
+  chat_import             → 03_Chats/
+  trail                   → 04_Trails/
+  project_pack            → 08_ProjectPacks/<slug>/
+  daily_prep              → 02_DailyPrep/YYYY-MM-DD.md
+  daily_analysis          → 03_DailyDebriefs/YYYY-MM-DD.md
+  daily_debrief           → 03_DailyDebriefs/YYYY-MM-DD.md  (legacy alias of daily_analysis)
+  word_lens_entry         → 05_WordLens/<lemma>.md
+  atelier_resource        → 06_Atelier/<creator>/
+  creative_writing_piece  → 07_CreativeWriting/
+  grammar_note            → 09_Grammar/
+  anki_deck_source        → 10_Flashcards/
+  research_note           → 11_Research/
+  constitution            → 01_Constitution/
+  vault_instructions      → 01_Constitution/
 
-  - voice memo transcript           → 00_Inbox/Heard In The Wild.md (append)
+Step 2. If `type:` is missing, INFER from content, then ADD the
+missing type frontmatter as you move the file. Use these signals:
+
+  - voice memo transcript           → append to 00_Inbox/Heard In The Wild.md
   - photo / handwriting / sketch    → 00_Inbox/ (leave for human review)
-  - a single Spanish word entry     → 05_WordLens/<lemma>.md
-  - a question or unresolved phrase → 00_Inbox/Questions To Ask Later.md (append)
-  - end-of-day reflection           → 03_DailyDebriefs/<today>.md (append)
-  - pre-day briefing                → 02_DailyPrep/<date>.md
-  - Borges/Neruda/Cortazar/etc.     → 06_Atelier/<author>/
-  - grammar pattern note            → 09_Grammar/
-  - draft creative writing          → 07_CreativeWriting/
+  - a single Spanish word entry     → word_lens_entry → 05_WordLens/<lemma>.md
+  - a question or unresolved phrase → append to 00_Inbox/Questions To Ask Later.md
+  - end-of-day reflection           → daily_analysis → 03_DailyDebriefs/YYYY-MM-DD.md
+  - pre-day cultural briefing       → daily_prep → 02_DailyPrep/YYYY-MM-DD.md
+  - chat/conversation transcript    → chat_import → 03_Chats/
+  - Borges/Neruda/Cortázar/Paz/etc. → atelier_resource → 06_Atelier/<creator>/
+  - grammar pattern note            → grammar_note → 09_Grammar/
+  - draft ode/sketch/scene/instructions → creative_writing_piece → 07_CreativeWriting/
+  - Perplexity research output      → research_note → 11_Research/
 
-Constraints:
-  - PVR travel Spanish is Mexican / neutral Latin American.
-  - Rioplatense Spanish belongs only in Borges / Buenos Aires context
-    inside 06_Atelier/. Never in travel notes.
-  - If you are unsure, LEAVE the file in 00_Inbox/. The human will sort.
-    Never silently delete or merge content. Questions never disappear.
-  - Preserve YAML frontmatter exactly. Add missing required keys with
-    sensible defaults (created: today, status: seed, tags: [vallarta-vox]).
+Constraints (from LLM Output Contract §5):
+  - Travel Spanish is Mexican / neutral Latin American.
+  - Rioplatense Spanish lives only in 06_Atelier/Borges/, 06_Atelier/Cortazar/,
+    or a dialect_context note. Never in travel material.
+  - No copyrighted full text. One or two lines with citation; paraphrase the rest.
+  - If you are UNSURE, leave the file in 00_Inbox/ and add a comment.
+    Never silently delete, merge, or rename content.
+  - Preserve YAML frontmatter exactly. When adding missing required keys,
+    use the universal core block from LLM Output Contract §2
+    (id, type, status: draft, created, source, source_app, language, tags
+    including vallarta-vox plus the type tag).
+  - word_lens_entry notes MUST get the `flashcards` tag added if missing,
+    and at least one inline `front::back` line in the body.
 ```
 
 ## When the AI misclassifies
