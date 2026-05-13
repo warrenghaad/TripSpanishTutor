@@ -64,7 +64,7 @@ pair_id: door-001           # optional — for bridge-notes, links the two halve
 | Kind | Required frontmatter | Notes |
 |---|---|---|
 | `airport-scenelet` | kind, date, locale, mode=airport | tags strongly recommended |
-| `atelier-entry` | kind, date, locale, mode=atelier, author | `work` recommended; excerpt only per copyright rule |
+| `atelier-entry` | kind, date, locale, mode=atelier, author | `work` recommended; excerpt only per copyright rule. The legacy name `borges-line` is an alias — parsers should treat `kind: borges-line` as `atelier-entry` with `author: Borges`. |
 | `bridge-note` | kind, date, locale, mode=bridge, pair_id | body must contain both halves (see §5) |
 | `vocab-pack` | kind, date, locale, mode | one entry per word in the body |
 | `grammar-note` | kind, date, locale, mode | |
