@@ -1,0 +1,97 @@
+{
+  "TranslationCard": {
+    "fields": [
+      "id",
+      "createdAt",
+      "sourceText",
+      "sourceLanguage",
+      "targetLanguage",
+      "translatedText",
+      "literalText",
+      "naturalText",
+      "grammarNotes",
+      "detectedVerbs",
+      "detectedAdjectives",
+      "detectedAdverbs",
+      "tags",
+      "saved",
+      "conversationId",
+      "journalEntryId",
+      "status"
+    ]
+  },
+  "IdentityCard": {
+    "fields": [
+      "id",
+      "type",
+      "title",
+      "pattern",
+      "examples",
+      "grammar",
+      "practice",
+      "tags"
+    ]
+  },
+  "DailyJournalPrompt": {
+    "fields": [
+      "id",
+      "type",
+      "title",
+      "prompt_en",
+      "sentence_frames",
+      "example_entry",
+      "tags"
+    ]
+  },
+  "SentenceGrowerTemplate": {
+    "fields": [
+      "id",
+      "type",
+      "title",
+      "base",
+      "layers",
+      "grammar",
+      "tags"
+    ]
+  },
+  "VerbCard": {
+    "fields": [
+      "id",
+      "type",
+      "infinitive",
+      "english",
+      "forms",
+      "examples",
+      "personal_prompt",
+      "tags"
+    ]
+  },
+  "BorgesLabCard": {
+    "fields": [
+      "id",
+      "mode",
+      "type",
+      "title",
+      "english_title",
+      "literary_function",
+      "grammar_bridge",
+      "airport_bridge",
+      "practice",
+      "tags"
+    ]
+  },
+  "AskLaterQuestion": {
+    "fields": [
+      "id",
+      "created_at",
+      "source",
+      "mode",
+      "book",
+      "question",
+      "tags",
+      "line_reference",
+      "why_i_noticed_it",
+      "status"
+    ]
+  }
+}
