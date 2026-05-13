@@ -8,6 +8,7 @@ tags:
   - spanish
   - wordlens
   - mexican
+  - flashcards
 ---
 
 # ahorita
@@ -42,3 +43,15 @@ Context, tone, and body language do the work. The same word covers urgency and p
 ## Voice note
 
 Mexicans have an entire emotional spectrum compressed into one word. Respect it.
+
+## Flashcards
+
+<!-- Spaced Repetition plugin picks these up via `front::back` syntax
+     when the note has the `#flashcards` tag (set above).
+     AI-AnkiSync can later upgrade them with example, etymology, register. -->
+
+ahorita (immediate)::*Ahorita lo hago.* — I'm doing it right now.
+ahorita (soft soon)::*Ahorita voy.* — I'm coming in a sec.
+ahorita (eventually / never)::*Ahorita...* (with a shrug). Don't hold your breath.
+What is *ahorita* a diminutive of?::*ahora* (now).
+Most punctual: *ahorita* or *ya*?::*ya* — *ya* usually means right-this-instant; *ahorita* is fuzzy.

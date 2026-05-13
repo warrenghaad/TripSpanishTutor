@@ -1,28 +1,55 @@
 # 05 WordLens
 
-Every word worth keeping gets its own note. Small, durable, linkable.
+Every word worth keeping gets its own note. Small, durable, linkable. Each note doubles as a Spaced Repetition source for the Anki sync.
 
 ## Naming
 
-`<lemma>.md` — e.g. `ahorita.md`, `mande.md`, `traste.md`. Lowercase, no diacritics-as-filename gymnastics (in the body, keep accents).
+`<lemma>.md` — e.g. `ahorita.md`, `mande.md`, `traste.md`. Lowercase filename; keep accents in the body.
 
-## What a WordLens note has
+## Frontmatter
 
 ```yaml
 ---
 type: wordlens
 lemma: ahorita
-part_of_speech: adv
-register: informal_mx
-created: 2026-05-13
+part_of_speech: adv          # noun | verb | adj | adv | phrase | interjection
+register: informal_mx        # neutral | formal | informal_mx | informal_rio | literary | slang
+created: YYYY-MM-DD
+tags:
+  - spanish
+  - wordlens
+  - mexican           # or argentine, chilean, etc.
+  - flashcards        # ← required so Spaced Repetition picks up the cards
 ---
 ```
 
-- Spanish word + accentuation
-- 1–3 contexts where you've actually heard / used it
-- ambiguity (does it mean two different things?)
-- related words (see also)
-- a sentence you wrote with it
+## Body sections
+
+- **Meaning** — short. Bullet ambiguities.
+- **How to read which** — the *which-meaning-now* skill.
+- **Heard** — dated captures from the wild.
+- **Use it yourself** — sentences you've actually said or want to say.
+- **See also** — related words / WordLens entries / notes.
+- **Voice note** — one line of personal stance.
+- **Flashcards** — inline cards in `front::back` syntax for the Spaced Repetition plugin.
+
+## Flashcard convention
+
+This vault uses the Obsidian **Spaced Repetition** plugin. To make a card:
+
+1. Add `flashcards` to the note's `tags:`.
+2. Anywhere in the body, write a line: `Front question::Back answer`.
+3. For reversed (both directions): use `:::` instead of `::`.
+4. For multi-line:
+
+```md
+Front question
+?
+Back answer that can run multiple
+lines until a blank line.
+```
+
+The plugin surfaces these inline. Once a word is stable, **AI-AnkiSync** can upgrade the card with etymology, example sentence, and register notes, then push to Anki for offline phone drilling.
 
 ## Example
 

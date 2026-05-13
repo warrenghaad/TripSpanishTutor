@@ -1,17 +1,28 @@
 ---
-type: day_dashboard
-status: seed
+id: vv-pack-day1-pvr
+type: project_pack
+status: ready
+pack_slug: day1_pvr_voice_travel
+outing_date: 2026-05-13
+location_name: PVR airport → hotel
+paired_prep: "[[02_DailyPrep/2026-05-13]]"
+paired_debrief: "[[03_DailyDebriefs/2026-05-13]]"
+app_pack_json: "[[day1_pvr_voice_travel.json]]"
 tags:
-  - spanish
-  - travel
-  - pvr
+  - vallarta-vox
+  - project-pack
   - day1
+  - pvr
 created: 2026-05-13
 ---
 
 # 00 Day 1 PVR Dashboard
 
 > Mexican / neutral Latin American Spanish. Save Rioplatense for Borges.
+
+Paired DailyPrep → [[02_DailyPrep/2026-05-13]]
+Paired DailyDebrief → [[03_DailyDebriefs/2026-05-13]]
+App offline JSON → `day1_pvr_voice_travel.json` (this folder)
 
 ## Today's goal
 
