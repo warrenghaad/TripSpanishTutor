@@ -9,6 +9,7 @@ vite.config.ts.*
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/cache
+.obsidian/plugins/*/data.json
 .trash/
 *.log
 content/dist/*
