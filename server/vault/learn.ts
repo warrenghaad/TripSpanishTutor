@@ -94,17 +94,27 @@ async function loadAll(roots: string[]): Promise<{ parsed: ParsedFile[]; errors:
   return { parsed, errors };
 }
 
+// Cap the rendered literary excerpt at a conservative length to keep us
+// inside fair-use territory regardless of how long an upstream vault file
+// quotes a primary source. The full source file is still authoritative on
+// disk; this only constrains what the UI renders.
+const MAX_EXCERPT_CHARS = 280;
+
 function leadExcerpt(body: string): string | undefined {
   const before = body.split(/^##\s+/m)[0] || "";
   const trimmed = before.trim();
   if (!trimmed) return undefined;
   // Strip a leading "> " from each line so the excerpt renders as plain prose;
   // the UI will style it as a pull-quote.
-  return trimmed
+  const cleaned = trimmed
     .split("\n")
     .map((l) => l.replace(/^>\s?/, ""))
     .join("\n")
-    .trim() || undefined;
+    .trim();
+  if (!cleaned) return undefined;
+  return cleaned.length > MAX_EXCERPT_CHARS
+    ? cleaned.slice(0, MAX_EXCERPT_CHARS).trimEnd() + "…"
+    : cleaned;
 }
 
 function authorFromAtelierPath(relPath: string, fmAuthor?: string): string {
