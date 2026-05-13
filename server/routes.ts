@@ -405,6 +405,26 @@ export async function registerRoutes(
     }
   });
 
+  // -------- Learn modes (vault-sourced) --------
+  //
+  // GET /api/learn/modes
+  //   Returns content for the /learn page grouped into the three project
+  //   modes — airport, borges (atelier authors), bridge — by reading the
+  //   VallartaVoxVault recursively. Each mode includes an `empty` hint that
+  //   tells the user exactly which template + folder to drop a file into to
+  //   populate it. Read fresh on every request — small enough to be cheap
+  //   and always in sync with the latest vault state.
+  app.get("/api/learn/modes", async (_req, res) => {
+    try {
+      const { loadLearnModes } = await import("./vault/learn");
+      const modes = await loadLearnModes();
+      res.json(modes);
+    } catch (e: any) {
+      console.error("learn modes error:", e);
+      res.status(500).json({ error: e?.message || "Failed to load learn modes" });
+    }
+  });
+
   // -------- Translation Cards (Translate surface) --------
   app.post("/api/translate/rich", async (req, res) => {
     try {

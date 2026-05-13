@@ -1,297 +1,451 @@
 import Layout from "@/components/layout";
-import SentenceBuilder from "@/components/sentence-builder";
-import { bodyParts, conditionalScenarios, commonVerbs } from "@/lib/data";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, User, Brain, MapPin, ArrowRight, Utensils, DollarSign, ShoppingBag, Pencil, MessageCircle, Sprout } from "lucide-react";
-import { useState } from "react";
+import { Plane, BookOpen, GitMerge, ArrowRight, Pencil, MessageCircle, Sprout, Bookmark, AlertTriangle } from "lucide-react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { listLocalCards, type LocalTranslationCard } from "@/lib/translation-store";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { listLocalCards, saveLocalCard, type LocalTranslationCard } from "@/lib/translation-store";
 
-export default function Learn() {
-  const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
-  const { data: practiceCards = [] } = useQuery<LocalTranslationCard[]>({
-    queryKey: ["learn-practice-cards"],
-    queryFn: async () => {
-      const all = await listLocalCards();
-      return all.filter((c) => (c.tags || []).includes("practice"));
+type GoldenSections = {
+  meaning?: string;
+  literal?: string;
+  natural?: string;
+  grammarSkeleton?: string;
+  practiceMove?: string;
+  saveableCard?: string;
+};
+
+type AirportEntry = {
+  slug: string;
+  title: string;
+  tags: string[];
+  sections: GoldenSections;
+  sourcePath: string;
+};
+
+type AtelierEntry = {
+  slug: string;
+  author: string;
+  work?: string;
+  title: string;
+  sections: GoldenSections;
+  sourcePath: string;
+};
+
+type BridgeEntry = {
+  slug: string;
+  pairId: string;
+  travel: GoldenSections;
+  literary: GoldenSections;
+  sourcePath: string;
+};
+
+type EmptyHint = { template: string; folder: string; message: string };
+
+type LearnModes = {
+  generatedAt: string;
+  airport: { entries: AirportEntry[]; empty: EmptyHint };
+  borges: { authors: { name: string; entries: AtelierEntry[] }[]; empty: EmptyHint };
+  bridge: { entries: BridgeEntry[]; empty: EmptyHint };
+  errors: { file: string; message: string; line?: number }[];
+};
+
+type Mode = "airport" | "borges" | "bridge";
+
+const MODE_META: Record<Mode, { label: string; tagline: string; icon: typeof Plane; accent: string }> = {
+  airport: {
+    label: "Airport",
+    tagline: "Phenomenology of arrival — orientation, signs, asking again without shame.",
+    icon: Plane,
+    accent: "from-sky-500/10 to-sky-500/0 border-sky-500/30 text-sky-700",
+  },
+  borges: {
+    label: "Borges",
+    tagline: "Literary high-density grammar — Borges, Neruda, Cortázar, Paz, Rulfo.",
+    icon: BookOpen,
+    accent: "from-amber-500/10 to-amber-500/0 border-amber-500/30 text-amber-800",
+  },
+  bridge: {
+    label: "Bridge",
+    tagline: "Pair the travel line with its literary echo, side by side.",
+    icon: GitMerge,
+    accent: "from-emerald-500/10 to-emerald-500/0 border-emerald-500/30 text-emerald-800",
+  },
+};
+
+function GoldenView({ s }: { s: GoldenSections }) {
+  const Section = ({ heading, body }: { heading: string; body?: string }) =>
+    body ? (
+      <div className="space-y-1">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{heading}</p>
+        <div className="text-sm whitespace-pre-wrap text-foreground leading-relaxed">{body}</div>
+      </div>
+    ) : null;
+  return (
+    <div className="space-y-3">
+      <Section heading="Meaning" body={s.meaning} />
+      <Section heading="Literal" body={s.literal} />
+      <Section heading="Natural" body={s.natural} />
+      <Section heading="Grammar Skeleton" body={s.grammarSkeleton} />
+      <Section heading="Practice Move" body={s.practiceMove} />
+      <Section heading="Saveable Card" body={s.saveableCard} />
+    </div>
+  );
+}
+
+function EmptyState({ hint }: { hint: EmptyHint }) {
+  return (
+    <div className="border-2 border-dashed border-border rounded-xl p-8 text-center text-muted-foreground" data-testid="empty-mode">
+      <p className="text-sm">{hint.message}</p>
+      <p className="text-xs mt-2 opacity-70">
+        Template: <code className="font-mono">{hint.template}</code> · Folder: <code className="font-mono">{hint.folder}</code>
+      </p>
+    </div>
+  );
+}
+
+function SaveCardButton({ slug, savePayload }: { slug: string; savePayload: { source: string; translated: string; literal?: string; tag: string } }) {
+  const qc = useQueryClient();
+  const [saved, setSaved] = useState(false);
+  const m = useMutation({
+    mutationFn: async () => {
+      await saveLocalCard({
+        sourceText: savePayload.source,
+        sourceLanguage: "es",
+        targetLanguage: "en",
+        translatedText: savePayload.translated,
+        literalText: savePayload.literal,
+        grammarNotes: [],
+        detectedVerbs: [],
+        detectedAdjectives: [],
+        detectedAdverbs: [],
+        suggestedTransforms: [],
+        tags: ["practice", savePayload.tag, slug],
+        saved: true,
+        status: "completed",
+      });
+    },
+    onSuccess: () => {
+      setSaved(true);
+      qc.invalidateQueries({ queryKey: ["learn-practice-cards"] });
     },
   });
+  return (
+    <Button
+      size="sm"
+      variant={saved ? "secondary" : "outline"}
+      disabled={saved || m.isPending}
+      onClick={() => m.mutate()}
+      data-testid={`button-save-${slug}`}
+    >
+      <Bookmark className="w-3 h-3 mr-1" /> {saved ? "Saved" : "Save to Practice"}
+    </Button>
+  );
+}
 
-  const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'utensils': return Utensils;
-      case 'activity': return Activity;
-      case 'map-pin': return MapPin;
-      case 'dollar-sign': return DollarSign;
-      case 'shopping-bag': return ShoppingBag;
-      default: return MapPin;
-    }
+function EntryCard({ slug, title, subtitle, tags, sections, sourcePath, savePayload }: {
+  slug: string;
+  title: string;
+  subtitle?: string;
+  tags?: string[];
+  sections: GoldenSections;
+  sourcePath: string;
+  savePayload: { source: string; translated: string; literal?: string; tag: string };
+}) {
+  return (
+    <Card className="p-5 space-y-4 hover:border-primary/40 transition-colors" data-testid={`card-entry-${slug}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-display font-semibold text-lg text-foreground" data-testid={`text-title-${slug}`}>{title}</h3>
+          {subtitle && <p className="text-xs text-muted-foreground italic">{subtitle}</p>}
+          {tags && tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {tags.map((t) => (
+                <span key={t} className="text-[10px] bg-muted/60 text-muted-foreground rounded-full px-2 py-0.5">
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+        <SaveCardButton slug={slug} savePayload={savePayload} />
+      </div>
+      <GoldenView s={sections} />
+      <p className="text-[10px] font-mono text-muted-foreground/70 pt-1 border-t border-border/40">{sourcePath}</p>
+    </Card>
+  );
+}
+
+function airportSavePayload(e: AirportEntry) {
+  return {
+    source: e.sections.natural || e.sections.literal || e.title,
+    translated: e.sections.meaning || e.title,
+    literal: e.sections.literal,
+    tag: "airport",
   };
+}
+function atelierSavePayload(e: AtelierEntry) {
+  return {
+    source: e.sections.natural || e.sections.literal || e.title,
+    translated: e.sections.meaning || e.title,
+    literal: e.sections.literal,
+    tag: `atelier-${e.author.toLowerCase()}`,
+  };
+}
+function bridgeSavePayload(e: BridgeEntry, side: "travel" | "literary") {
+  const s = side === "travel" ? e.travel : e.literary;
+  return {
+    source: s.natural || s.literal || e.pairId,
+    translated: s.meaning || e.pairId,
+    literal: s.literal,
+    tag: `bridge-${side}`,
+  };
+}
+
+export default function Learn() {
+  const [mode, setMode] = useState<Mode>("airport");
+  const { data, isLoading, error } = useQuery<LearnModes>({
+    queryKey: ["learn-modes"],
+    queryFn: async () => {
+      const r = await fetch("/api/learn/modes");
+      if (!r.ok) throw new Error("Failed to load");
+      return r.json();
+    },
+  });
+  const { data: practiceCards = [] } = useQuery<LocalTranslationCard[]>({
+    queryKey: ["learn-practice-cards"],
+    queryFn: async () => (await listLocalCards()).filter((c) => (c.tags || []).includes("practice")),
+  });
+
+  const counts = useMemo(() => ({
+    airport: data?.airport.entries.length ?? 0,
+    borges: data?.borges.authors.reduce((a, g) => a + g.entries.length, 0) ?? 0,
+    bridge: data?.bridge.entries.length ?? 0,
+  }), [data]);
+
+  const [authorTab, setAuthorTab] = useState<string | null>(null);
+  const activeAuthor = useMemo(() => {
+    if (!data) return null;
+    if (authorTab && data.borges.authors.find((a) => a.name === authorTab)) return authorTab;
+    return data.borges.authors[0]?.name ?? null;
+  }, [authorTab, data]);
 
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto px-6 py-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-foreground mb-2">Learning Center</h1>
-          <p className="text-muted-foreground">Master specific categories and grammar rules.</p>
+      <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+        <header>
+          <h1 className="text-3xl font-display font-bold text-foreground mb-2">Learn</h1>
+          <p className="text-muted-foreground">Three modes, sourced from the vault: airport orientation, literary atelier, and the bridge between them.</p>
         </header>
 
-        <Tabs defaultValue="scenarios" className="space-y-8">
-          <TabsList className="bg-background border-b border-border w-full justify-start rounded-none h-auto p-0 gap-6 overflow-x-auto">
-             <TabsTrigger 
-              value="scenarios" 
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-3 font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+        {/* Three mode cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="mode-cards">
+          {(["airport", "borges", "bridge"] as Mode[]).map((m) => {
+            const meta = MODE_META[m];
+            const Icon = meta.icon;
+            const isActive = mode === m;
+            return (
+              <Card
+                key={m}
+                onClick={() => setMode(m)}
+                className={`relative p-5 cursor-pointer transition-all overflow-hidden bg-gradient-to-br ${meta.accent} ${
+                  isActive ? "ring-2 ring-primary shadow-lg" : "hover:shadow-md"
+                }`}
+                data-testid={`mode-card-${m}`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <Icon className="w-7 h-7" />
+                  <span className="text-xs font-bold bg-white/70 rounded-full px-2 py-0.5">
+                    {counts[m]} {counts[m] === 1 ? "entry" : "entries"}
+                  </span>
+                </div>
+                <h2 className="text-xl font-display font-bold text-foreground">{meta.label}</h2>
+                <p className="text-xs text-muted-foreground mt-1 leading-snug">{meta.tagline}</p>
+              </Card>
+            );
+          })}
+        </div>
+
+        {error && (
+          <Card className="p-4 bg-destructive/10 border-destructive/30 text-destructive flex items-center gap-2" data-testid="error-state">
+            <AlertTriangle className="w-4 h-4" /> Couldn't load vault content.
+          </Card>
+        )}
+        {isLoading && <p className="text-sm text-muted-foreground">Loading vault…</p>}
+
+        {data && data.errors.length > 0 && (
+          <Card className="p-3 bg-amber-50 border-amber-200 text-xs text-amber-900" data-testid="vault-warnings">
+            <p className="font-bold mb-1">Some vault files were skipped:</p>
+            <ul className="space-y-0.5 font-mono">
+              {data.errors.slice(0, 5).map((e, i) => (
+                <li key={i}>
+                  {e.file}{e.line ? `:${e.line}` : ""} — {e.message}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+
+        {/* Mode body */}
+        {data && (
+          <AnimatePresence mode="wait">
+            <motion.section
+              key={mode}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              data-testid={`mode-body-${mode}`}
             >
-              "Where would I go if..."
-            </TabsTrigger>
-            <TabsTrigger 
-              value="body" 
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-3 font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-            >
-              Body & Health
-            </TabsTrigger>
-             <TabsTrigger 
-              value="verbs" 
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-3 font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-            >
-              Travel Verbs
-            </TabsTrigger>
-            <TabsTrigger
-              value="practice"
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-3 font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-              data-testid="tab-practice"
-            >
+              {mode === "airport" && (
+                <div className="space-y-4">
+                  {data.airport.entries.length === 0 ? (
+                    <EmptyState hint={data.airport.empty} />
+                  ) : (
+                    data.airport.entries.map((e) => (
+                      <EntryCard
+                        key={e.slug}
+                        slug={e.slug}
+                        title={e.title}
+                        tags={e.tags}
+                        sections={e.sections}
+                        sourcePath={e.sourcePath}
+                        savePayload={airportSavePayload(e)}
+                      />
+                    ))
+                  )}
+                </div>
+              )}
+
+              {mode === "borges" && (
+                <div className="space-y-4">
+                  {data.borges.authors.length === 0 ? (
+                    <EmptyState hint={data.borges.empty} />
+                  ) : (
+                    <Tabs value={activeAuthor || undefined} onValueChange={setAuthorTab}>
+                      <TabsList className="bg-background border-b border-border w-full justify-start rounded-none h-auto p-0 gap-4 overflow-x-auto">
+                        {data.borges.authors.map((g) => (
+                          <TabsTrigger
+                            key={g.name}
+                            value={g.name}
+                            className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-3 font-medium text-muted-foreground"
+                            data-testid={`tab-author-${g.name}`}
+                          >
+                            {g.name}
+                            <span className="ml-2 text-[10px] bg-muted text-muted-foreground rounded-full px-2 py-0.5">
+                              {g.entries.length}
+                            </span>
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
+                      {data.borges.authors.map((g) => (
+                        <TabsContent key={g.name} value={g.name} className="space-y-4 mt-4">
+                          {g.entries.length === 0 ? (
+                            <EmptyState hint={data.borges.empty} />
+                          ) : (
+                            g.entries.map((e) => (
+                              <EntryCard
+                                key={e.slug}
+                                slug={e.slug}
+                                title={e.title}
+                                subtitle={[e.author, e.work].filter(Boolean).join(" — ")}
+                                sections={e.sections}
+                                sourcePath={e.sourcePath}
+                                savePayload={atelierSavePayload(e)}
+                              />
+                            ))
+                          )}
+                        </TabsContent>
+                      ))}
+                    </Tabs>
+                  )}
+                </div>
+              )}
+
+              {mode === "bridge" && (
+                <div className="space-y-4">
+                  {data.bridge.entries.length === 0 ? (
+                    <EmptyState hint={data.bridge.empty} />
+                  ) : (
+                    data.bridge.entries.map((e) => (
+                      <Card key={e.slug} className="p-5 space-y-4" data-testid={`card-bridge-${e.slug}`}>
+                        <div className="flex items-center justify-between gap-3">
+                          <h3 className="font-display font-semibold text-lg">Pair: {e.pairId}</h3>
+                          <p className="text-[10px] font-mono text-muted-foreground/70">{e.sourcePath}</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-3 p-4 rounded-lg bg-sky-500/5 border border-sky-500/20">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-bold uppercase tracking-wider text-sky-700 flex items-center gap-1"><Plane className="w-3 h-3" /> Travel</p>
+                              <SaveCardButton slug={`${e.slug}-travel`} savePayload={bridgeSavePayload(e, "travel")} />
+                            </div>
+                            <GoldenView s={e.travel} />
+                          </div>
+                          <div className="space-y-3 p-4 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1"><BookOpen className="w-3 h-3" /> Literary</p>
+                              <SaveCardButton slug={`${e.slug}-literary`} savePayload={bridgeSavePayload(e, "literary")} />
+                            </div>
+                            <GoldenView s={e.literary} />
+                          </div>
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              )}
+            </motion.section>
+          </AnimatePresence>
+        )}
+
+        {/* Saved to Practice (smaller bottom section) */}
+        <section className="pt-6 border-t border-border" data-testid="saved-to-practice">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
+              <Pencil className="w-4 h-4 text-primary" />
               Saved to Practice
               {practiceCards.length > 0 && (
-                <span className="ml-2 text-[10px] bg-primary/10 text-primary rounded-full px-2 py-0.5">
-                  {practiceCards.length}
-                </span>
+                <span className="text-[10px] bg-primary/10 text-primary rounded-full px-2 py-0.5">{practiceCards.length}</span>
               )}
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="scenarios" className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <section>
-              <div className="mb-6">
-                 <h2 className="text-xl font-display font-bold flex items-center gap-2 text-foreground">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  Problem Solving & Locations
-                </h2>
-                <p className="text-muted-foreground text-sm mt-1">Click a condition to see where you should go and what to say.</p>
-              </div>
-             
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  {conditionalScenarios.map((scenario) => {
-                    const Icon = getIcon(scenario.icon);
-                    const isSelected = selectedScenario === scenario.id;
-                    
-                    return (
-                      <Card 
-                        key={scenario.id} 
-                        onClick={() => setSelectedScenario(scenario.id)}
-                        className={`p-4 cursor-pointer transition-all duration-200 hover:border-primary/50 flex items-center gap-4 ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'bg-white'}`}
-                      >
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isSelected ? 'bg-primary text-white' : 'bg-secondary/10 text-secondary'}`}>
-                          <Icon className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <p className="font-bold text-foreground">{scenario.condition}</p>
-                          <p className="text-sm text-muted-foreground">{scenario.spanishCondition}</p>
-                        </div>
-                        {isSelected && <ArrowRight className="w-4 h-4 text-primary ml-auto animate-pulse" />}
-                      </Card>
-                    );
-                  })}
-                </div>
-
-                <div className="relative min-h-[300px]">
-                   <AnimatePresence mode="wait">
-                    {selectedScenario ? (
-                      (() => {
-                        const scenario = conditionalScenarios.find(s => s.id === selectedScenario)!;
-                        const Icon = getIcon(scenario.icon);
-                        return (
-                          <motion.div
-                            key={scenario.id}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="h-full"
-                          >
-                            <Card className="h-full bg-secondary text-white p-8 flex flex-col justify-center items-center text-center relative overflow-hidden border-none shadow-xl">
-                               <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
-                               <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -ml-32 -mb-32 pointer-events-none" />
-                               
-                               <div className="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center mb-6 relative z-10">
-                                 <Icon className="w-10 h-10 text-white" />
-                               </div>
-
-                               <h3 className="text-3xl font-display font-bold mb-2 relative z-10 text-white">
-                                 {scenario.location}
-                               </h3>
-                               
-                               <div className="w-12 h-1 bg-primary rounded-full mb-6 relative z-10" />
-                               
-                               <div className="space-y-2 relative z-10 mb-8">
-                                 <p className="text-white/60 text-sm uppercase tracking-widest font-bold">The Solution</p>
-                                 <p className="text-2xl font-display font-medium">"{scenario.spanishAction}"</p>
-                                 <p className="text-white/80 italic">({scenario.action})</p>
-                               </div>
-
-                               {scenario.linkedSituationId && (
-                                 <Link href={`/situations/${scenario.linkedSituationId}`}>
-                                    <Button className="relative z-10 bg-white text-secondary hover:bg-white/90 font-bold gap-2">
-                                      Practice Here <ArrowRight className="w-4 h-4" />
-                                    </Button>
-                                 </Link>
-                               )}
-                            </Card>
-                          </motion.div>
-                        );
-                      })()
-                    ) : (
-                      <div className="h-full flex items-center justify-center text-center p-8 border-2 border-dashed border-border rounded-xl text-muted-foreground">
-                        <p>Select a scenario on the left to practice.</p>
-                      </div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-            </section>
-          </TabsContent>
-
-          <TabsContent value="body" className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <section>
-              <h2 className="text-xl font-display font-bold mb-4 flex items-center gap-2">
-                <User className="w-5 h-5 text-primary" />
-                Vocabulary: Las Partes del Cuerpo
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {bodyParts.map((part) => (
-                  <Card key={part.id} className="p-4 flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer group">
-                    <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center text-secondary mb-3 group-hover:scale-110 transition-transform">
-                      {/* Fallback icon logic */}
-                      <Activity className="w-6 h-6" />
-                    </div>
-                    <p className="font-bold text-foreground">{part.spanish}</p>
-                    <p className="text-sm text-muted-foreground">{part.english}</p>
-                  </Card>
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-display font-bold mb-4 flex items-center gap-2">
-                <Brain className="w-5 h-5 text-primary" />
-                Practice: Expressing Feelings
-              </h2>
-              <SentenceBuilder />
-            </section>
-          </TabsContent>
-
-          <TabsContent value="verbs" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <section>
-              <h2 className="text-xl font-display font-bold mb-6 flex items-center gap-2">
-                <ArrowRight className="w-5 h-5 text-primary" />
-                Essential Travel Verbs
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {commonVerbs.filter(v => ['ir', 'necesitar', 'querer'].includes(v.id)).map((verb) => (
-                  <Card key={verb.id} className="overflow-hidden group hover:shadow-md transition-shadow">
-                    <div className="bg-secondary p-4 text-white">
-                      <h3 className="text-xl font-bold capitalize">{verb.spanish}</h3>
-                      <p className="text-white/70 text-sm">{verb.english}</p>
-                    </div>
-                    <div className="p-4 space-y-3 bg-white">
-                      <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                        <span className="text-xs font-bold text-muted-foreground uppercase">Present (I)</span>
-                        <span className="text-foreground font-medium">{verb.conjugations.present.yo}</span>
-                      </div>
-                      <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                         <span className="text-xs font-bold text-muted-foreground uppercase">Past (I)</span>
-                        <span className="text-foreground font-medium">{verb.conjugations.past.yo}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                         <span className="text-xs font-bold text-muted-foreground uppercase">Future (I)</span>
-                        <span className="text-foreground font-medium">{verb.conjugations.future.yo}</span>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-              <div className="mt-8">
-                 <h3 className="text-lg font-bold mb-4">Practice Sentences</h3>
-                 <SentenceBuilder />
-              </div>
-            </section>
-          </TabsContent>
-
-          <TabsContent value="practice" className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <section>
-              <div className="mb-6">
-                <h2 className="text-xl font-display font-bold flex items-center gap-2 text-foreground">
-                  <Pencil className="w-5 h-5 text-primary" />
-                  Sentences You Saved to Practice
-                </h2>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Translations you tagged "Practice" land here. Open them to chat about each one or grow new sentences from them.
-                </p>
-              </div>
-
-              {practiceCards.length === 0 ? (
-                <div className="border-2 border-dashed border-border rounded-xl p-8 text-center text-muted-foreground" data-testid="empty-practice-list">
-                  <Pencil className="w-6 h-6 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">
-                    No saved sentences yet. On the Translate screen, tap{" "}
-                    <span className="font-medium text-foreground">Save to Practice</span> on any translation to keep it here.
-                  </p>
-                  <Link href="/">
-                    <Button variant="outline" size="sm" className="mt-4" data-testid="link-translate-from-empty-practice">
-                      Go to Translate <ArrowRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {practiceCards.map((c) => (
-                    <Card
-                      key={c.id}
-                      className="p-4 hover:border-primary/40 transition-colors"
-                      data-testid={`card-practice-${c.id}`}
-                    >
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <p className="text-sm text-muted-foreground italic">{c.sourceText}</p>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">
-                          {c.targetLanguage === "es" ? "→ es" : "→ en"}
-                        </span>
-                      </div>
-                      <p className="text-lg font-display text-foreground mb-3" data-testid={`text-practice-${c.id}`}>
-                        {c.translatedText || <span className="italic text-muted-foreground">queued — translation pending</span>}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        <Link href={`/chat/${c.id}`}>
-                          <Button size="sm" variant="outline" data-testid={`button-practice-chat-${c.id}`}>
-                            <MessageCircle className="w-3 h-3 mr-1" /> Chat
-                          </Button>
-                        </Link>
-                        <Link href={`/grow/${c.id}`}>
-                          <Button size="sm" variant="outline" data-testid={`button-practice-grow-${c.id}`}>
-                            <Sprout className="w-3 h-3 mr-1" /> Grow
-                          </Button>
-                        </Link>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </section>
-          </TabsContent>
-        </Tabs>
+            </h2>
+          </div>
+          {practiceCards.length === 0 ? (
+            <p className="text-sm text-muted-foreground" data-testid="empty-practice-list">
+              Save a Golden card from any mode above and it'll land here for chat & growth practice.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {practiceCards.slice(0, 6).map((c) => (
+                <Card key={c.id} className="p-3 hover:border-primary/40 transition-colors" data-testid={`card-practice-${c.id}`}>
+                  <p className="text-xs text-muted-foreground italic mb-1 line-clamp-1">{c.sourceText}</p>
+                  <p className="text-sm font-display text-foreground mb-2 line-clamp-2">{c.translatedText}</p>
+                  <div className="flex flex-wrap gap-1">
+                    <Link href={`/chat/${c.id}`}>
+                      <Button size="sm" variant="ghost" className="h-7 text-xs" data-testid={`button-practice-chat-${c.id}`}>
+                        <MessageCircle className="w-3 h-3 mr-1" /> Chat
+                      </Button>
+                    </Link>
+                    <Link href={`/grow/${c.id}`}>
+                      <Button size="sm" variant="ghost" className="h-7 text-xs" data-testid={`button-practice-grow-${c.id}`}>
+                        <Sprout className="w-3 h-3 mr-1" /> Grow
+                      </Button>
+                    </Link>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+          {practiceCards.length > 6 && (
+            <Link href="/">
+              <Button variant="link" size="sm" className="mt-2" data-testid="link-all-practice">
+                See all {practiceCards.length} <ArrowRight className="w-3 h-3 ml-1" />
+              </Button>
+            </Link>
+          )}
+        </section>
       </div>
     </Layout>
   );
