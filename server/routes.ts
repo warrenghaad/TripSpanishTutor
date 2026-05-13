@@ -353,6 +353,33 @@ export async function registerRoutes(
     } catch (e) { console.error(e); res.status(500).json({ error: "Failed" }); }
   });
 
+  // -------- Vault-sourced daily packs --------
+  app.get("/api/packs/daily/:date", async (req, res) => {
+    try {
+      const date = req.params.date;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return res.status(400).json({ error: "Invalid date format, expected YYYY-MM-DD" });
+      }
+      const { assembleDailyPack } = await import("./vault/assembler");
+      const pack = await assembleDailyPack(date);
+      res.json(pack);
+    } catch (e: any) {
+      console.error("daily pack error:", e);
+      res.status(500).json({ error: e?.message || "Failed to assemble daily pack" });
+    }
+  });
+
+  app.post("/api/packs/sync", async (_req, res) => {
+    try {
+      const { syncAllDailyPacks } = await import("./vault/sync");
+      const report = await syncAllDailyPacks();
+      res.json(report);
+    } catch (e: any) {
+      console.error("vault sync error:", e);
+      res.status(500).json({ error: e?.message || "Failed to sync vault" });
+    }
+  });
+
   // -------- Translation Cards (Translate surface) --------
   app.post("/api/translate/rich", async (req, res) => {
     try {

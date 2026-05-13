@@ -91,8 +91,21 @@ app.use((req, res, next) => {
       host: "0.0.0.0",
       reusePort: true,
     },
-    () => {
+    async () => {
       log(`serving on port ${port}`);
+      // Vault → day-pack sync. In dev, watch the research dir; in prod, sync once at boot.
+      try {
+        if (process.env.NODE_ENV === "production") {
+          const { runBootSync } = await import("./vault/watcher");
+          await runBootSync();
+        } else {
+          const { runBootSync, startVaultWatcher } = await import("./vault/watcher");
+          await runBootSync();
+          startVaultWatcher();
+        }
+      } catch (e: any) {
+        log(`vault module init failed: ${e?.message || e}`, "vault");
+      }
     },
   );
 })();

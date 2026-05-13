@@ -1,0 +1,115 @@
+Yes — this is a strong vault structure, and it fits what you've clarified: Obsidian as an offline workbook and research library, not the app UI. The app can stay chat-first, while the vault holds the durable artifacts, research imports, atelier syllabus, word spelunking, and ProjectPacks that feed the daily loop. Your proposed folders already separate intake, constitution, daily use, trails, atelier resources, creative writing, grammar, flashcards, and research in a way that matches the system you've been describing. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/102755122/def04452-94ba-4b77-aaaf-32caeee6ebc5/04_OBSIDIAN_WORKBOOK_STRUCTURE-4.md)
+
+For the Puerto Vallarta event layer, there is already a clear research answer: people heavily use Facebook groups for community events, live music, arts, and wellness; there are dedicated local sites for live music and event calendars; and there are recurring art-walk and cultural-calendar sites that can be treated as structured sources. Search results surface Facebook groups like *Puerto Vallarta Friends Events and MORE*, *PV Activities & Events*, *PV Arts, Entertainment and Life!*, and *Puerto Vallarta Conscious Community & Events*, while sites like [ShowMePV](https://showmepv.com), [Vallarta Sounds](https://www.vallartasounds.com/calendar-of-events.html), [Vallarta Art Walk](https://vallartaartwalk.com), and the official tourism events page provide more formal calendars. These cover live music, restaurant happenings, art exhibits, yoga and wellness, markets, and film or open-air cinema events. [facebook](https://www.facebook.com/groups/1162961544157062/)
+
+Here is a concise structure block you can use for the repo and for future build instructions:
+
+## Vault structure
+
+```txt
+VallartaVoxVault/
+  00_Inbox/
+  01_Constitution/
+  02_DailyPrep/
+  03_DailyDebriefs/
+  04_Trails/
+  05_WordLens/
+  06_Atelier/
+    Borges/
+    Neruda/
+    Cortazar/
+    Paz/
+    Rulfo/
+    Murals_PV/
+    Music/
+    Film/
+    Art_Exhibits/
+    Yoga_Wellness/
+    Event_Finding/
+  07_CreativeWriting/
+  08_ProjectPacks/
+  09_Grammar/
+  10_Flashcards/
+  11_Research/
+  12_Schemas/
+    Templates/
+```
+
+## Folder roles
+
+- `00_Inbox/` — raw captures, Bear drops, voice memos, quick notes, unresolved fragments. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/102755122/def04452-94ba-4b77-aaaf-32caeee6ebc5/04_OBSIDIAN_WORKBOOK_STRUCTURE-4.md)
+- `01_Constitution/` — standing rules, vault instructions, schemas, prompt principles, system identity. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/102755122/de73af36-a824-421d-9ced-a62201be54b0/03_CLAUDE_CODE_WORKBOOK_BUILD_INSTRUCTIONS-3.md)
+- `02_DailyPrep/` — morning pre-day briefings generated from plans, likely scenes, courage needs, and atelier relevance.
+- `03_DailyDebriefs/` — evening reflections, what happened, what was needed, what was missed, what to promote.
+- `04_Trails/` — saved language spelunks, etymology chains, phrase clusters, side-paths discovered in chat.
+- `05_WordLens/` — durable word notes: meanings, variants, etymologies, examples, field use.
+- `06_Atelier/` — the scene-responsive cultural syllabus: poetry, art, music, film, history, murals, exhibits, yoga, event-finding.
+- `07_CreativeWriting/` — fragments, ode attempts, scene descriptions, sentence gardening, rewrites.
+- `08_ProjectPacks/` — outing packs for offline use: airport, arrival, malecón, bookstore, café, etc.
+- `09_Grammar/` — patterns discovered through use, not abstract grammar lectures.
+- `10_Flashcards/` — export-ready spaced repetition source files.
+- `11_Research/` — imported Perplexity sessions, notes, source extracts, temporary synthesis.
+- `12_Schemas/Templates/` — note templates, JSON schemas, YAML standards, artifact templates. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/102755122/de73af36-a824-421d-9ced-a62201be54b0/03_CLAUDE_CODE_WORKBOOK_BUILD_INSTRUCTIONS-3.md)
+
+## Add these atelier research questions
+
+Put this in `06_Atelier/Event_Finding/Research Questions.md`:
+
+```md
+# Puerto Vallarta Event Finding Questions
+
+## Core questions
+- How do Puerto Vallarta event, restaurant, music, art, film, and yoga communities actually broadcast what is happening?
+- Which Facebook groups are most active and reliable?
+- Which Instagram accounts, tags, and venue pages matter most?
+- Which local websites or calendars are updated consistently?
+- What information is formal calendar data versus social chatter versus flyer-level noise?
+- How should the app rank and merge these sources into something useful each morning?
+
+## Source categories
+- Facebook groups and event pages
+- Instagram venue accounts and local tags
+- Official tourism and city event calendars
+- Local live-music calendars
+- Gallery and Art Walk sites
+- Yoga / wellness communities
+- Film screenings and open-air cinema listings
+- Restaurant and bar schedule pages
+- WhatsApp or concierge-style local relay channels
+- Street poster / flyer / bulletin board phenomena to capture manually later
+
+## Output goal
+Build a repeatable source map the app can use for:
+- live music tonight
+- restaurant events
+- art exhibits
+- film screenings
+- yoga / wellness offerings
+- seasonal and civic events
+- culturally meaningful happenings, not just tourist noise
+```
+
+## Seed source list
+
+A good starter note for `06_Atelier/Event_Finding/Seed Sources.md` would include:
+
+- Facebook groups:
+  - Puerto Vallarta Friends Events and MORE [facebook](https://www.facebook.com/groups/1162961544157062/)
+  - PV Activities & Events [facebook](https://www.facebook.com/groups/1273839802802605/)
+  - PV Arts, Entertainment and Life! [facebook](https://www.facebook.com/groups/1704629776450014/)
+  - Puerto Vallarta Conscious Community & Events [facebook](https://www.facebook.com/groups/1097237864348552/)
+- Event calendars:
+  - ShowMePV [showmepv](https://showmepv.com)
+  - Vallarta Sounds [vallartasounds](https://www.vallartasounds.com/calendar-of-events.html)
+  - Official Puerto Vallarta Events page [visitpuertovallarta](https://visitpuertovallarta.com/events)
+- Art:
+  - Vallarta Art Walk [vallartaartwalk](https://vallartaartwalk.com)
+  - gallery guides and summaries such as local art-walk and gallery roundups [pinnacleresortspv](https://pinnacleresortspv.com/blog/a-walk-through-puerto-vallartas-art-galleries/)
+- Wellness:
+  - Puerto Vallarta Retreats & Wellness Events group [facebook](https://www.facebook.com/groups/2834990980056685/)
+
+## Build note
+
+The important architectural point is that **event-finding belongs inside the Atelier**, not as a random travel utility. It supports the morning frontload ritual: “What am I doing today, what matters here, and what language plus cultural material should accompany me?” That turns the app into a real daily act, not just a repair tool. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/102755122/2c00a76a-23c2-474e-9d16-01efcf03fcc5/06_CLAUDE_MD_STANDING_INSTRUCTIONS-6.md)
+
+One correction: I cannot directly upload to your git repo from here. But I can absolutely keep producing the exact vault structure, seed notes, templates, and repo-ready file contents so you can drop them in as soon as you have the final structure.

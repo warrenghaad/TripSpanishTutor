@@ -1,13 +1,36 @@
 import Layout from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Package, Download, CheckCircle2, Trash2, Wifi, WifiOff } from "lucide-react";
+import { Package, Download, CheckCircle2, Trash2, Wifi, WifiOff, RefreshCw, BookOpen, Plane, GitMerge } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useLocale } from "@/lib/locale-context";
 import { useOnline } from "@/lib/use-online";
 import { savePack, listPacks, getActivePack, setActivePack, removePack, type TripPack } from "@/lib/pack-store";
+
+type DailyPack = {
+  version: number;
+  date: string;
+  generatedAt: string;
+  personalization: {
+    learnerProfileExcerpt: string;
+    recentWords: { word: string; gloss?: string }[];
+    recentGrammar: { title: string }[];
+  };
+  airport: { slug: string; title: string; sourcePath: string }[];
+  atelier: { slug: string; author: string; work?: string; title: string; sourcePath: string }[];
+  bridge: { slug: string; pairId: string; sourcePath: string }[];
+  vocab: { slug: string; items: { front: string; back: string }[]; sourcePath: string }[];
+  grammar: { slug: string; title: string; sourcePath: string }[];
+  sources: { path: string; kind: string; status: string }[];
+  errors: { file: string; message: string }[];
+};
+
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 const ALL_INTERESTS = [
   { id: "food", label: "Food & restaurants" },
@@ -35,6 +58,9 @@ export default function TripPackPage() {
   const [packs, setPacks] = useState<(TripPack & { id: string })[]>([]);
   const [activeId, setActiveId] = useState<string | undefined>();
 
+  const queryClient = useQueryClient();
+  const today = todayISO();
+
   const refresh = async () => {
     const [list, active] = await Promise.all([listPacks(), getActivePack()]);
     setPacks(list);
@@ -42,6 +68,28 @@ export default function TripPackPage() {
   };
 
   useEffect(() => { refresh(); }, []);
+
+  const dailyQuery = useQuery<DailyPack>({
+    queryKey: ["daily-pack", today],
+    queryFn: async () => {
+      const r = await fetch(`/api/packs/daily/${today}`);
+      if (!r.ok) throw new Error(`Failed to load today's pack`);
+      return await r.json();
+    },
+  });
+
+  const resyncMutation = useMutation({
+    mutationFn: async () => {
+      const r = await fetch(`/api/packs/sync`, { method: "POST" });
+      if (!r.ok) throw new Error("Resync failed");
+      return await r.json();
+    },
+    onSuccess: (report: { built: number; updated: number; errors: any[] }) => {
+      toast({ title: "Vault resynced", description: `${report.built} built, ${report.updated} updated, ${report.errors.length} errors.` });
+      queryClient.invalidateQueries({ queryKey: ["daily-pack", today] });
+    },
+    onError: () => toast({ title: "Resync failed", variant: "destructive" }),
+  });
 
   const buildMutation = useMutation({
     mutationFn: async () => {
@@ -85,6 +133,77 @@ export default function TripPackPage() {
             )}
           </div>
         </header>
+
+        <Card className="p-4 md:p-6 border-secondary/30 mb-6 bg-secondary/5" data-testid="card-daily-pack">
+          <div className="flex items-start justify-between mb-3 gap-3">
+            <div>
+              <h2 className="font-display font-bold text-lg">Today's Pack (auto)</h2>
+              <p className="text-xs text-muted-foreground">Assembled live from <code className="text-[10px]">VallartaVoxVault/11_Research/{today}/</code> — anything Perplexity drops there appears here within seconds.</p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => resyncMutation.mutate()}
+              disabled={resyncMutation.isPending}
+              data-testid="button-resync-vault"
+            >
+              <RefreshCw className={`w-3 h-3 mr-1 ${resyncMutation.isPending ? "animate-spin" : ""}`} />
+              Resync now
+            </Button>
+          </div>
+
+          {dailyQuery.isLoading && <p className="text-sm text-muted-foreground">Loading today's pack…</p>}
+          {dailyQuery.error && <p className="text-sm text-destructive">Couldn't load today's pack.</p>}
+          {dailyQuery.data && (
+            <div className="space-y-3">
+              {(dailyQuery.data.airport.length + dailyQuery.data.atelier.length + dailyQuery.data.bridge.length + dailyQuery.data.vocab.length + dailyQuery.data.grammar.length) === 0 ? (
+                <p className="text-sm text-muted-foreground" data-testid="text-daily-empty">
+                  No research yet for {today}. Drop spec-compliant markdown into <code>11_Research/{today}/</code> (or click Resync).
+                </p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="bg-white/60 rounded-lg p-2 text-center" data-testid="stat-airport">
+                      <Plane className="w-4 h-4 mx-auto mb-1 text-primary" />
+                      <div className="font-bold">{dailyQuery.data.airport.length}</div>
+                      <div className="text-muted-foreground">Airport</div>
+                    </div>
+                    <div className="bg-white/60 rounded-lg p-2 text-center" data-testid="stat-atelier">
+                      <BookOpen className="w-4 h-4 mx-auto mb-1 text-primary" />
+                      <div className="font-bold">{dailyQuery.data.atelier.length}</div>
+                      <div className="text-muted-foreground">Atelier</div>
+                    </div>
+                    <div className="bg-white/60 rounded-lg p-2 text-center" data-testid="stat-bridge">
+                      <GitMerge className="w-4 h-4 mx-auto mb-1 text-primary" />
+                      <div className="font-bold">{dailyQuery.data.bridge.length}</div>
+                      <div className="text-muted-foreground">Bridge</div>
+                    </div>
+                  </div>
+
+                  {dailyQuery.data.airport.slice(0, 2).map((a) => (
+                    <div key={a.slug} className="text-sm" data-testid={`daily-airport-${a.slug}`}>
+                      <span className="font-bold">✈ </span>{a.title}
+                    </div>
+                  ))}
+                  {dailyQuery.data.atelier.slice(0, 2).map((a) => (
+                    <div key={a.slug} className="text-sm" data-testid={`daily-atelier-${a.slug}`}>
+                      <span className="font-bold">📖 </span>{a.author}{a.work ? ` — ${a.work}` : ""}: {a.title}
+                    </div>
+                  ))}
+                  {dailyQuery.data.bridge.slice(0, 2).map((b) => (
+                    <div key={b.slug} className="text-sm" data-testid={`daily-bridge-${b.slug}`}>
+                      <span className="font-bold">🌉 </span>Pair: {b.pairId}
+                    </div>
+                  ))}
+                  <p className="text-[10px] text-muted-foreground pt-1 border-t border-border/30">
+                    Built {new Date(dailyQuery.data.generatedAt).toLocaleString()} from {dailyQuery.data.sources.length} source files
+                    {dailyQuery.data.errors.length > 0 && ` · ${dailyQuery.data.errors.length} skipped`}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+        </Card>
 
         <Card className="p-4 md:p-6 border-primary/20 mb-6">
           <h2 className="font-display font-bold text-lg mb-3">Build a new pack</h2>
