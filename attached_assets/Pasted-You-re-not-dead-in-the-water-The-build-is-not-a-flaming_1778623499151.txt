@@ -1,0 +1,191 @@
+You’re not dead in the water. The build is not a flaming crater, it’s a **bad scaffold merge plus an overzealous guardrail pretending to be a compiler**. 🧯
+
+I checked the repo. Here is the situation:
+
+1. The Perplexity scaffold landed on **May 12, 2026** as `2669747`, then got merged into `Warrenghaad`, followed by CI hardening and a tiny conjugator fix. The last clearly pre-Perplexity commit on `Warrenghaad` appears to be `142fe52`, from May 6, 2026. ([GitHub][1])
+2. GitHub Actions is failing now. The main hard failure is the new **“Unevaluative-language lint”** step saying: “Evaluative language found in user-facing surface.” ([GitHub][2])
+3. The TypeScript errors shown in CI are old structural errors in `client/src/lib/data.ts`: the `Verb` type now requires `type` and `fullConjugations`, but the existing `commonVerbs` objects do not provide them. ([GitHub][2])
+4. The iOS PR is still open, not merged. Do **not** merge PR #2 right now. It adds SwiftUI scaffolding and codegen stubs, but the same CI failures are present there too. ([GitHub][3])
+
+## Do this first: freeze the damage
+
+In Replit Shell or your local repo:
+
+```bash
+git status
+git checkout Warrenghaad
+git pull origin Warrenghaad
+git branch rescue/perplexity-breakage-$(date +%Y%m%d-%H%M%S)
+git log --oneline -10
+```
+
+That creates a lifeboat branch before you touch anything. The boat matters.
+
+## Fastest safe recovery path
+
+If the app itself is broken and you need a working build now, make a restore branch from the last pre-Perplexity commit:
+
+```bash
+git checkout -b fix/restore-pre-perplexity-142fe52
+git reset --hard 142fe52
+npm install
+npm run dev
+```
+
+If that runs, push it:
+
+```bash
+git push -u origin fix/restore-pre-perplexity-142fe52
+```
+
+Then use that branch as your temporary clean room.
+
+## If you need to restore `Warrenghaad` immediately
+
+Only do this after the rescue branch exists.
+
+```bash
+git checkout Warrenghaad
+git reset --hard 142fe52
+git push --force-with-lease origin Warrenghaad
+```
+
+That is the “put the book back before the spell finishes” option. It will move `Warrenghaad` back before the Perplexity scaffold. It is forceful, but because you made the rescue branch first, the current state is still preserved.
+
+## Less destructive option: revert the Perplexity layer
+
+If you don’t want to rewrite branch history, use a revert branch:
+
+```bash
+git checkout Warrenghaad
+git pull origin Warrenghaad
+git checkout -b fix/revert-perplexity-scaffold
+git revert --no-edit 7c4e368
+git revert --no-edit c5deae7
+git revert -m 1 --no-edit a67a59f
+git push -u origin fix/revert-perplexity-scaffold
+```
+
+This tries to undo the scaffold merge and follow-up commits without erasing history. If Git gets cranky about conflicts, abandon this branch and use the `142fe52` restore branch above.
+
+## The immediate actual bug
+
+The new CI workflow added a hard lint gate:
+
+```yaml
+- name: Unevaluative-language lint (banned words in user-facing strings)
+```
+
+That lint fails if it sees words like `correct`, `wrong`, `incorrect`, `XP`, or `streak` in `client/` or `server/`. Your existing app already uses normal learning-app language like “corrected text” and error messages, so this guardrail is currently too blunt. The workflow was added by the Perplexity scaffold, and the failure message confirms this exact gate is blocking CI. ([GitHub][4])
+
+If you want to keep the scaffold but unbreak CI, change that step to non-blocking:
+
+```yaml
+- name: Unevaluative-language lint (non-blocking for now)
+  run: |
+    set -e
+    if grep -RIn --include="*.ts" --include="*.tsx" --include="*.swift" \
+      -E "\b(XP|streak|correct!|wrong!|incorrect)\b" \
+      client/ server/ 2>/dev/null | grep -v "conjugator/" | grep -v "// ALLOW:" ; then
+      echo "::warning::Evaluative language found. Review later; do not block build."
+    fi
+    echo "OK"
+  continue-on-error: true
+```
+
+That turns the guardrail back into a note instead of a guillotine.
+
+## The TypeScript wound
+
+`client/src/lib/data.ts` defines:
+
+```ts
+export type Verb = {
+  id: string;
+  spanish: string;
+  english: string;
+  type: '-ar' | '-er' | '-ir' | 'irregular';
+  ...
+  fullConjugations: { ... };
+};
+```
+
+But each existing verb in `commonVerbs` only has:
+
+```ts
+{
+  id,
+  spanish,
+  english,
+  conjugations
+}
+```
+
+So CI complains that the objects are missing `type` and `fullConjugations`. ([GitHub][5])
+
+Quick patch:
+
+```ts
+export type Verb = {
+  id: string;
+  spanish: string;
+  english: string;
+  type?: '-ar' | '-er' | '-ir' | 'irregular';
+  irregular?: boolean;
+  conjugations: {
+    present: { yo: string; tu: string; el: string };
+    past: { yo: string; tu: string; el: string };
+    future: { yo: string; tu: string; el: string };
+  };
+  fullConjugations?: {
+    presente: FullConjugation;
+    preterito: FullConjugation;
+    imperfecto: FullConjugation;
+    futuro: FullConjugation;
+    condicional: FullConjugation;
+  };
+};
+```
+
+That makes the current data legal again without forcing you to fill full tables for every verb right now.
+
+## What to tell Perplexity / Copilot now
+
+Paste this exactly:
+
+```md
+Emergency build triage.
+
+Do not add new architecture. Do not add iOS. Do not add swarm, schema, codegen, or content packs.
+
+Goal: restore a green dev/build path for the existing Replit web app.
+
+Current problems:
+1. CI is failing because the newly added unevaluative-language lint is blocking on existing user-facing text. Make that lint non-blocking or remove it for now.
+2. TypeScript reports client/src/lib/data.ts commonVerbs objects missing Verb.type and Verb.fullConjugations. Patch the Verb type so type and fullConjugations are optional, or populate every commonVerbs item. Prefer optional fields for now.
+3. Do not merge PR #2.
+4. Preserve the scaffold work in a branch, but do not let it block Warrenghaad.
+
+Acceptance:
+- npm run dev starts.
+- npm run build succeeds.
+- Existing chat, translator, dictionary, and journal routes remain untouched.
+- No new product architecture until build is stable.
+```
+
+## My read
+
+Perplexity didn’t just “build.” It **promoted design theology into CI law**. That’s the failure pattern. The guardrail about unevaluative language is a good philosophical principle, but it was installed as a hard shell trap before the existing app was ready for it.
+
+So the fix is not “throw away the vision.”
+The fix is:
+
+> **Runtime first. Philosophy second. Schema third. iOS last.**
+
+Right now, do the rescue branch, restore to `142fe52` if needed, and freeze PR #2. The Borges airport cathedral can still happen. We just need to get the scaffolding off the oxygen hose.
+
+[1]: https://github.com/warrenghaad/TripSpanishTutor/commits/Warrenghaad/ "Commits · warrenghaad/TripSpanishTutor · GitHub"
+[2]: https://github.com/warrenghaad/TripSpanishTutor/actions/runs/25760064299 "Fix ES5-compatible Set conversion in conjugator · warrenghaad/TripSpanishTutor@7c4e368 · GitHub"
+[3]: https://github.com/warrenghaad/TripSpanishTutor/pulls "Pull requests · warrenghaad/TripSpanishTutor · GitHub"
+[4]: https://github.com/warrenghaad/TripSpanishTutor/commit/266974747ba316db25e934f1ab229566a806351f "feat(scaffold): tutor schemas, conjugator, swarm contracts, Borges Pack · warrenghaad/TripSpanishTutor@2669747 · GitHub"
+[5]: https://raw.githubusercontent.com/warrenghaad/TripSpanishTutor/Warrenghaad/client/src/lib/data.ts "raw.githubusercontent.com"

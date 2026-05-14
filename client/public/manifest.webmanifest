@@ -1,0 +1,25 @@
+{
+  "name": "Vallarta Voz — Travel Spanish",
+  "short_name": "Vallarta Voz",
+  "description": "Offline-capable Spanish learning companion for Puerto Vallarta and beyond.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdfaf6",
+  "theme_color": "#c0593a",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

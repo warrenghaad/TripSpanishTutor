@@ -3,14 +3,23 @@ import SentenceBuilder from "@/components/sentence-builder";
 import { bodyParts, conditionalScenarios, commonVerbs } from "@/lib/data";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, User, Brain, Hand, MapPin, ArrowRight, Utensils, DollarSign, ShoppingBag } from "lucide-react";
+import { Activity, User, Brain, MapPin, ArrowRight, Utensils, DollarSign, ShoppingBag, Pencil, MessageCircle, Sprout } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { listLocalCards, type LocalTranslationCard } from "@/lib/translation-store";
 
 export default function Learn() {
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
+  const { data: practiceCards = [] } = useQuery<LocalTranslationCard[]>({
+    queryKey: ["learn-practice-cards"],
+    queryFn: async () => {
+      const all = await listLocalCards();
+      return all.filter((c) => (c.tags || []).includes("practice"));
+    },
+  });
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -50,6 +59,18 @@ export default function Learn() {
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-3 font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
             >
               Travel Verbs
+            </TabsTrigger>
+            <TabsTrigger
+              value="practice"
+              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-3 font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+              data-testid="tab-practice"
+            >
+              Saved to Practice
+              {practiceCards.length > 0 && (
+                <span className="ml-2 text-[10px] bg-primary/10 text-primary rounded-full px-2 py-0.5">
+                  {practiceCards.length}
+                </span>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -207,6 +228,67 @@ export default function Learn() {
                  <h3 className="text-lg font-bold mb-4">Practice Sentences</h3>
                  <SentenceBuilder />
               </div>
+            </section>
+          </TabsContent>
+
+          <TabsContent value="practice" className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <section>
+              <div className="mb-6">
+                <h2 className="text-xl font-display font-bold flex items-center gap-2 text-foreground">
+                  <Pencil className="w-5 h-5 text-primary" />
+                  Sentences You Saved to Practice
+                </h2>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Translations you tagged "Practice" land here. Open them to chat about each one or grow new sentences from them.
+                </p>
+              </div>
+
+              {practiceCards.length === 0 ? (
+                <div className="border-2 border-dashed border-border rounded-xl p-8 text-center text-muted-foreground" data-testid="empty-practice-list">
+                  <Pencil className="w-6 h-6 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">
+                    No saved sentences yet. On the Translate screen, tap{" "}
+                    <span className="font-medium text-foreground">Save to Practice</span> on any translation to keep it here.
+                  </p>
+                  <Link href="/">
+                    <Button variant="outline" size="sm" className="mt-4" data-testid="link-translate-from-empty-practice">
+                      Go to Translate <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {practiceCards.map((c) => (
+                    <Card
+                      key={c.id}
+                      className="p-4 hover:border-primary/40 transition-colors"
+                      data-testid={`card-practice-${c.id}`}
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <p className="text-sm text-muted-foreground italic">{c.sourceText}</p>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+                          {c.targetLanguage === "es" ? "→ es" : "→ en"}
+                        </span>
+                      </div>
+                      <p className="text-lg font-display text-foreground mb-3" data-testid={`text-practice-${c.id}`}>
+                        {c.translatedText || <span className="italic text-muted-foreground">queued — translation pending</span>}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <Link href={`/chat/${c.id}`}>
+                          <Button size="sm" variant="outline" data-testid={`button-practice-chat-${c.id}`}>
+                            <MessageCircle className="w-3 h-3 mr-1" /> Chat
+                          </Button>
+                        </Link>
+                        <Link href={`/grow/${c.id}`}>
+                          <Button size="sm" variant="outline" data-testid={`button-practice-grow-${c.id}`}>
+                            <Sprout className="w-3 h-3 mr-1" /> Grow
+                          </Button>
+                        </Link>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </section>
           </TabsContent>
         </Tabs>

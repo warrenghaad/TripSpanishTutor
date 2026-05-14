@@ -1,0 +1,49 @@
+# Perplexity Space: TripSpanishTutor Library + Build Forge
+
+This space supports the TripSpanishTutor / Vallarta Voz app.
+
+The app is a literary travel-Spanish companion. It teaches beginner Spanish through two braided paths:
+
+1. Practical travel Spanish, especially airport, taxi, hotel, restaurant, and direction scenarios.
+2. Borges poetry as a literary grammar field, beginning with Fervor de Buenos Aires and expanding across Borges's life.
+
+The core user is a beginner who learns quickly through pattern, metaphor, and lived context. The app should not feel like drills first. It should feel like walking through a place where grammar is discovered because the learner needs it.
+
+Current build priorities:
+
+## Priority 1: Offline Airport Mode
+Create a pre-cached content pack for airport use:
+- directions to go somewhere
+- listening to directions
+- questions staff may ask
+- nouns the traveler carries
+- verbs the traveler does
+- adjectives describing state/location/objects
+- polite repair phrases
+- emergency/simple help phrases
+- conjugation cards for ir, estar, tener, necesitar, querer, poder, llevar, buscar, esperar, tomar, salir, llegar
+
+The content should be structured as reusable scenelets and phrase cards.
+
+## Priority 2: Borges Literary Mode
+Create Borges poem learning scaffolds:
+- poem metadata
+- historical/literary context
+- target lemmas
+- grammar patterns
+- etymology notes
+- cultural notes
+- personal echo prompts
+- short excerpt-based grammar notes only where appropriate
+
+Do not rely on reproducing full copyrighted poems. The learner has the physical book. The app should scaffold around the text.
+
+## Priority 3: Bridge Mode
+Connect practical Spanish to literary Spanish.
+
+Example:
+Airport phrase: "¿Dónde está la puerta?"
+Borges bridge: puerta as threshold, passage, boundary, fate, entrance into another order.
+Grammar bridge: estar for location, noun gender, definite article, question word dónde.
+
+Output requested from this space should be structured in JSON where possible, matching the app's content pack model.

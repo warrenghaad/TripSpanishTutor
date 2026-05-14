@@ -10,6 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useLocale } from "@/lib/locale-context";
+import { smartFetch } from "@/lib/api-fetch";
+import { useOnline } from "@/lib/use-online";
 
 type ConjugationTable = Record<string, Record<string, string>>;
 
@@ -161,6 +163,7 @@ export default function Dictionary() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { locale } = useLocale();
+  const online = useOnline();
 
   const savedWordsQuery = useQuery<SavedWord[]>({
     queryKey: ["/api/dictionary/words", savedFilter],
@@ -176,13 +179,30 @@ export default function Dictionary() {
 
   const lookupMutation = useMutation({
     mutationFn: async (word: string) => {
-      const res = await fetch("/api/dictionary/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word, locale }),
+      const r = await smartFetch<LookupResult>({
+        endpoint: "/api/dictionary/lookup",
+        body: { word, locale },
+        trailKind: "lookup",
+        label: `Lookup: ${word}`,
+        lookupKey: word,
+        packToResponse: (text, confidence) => ({
+          spanish: word,
+          english: text,
+          partOfSpeech: "—",
+          examples: [],
+          relatedWords: [],
+          localeNotes: [`From your saved trip pack (${confidence} confidence). Will refresh when you reconnect.`],
+        }),
+        offlineFallback: () => ({
+          spanish: word,
+          english: "(offline — will look up when you reconnect)",
+          partOfSpeech: "—",
+          examples: [],
+          relatedWords: [],
+          localeNotes: ["You're offline and this word isn't in your trip pack. Saved — we'll fetch it as soon as you reconnect."],
+        }),
       });
-      if (!res.ok) throw new Error("Lookup failed");
-      return res.json() as Promise<LookupResult>;
+      return r.data;
     },
     onSuccess: (data) => setLookupResult(data),
     onError: () => toast({ title: "Lookup failed", description: "Try another word.", variant: "destructive" }),
@@ -190,17 +210,22 @@ export default function Dictionary() {
 
   const extractMutation = useMutation({
     mutationFn: async (text: string) => {
-      const res = await fetch("/api/dictionary/extract", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, locale }),
+      const r = await smartFetch<{ words: ExtractedWord[]; grammarPatterns: GrammarPattern[] }>({
+        endpoint: "/api/dictionary/extract",
+        body: { text, locale },
+        trailKind: "lookup",
+        label: `Extract: "${text.slice(0, 40)}"`,
+        lookupKey: text,
+        offlineFallback: () => ({ words: [], grammarPatterns: [] }),
       });
-      if (!res.ok) throw new Error("Extract failed");
-      return res.json();
+      return r.data;
     },
     onSuccess: (data) => {
       setExtractedWords(data.words || []);
       setGrammarPatterns(data.grammarPatterns || []);
+      if (online && (!data.words?.length && !data.grammarPatterns?.length)) {
+        toast({ title: "Saved offline", description: "We'll extract vocabulary and grammar when you reconnect." });
+      }
     },
     onError: () => toast({ title: "Extraction failed", variant: "destructive" }),
   });

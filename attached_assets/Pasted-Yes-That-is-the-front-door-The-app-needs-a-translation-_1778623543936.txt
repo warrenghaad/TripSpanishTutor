@@ -1,0 +1,540 @@
+Yes. **That is the front door.**
+
+The app needs a **translation surface** because translation is the first usable gesture. It lets you open the app and immediately do something:
+
+> “I have a sentence. Help me cross it.”
+
+But translation should not be the endpoint. It should become the **seed of conversation**, practice, journaling, and identity-building.
+
+So the flow is:
+
+```txt
+Translate
+→ Understand
+→ Ask about it
+→ Grow it
+→ Practice it
+→ Save it
+→ Return to it later
+```
+
+That is exactly aligned with the project sentence from the workshop file: Spanish is not just fluency performance, but becoming recognizable in another language. 
+
+---
+
+# The translation surface is the app’s threshold
+
+Not “Google Translate inside my app.”
+
+More like:
+
+> **A translation workbench that turns any phrase into a learning object.**
+
+You should be able to type:
+
+```txt
+I feel strange but awake today.
+```
+
+Get:
+
+```txt
+Hoy me siento extraño pero despierto.
+```
+
+Then press:
+
+```txt
+Explain
+Grow
+Chat about this
+Make it future tense
+Save to journal
+Practice verbs
+Make it more poetic
+Make it more casual
+```
+
+That is the living thing.
+
+---
+
+# Core workflow
+
+## 1. User enters text
+
+Could be English or Spanish:
+
+```txt
+I am tired, but I want to write.
+```
+
+or:
+
+```txt
+Estoy cansado, pero quiero escribir.
+```
+
+## 2. App gives translation
+
+```txt
+Estoy cansado, pero quiero escribir.
+```
+
+## 3. App breaks it down
+
+```txt
+Estoy = I am, from estar
+cansado = tired
+pero = but
+quiero = I want
+escribir = to write
+```
+
+## 4. App gives sentence-growth options
+
+```txt
+Estoy cansado, pero quiero escribir algo pequeño.
+Estoy cansado, pero quiero escribir sobre mi día.
+Estoy cansado, pero mañana escribiré más.
+```
+
+## 5. App turns it into chat
+
+The user taps:
+
+```txt
+Talk about this
+```
+
+Then the chat opens with context already loaded:
+
+```txt
+You translated: “I am tired, but I want to write.”
+Spanish: “Estoy cansado, pero quiero escribir.”
+Goal: help me talk about my day and grow this sentence.
+```
+
+Now the chat can ask:
+
+```txt
+¿Qué quieres escribir?
+¿Sobre tu día?
+¿Sobre un poema?
+¿Sobre cómo te sientes?
+```
+
+The translation becomes a doorway, not a receipt.
+
+---
+
+# The app modes should be reorganized around this
+
+## Main tabs
+
+```txt
+Translate
+Chat
+Journal
+Practice
+Read
+Saved
+```
+
+Or even simpler for v1:
+
+```txt
+Translate
+Journal
+Practice
+Saved
+```
+
+Chat can emerge from any translation.
+
+---
+
+# Translation surface features
+
+## Translation card
+
+Every translation result should become a card:
+
+```json
+{
+  "id": "translation.local.timestamp",
+  "source_text": "I feel strange but awake today.",
+  "source_language": "en",
+  "target_language": "es",
+  "translation": "Hoy me siento extraño pero despierto.",
+  "literal_translation": "Today I feel strange but awake.",
+  "grammar_notes": [
+    {
+      "token": "me siento",
+      "note": "reflexive form of sentir; means I feel"
+    },
+    {
+      "token": "extraño",
+      "note": "adjective; masculine singular form"
+    },
+    {
+      "token": "despierto",
+      "note": "awake; adjective"
+    }
+  ],
+  "actions": [
+    "start_chat",
+    "grow_sentence",
+    "make_future",
+    "save_to_journal",
+    "practice_verbs",
+    "make_more_poetic",
+    "make_more_casual"
+  ],
+  "tags": ["identity", "feeling", "journal", "adjectives"]
+}
+```
+
+This is important: every translation becomes **structured memory**.
+
+---
+
+# “Turn into chat” behavior
+
+When the user taps **Chat about this**, the app should not open a blank chat. It should open a seeded conversation.
+
+## Chat seed object
+
+```json
+{
+  "conversation_type": "translation_followup",
+  "source_text": "I feel strange but awake today.",
+  "translation": "Hoy me siento extraño pero despierto.",
+  "learner_goal": "Help me say this naturally and grow it into Spanish journal sentences.",
+  "suggested_questions": [
+    "Why is it me siento instead of siento?",
+    "How do I make this feminine?",
+    "How do I say this in the past?",
+    "How do I say this in the future?",
+    "Can we make it more poetic?",
+    "Can we make it simpler?"
+  ]
+}
+```
+
+Then the chat response can begin:
+
+```txt
+Good sentence. The core is “me siento,” which means “I feel.”
+
+You can grow it three ways:
+
+1. Add reason:
+   Hoy me siento extraño pero despierto porque dormí poco.
+
+2. Add place:
+   Hoy me siento extraño pero despierto en el aeropuerto.
+
+3. Add future:
+   Mañana voy a escribir sobre esto.
+```
+
+That is the app teaching Spanish through your own sentence.
+
+---
+
+# This solves the “use it immediately” problem
+
+You do not need to wait for the full curriculum.
+
+The first usable app can be:
+
+```txt
+Translation input
+Translation result
+Grammar notes
+Save
+Turn into chat
+Grow sentence
+Journal entry
+```
+
+That is enough to start living inside it.
+
+Borges, travel, verbs, adjectives, and journal prompts can all attach to the translation surface later.
+
+The translation surface is the **central intake valve**.
+
+---
+
+# Offline behavior
+
+This needs two tiers.
+
+## Online mode
+
+When online:
+
+```txt
+User enters text
+→ LLM/API translates
+→ LLM explains grammar
+→ user can chat
+→ save result locally
+```
+
+## Offline mode
+
+When offline:
+
+```txt
+User enters text
+→ app saves it as a queued translation
+→ app checks local phrase/grammar packs
+→ app offers partial help if possible
+→ full translation waits for online mode
+```
+
+Example offline response:
+
+```txt
+Saved for translation when online.
+
+I can still help with known patterns:
+
+“I feel...” often becomes:
+Me siento...
+
+Examples:
+Me siento cansado.
+Me siento nervioso.
+Me siento perdido.
+Me siento tranquilo.
+```
+
+So the app remains useful but honest.
+
+Do not fake full offline LLM translation unless you actually bundle a local model later.
+
+---
+
+# What to tell Replit
+
+Paste this as the updated scope:
+
+```md
+Add a Translation Surface as the primary entry point.
+
+The app is a phenomenological Spanish learning companion. The user needs to use it immediately by typing English or Spanish and receiving a translation, but the translation must become a learning object and optionally become a chat conversation.
+
+Core feature:
+Translate → Explain → Grow → Chat → Save → Practice.
+
+Build a Translate tab/screen with:
+
+1. Text input
+- User can enter English or Spanish.
+- User can choose:
+  - English to Spanish
+  - Spanish to English
+  - Auto-detect if easy to support
+- Button: Translate
+
+2. Translation result card
+Show:
+- original text
+- translated text
+- literal translation when useful
+- natural translation
+- short grammar notes
+- detected verbs
+- detected adjectives/adverbs
+- suggested practice transformations
+
+3. Action buttons on every translation card
+- Chat about this
+- Grow this sentence
+- Make it past tense
+- Make it future tense
+- Make it more casual
+- Make it more poetic
+- Save to Journal
+- Save to Practice
+- Save to Vocabulary
+
+4. Chat handoff
+When user taps "Chat about this":
+- open chat screen
+- seed the chat with the original text, translation, grammar notes, and learner goal
+- first assistant message should discuss the sentence, not start from zero
+
+5. Sentence Grower handoff
+When user taps "Grow this sentence":
+- show expansions by layers:
+  subject
+  verb
+  object
+  adjective
+  adverb
+  place
+  time
+  reason
+  reflection
+
+6. Journal handoff
+When user taps "Save to Journal":
+- create a journal entry with the original, translation, and optional reflection prompt:
+  "Write one more sentence about this."
+
+7. Offline behavior
+If offline:
+- save the text as a queued translation
+- search bundled local phrase/grammar packs for partial matches
+- show known pattern cards if available
+- do not pretend to fully translate with an LLM offline
+- allow the user to add notes and save the queued item
+
+8. Local persistence
+Save locally:
+- translation history
+- journal entries
+- saved phrases
+- queued offline translations
+- chat conversations seeded from translations
+
+9. Data model
+Create a TranslationCard model with:
+- id
+- createdAt
+- sourceText
+- sourceLanguage
+- targetLanguage
+- translatedText
+- literalText
+- grammarNotes
+- detectedVerbs
+- detectedAdjectives
+- detectedAdverbs
+- tags
+- saved
+- conversationId optional
+- journalEntryId optional
+- status: completed | queued_offline | failed
+
+10. Do not
+- Do not make translation a dead-end result.
+- Do not require network for viewing saved translations.
+- Do not remove existing travel, journal, grammar, or Borges concepts.
+- Do not make Borges the center. Borges is one learning lab.
+- Do not build fake offline LLM translation.
+
+Acceptance tests:
+1. User translates "I am tired but I want to write."
+2. App returns Spanish translation.
+3. App shows grammar notes for estoy, cansado, quiero, escribir.
+4. User taps "Chat about this."
+5. Chat opens with the translation already in context.
+6. User taps "Make future tense."
+7. App produces "Mañana voy a escribir" and/or "Mañana escribiré."
+8. User saves to Journal.
+9. App is closed and reopened.
+10. Translation and journal entry persist.
+11. In airplane mode, user enters a phrase and it is saved as queued_offline with partial local help if possible.
+```
+
+---
+
+# The UI surface
+
+Something like this:
+
+```txt
+[ Translate ]
+
+What do you want to say?
+┌───────────────────────────────┐
+│ I am tired but I want to write│
+└───────────────────────────────┘
+
+From: English
+To: Spanish
+
+[ Translate ]
+
+Result:
+Estoy cansado, pero quiero escribir.
+
+Literal:
+I am tired, but I want to write.
+
+Grammar:
+- estoy = I am, temporary state
+- cansado = tired
+- quiero = I want
+- escribir = to write
+
+Actions:
+[Chat about this]
+[Grow sentence]
+[Past tense]
+[Future tense]
+[Save to Journal]
+[Practice verbs]
+```
+
+Then:
+
+```txt
+Grow sentence
+
+Base:
+Estoy cansado.
+
++ contrast:
+Estoy cansado, pero quiero escribir.
+
++ object:
+Estoy cansado, pero quiero escribir una frase.
+
++ time:
+Hoy estoy cansado, pero quiero escribir una frase.
+
++ reason:
+Hoy estoy cansado, pero quiero escribir una frase porque no quiero perder la idea.
+
++ future:
+Mañana escribiré más.
+```
+
+That is the identity engine. Translation is just the ignition.
+
+---
+
+# Why this is the right move
+
+Because translation gives you immediate utility, but the project’s soul is still sentence growth.
+
+A normal translator says:
+
+```txt
+Here is the Spanish.
+Goodbye.
+```
+
+Your app should say:
+
+```txt
+Here is the Spanish.
+Here is what it is doing.
+Here is how to make it yours.
+Here is how to ask about it.
+Here is how to write tomorrow from it.
+```
+
+That is the difference.
+
+Translation is the doorway.
+Conversation is the room.
+Journal is the memory.
+Practice is the muscle.
+Borges is one stained-glass window. 🪟

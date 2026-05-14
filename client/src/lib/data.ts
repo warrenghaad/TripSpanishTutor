@@ -35,14 +35,14 @@ export type Verb = {
   id: string;
   spanish: string;
   english: string;
-  type: '-ar' | '-er' | '-ir' | 'irregular';
+  type?: '-ar' | '-er' | '-ir' | 'irregular';
   irregular?: boolean;
   conjugations: {
     present: { yo: string; tu: string; el: string };
     past: { yo: string; tu: string; el: string };
     future: { yo: string; tu: string; el: string };
   };
-  fullConjugations: {
+  fullConjugations?: {
     presente: FullConjugation;
     preterito: FullConjugation;
     imperfecto: FullConjugation;

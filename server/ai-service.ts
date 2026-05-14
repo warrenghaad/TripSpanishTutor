@@ -1,8 +1,30 @@
 import OpenAI from "openai";
 
+const replitKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+const replitBase = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+const standardKey = process.env.OPENAI_API_KEY;
+
+const apiKey = replitKey || standardKey;
+const baseURL = replitKey ? replitBase : process.env.OPENAI_BASE_URL;
+
+const aiMode = replitKey
+  ? "replit-managed (AI_INTEGRATIONS_OPENAI_*)"
+  : standardKey
+  ? `standard OpenAI${baseURL ? ` (custom base: ${baseURL})` : ""}`
+  : "DISABLED (no API key found)";
+
+console.log(`[ai-service] mode: ${aiMode}`);
+
+if (!apiKey) {
+  console.warn(
+    "[ai-service] No API key set. Provide AI_INTEGRATIONS_OPENAI_API_KEY (Replit) " +
+    "or OPENAI_API_KEY (standard). All AI endpoints will fail until one is configured."
+  );
+}
+
 const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  apiKey: apiKey || "missing-key-please-set-OPENAI_API_KEY",
+  baseURL: baseURL || undefined,
 });
 
 export type GrammarFeedback = {
@@ -327,6 +349,403 @@ Respond in JSON:
   } catch (error) {
     console.error("Error extracting vocabulary:", error);
     throw new Error("Vocabulary extraction failed");
+  }
+}
+
+export type TripPack = {
+  version: number;
+  locale: string;
+  scope: { interests: string[]; size: string };
+  generatedAt: string;
+  personaBrief: string;
+  translations: { en: string; es: string; topic: string }[];
+  vocabulary: { spanish: string; english: string; partOfSpeech: string; topic: string }[];
+  situations: { name: string; phrases: { es: string; en: string }[] }[];
+  slang: { term: string; meaning: string; usage: string }[];
+  verbs: { spanish: string; english: string; conjugations: Record<string, Record<string, string>> }[];
+};
+
+export async function buildTripPack(
+  locale: string,
+  interests: string[],
+  size: "small" | "medium" | "large" = "medium",
+): Promise<TripPack> {
+  const localeSegment = getLocalePromptSegment(locale);
+  const counts = {
+    small: { trans: 40, vocab: 60, situations: 6, slang: 12, verbs: 10 },
+    medium: { trans: 80, vocab: 120, situations: 10, slang: 20, verbs: 18 },
+    large: { trans: 150, vocab: 200, situations: 14, slang: 30, verbs: 25 },
+  }[size];
+
+  const prompt = `Build an offline Spanish "trip pack" for a traveler.
+${localeSegment}
+
+Traveler interests: ${interests.length ? interests.join(", ") : "general travel"}.
+
+Generate a self-contained JSON intelligence pack the traveler can use OFFLINE when no network is available. Pack should be optimized for the most likely things this traveler will say, ask, or look up.
+
+Include:
+1. PERSONA BRIEF (1-2 sentences) — a compact description of how the offline assistant should sound (tone, locale).
+2. TRANSLATIONS (${counts.trans} entries) — the most frequent phrases a traveler would need both directions, tagged by topic.
+3. VOCABULARY (${counts.vocab} entries) — top words by frequency for the interests above + universal travel needs (food, beach, transit, money, medical, emergencies, lodging, greetings).
+4. SITUATIONS (${counts.situations} entries) — named real-world scenarios with 5-8 ready-to-use phrase pairs each (taxi, restaurant, hotel check-in, pharmacy, beach rental, market haggling, lost item, asking directions, emergency, ordering coffee, art gallery, music venue).
+5. SLANG (${counts.slang} entries) — locale-specific terms with meaning + usage example.
+6. VERBS (${counts.verbs} entries) — most common verbs with full conjugations (presente, pretérito, imperfecto, futuro, condicional × yo/tú/él/nosotros/ellos).
+
+Respond in JSON:
+{
+  "personaBrief": "...",
+  "translations": [{ "en": "...", "es": "...", "topic": "food|beach|transit|money|medical|lodging|greetings|emergency|general" }],
+  "vocabulary": [{ "spanish": "...", "english": "...", "partOfSpeech": "...", "topic": "..." }],
+  "situations": [{ "name": "...", "phrases": [{ "es": "...", "en": "..." }] }],
+  "slang": [{ "term": "...", "meaning": "...", "usage": "..." }],
+  "verbs": [{ "spanish": "infinitive", "english": "...", "conjugations": { "presente": {"yo":"...","tú":"...","él":"...","nosotros":"...","ellos":"..."}, "pretérito": {...}, "imperfecto": {...}, "futuro": {...}, "condicional": {...} } }]
+}`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a precision travel-Spanish curator. Always respond with valid JSON only. Be exhaustive within the requested counts." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.4,
+    });
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("No response");
+    const parsed = JSON.parse(content);
+    return {
+      version: 1,
+      locale,
+      scope: { interests, size },
+      generatedAt: new Date().toISOString(),
+      personaBrief: parsed.personaBrief || "",
+      translations: Array.isArray(parsed.translations) ? parsed.translations : [],
+      vocabulary: Array.isArray(parsed.vocabulary) ? parsed.vocabulary : [],
+      situations: Array.isArray(parsed.situations) ? parsed.situations : [],
+      slang: Array.isArray(parsed.slang) ? parsed.slang : [],
+      verbs: Array.isArray(parsed.verbs) ? parsed.verbs : [],
+    };
+  } catch (error) {
+    console.error("Error building trip pack:", error);
+    throw new Error("Failed to build trip pack");
+  }
+}
+
+export type TrailSummary = { summary: string; bullets: string[] };
+export async function summarizeTrail(
+  trailName: string,
+  nodes: { kind: string; label: string; payload: unknown }[],
+  locale?: string,
+): Promise<TrailSummary> {
+  const localeSegment = getLocalePromptSegment(locale);
+  const compact = nodes.slice(0, 30).map((n, i) => `${i + 1}. [${n.kind}] ${n.label}`).join("\n");
+  const prompt = `Summarize this Spanish-learning exploration trail named "${trailName}".
+${localeSegment}
+
+Trail steps:
+${compact}
+
+Respond in JSON:
+{
+  "summary": "2-3 sentence narrative paragraph of what was explored and learned",
+  "bullets": ["concise bullet 1", "bullet 2", "bullet 3", "bullet 4", "bullet 5"]
+}`;
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You summarize learning trails. Always respond with valid JSON only." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.5,
+    });
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("No response");
+    const parsed = JSON.parse(content);
+    return {
+      summary: parsed.summary || "",
+      bullets: Array.isArray(parsed.bullets) ? parsed.bullets : [],
+    };
+  } catch (error) {
+    console.error("Error summarizing trail:", error);
+    throw new Error("Failed to summarize trail");
+  }
+}
+
+export type NearbyDoor = { kind: string; label: string; seed: string; reason: string };
+export async function nearbyDoors(
+  trailName: string,
+  nodes: { kind: string; label: string }[],
+  locale?: string,
+): Promise<NearbyDoor[]> {
+  const localeSegment = getLocalePromptSegment(locale);
+  const compact = nodes.slice(-15).map((n) => `[${n.kind}] ${n.label}`).join("\n");
+  const prompt = `Given this recent exploration trail "${trailName}", suggest 6-8 "nearby doors" — natural next things to explore that branch from where the user is.
+${localeSegment}
+
+Recent steps:
+${compact}
+
+Each door should be one of: lookup (a Spanish word to look up), translation (a phrase to translate), grammar (a tense or grammar concept), situation (a scenario to practice), question (a curiosity to ask the chatbot).
+
+Respond in JSON:
+{
+  "doors": [{ "kind": "lookup|translation|grammar|situation|question", "label": "short user-facing label", "seed": "the actual word/phrase/topic to feed into that tool", "reason": "1 sentence on why this is relevant" }]
+}`;
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You suggest learning paths. Always respond with valid JSON only." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+    });
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("No response");
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed.doors) ? parsed.doors : [];
+  } catch (error) {
+    console.error("Error generating doors:", error);
+    throw new Error("Failed to suggest doors");
+  }
+}
+
+export type RichTranslation = {
+  translatedText: string;
+  literalText?: string;
+  grammarNotes: { term: string; note: string }[];
+  detectedVerbs: string[];
+  detectedAdjectives: string[];
+  detectedAdverbs: string[];
+  suggestedTransforms: { id: string; label: string }[];
+  /** Resolved language of the user's input, especially relevant for auto-detect. */
+  resolvedSourceLanguage: "en" | "es";
+  /** Resolved target language. */
+  resolvedTargetLanguage: "en" | "es";
+};
+
+export async function translateRich(
+  text: string,
+  direction: "en-es" | "es-en" | "auto",
+  locale?: string,
+): Promise<RichTranslation> {
+  const localeSegment = getLocalePromptSegment(locale);
+  const dirInstr =
+    direction === "en-es"
+      ? "The user wrote English. Translate naturally to Spanish."
+      : direction === "es-en"
+      ? "The user wrote Spanish. Translate naturally to English."
+      : "Auto-detect the language. If Spanish, translate to English. If English, translate to Spanish. If mixed, translate the whole thing into the target language (Spanish if mostly English, English if mostly Spanish).";
+
+  const prompt = `You are a Spanish/English translator who also acts as a quick grammar coach.
+${localeSegment}
+
+${dirInstr}
+
+User text:
+"""
+${text}
+"""
+
+Return strict JSON:
+{
+  "translatedText": "natural translation",
+  "literalText": "literal/word-for-word version (only include if meaningfully different from natural; otherwise empty string)",
+  "grammarNotes": [{ "term": "the Spanish word or pattern", "note": "1 short sentence on what it does grammatically" }],
+  "detectedVerbs": ["spanish infinitive of every verb in the SPANISH side"],
+  "detectedAdjectives": ["adjectives in the SPANISH side, lemma form"],
+  "detectedAdverbs": ["adverbs in the SPANISH side"],
+  "suggestedTransforms": [
+    { "id": "past", "label": "Make it past tense" },
+    { "id": "future", "label": "Make it future tense" },
+    { "id": "casual", "label": "Make it more casual" },
+    { "id": "poetic", "label": "Make it more poetic" }
+  ],
+  "resolvedSourceLanguage": "en or es — the language of the user's input you actually translated FROM",
+  "resolvedTargetLanguage": "en or es — the language you translated INTO"
+}`;
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a precise translator and grammar coach. Always respond with valid JSON only." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.4,
+    });
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("No response");
+    const parsed = JSON.parse(content);
+    // Resolve direction: trust the model's self-report when given, otherwise
+    // derive from the user's chosen direction so an EN→ES card never gets
+    // labelled as ES→EN by accident.
+    const normalizeLang = (v: unknown): "en" | "es" | null => {
+      const s = typeof v === "string" ? v.trim().toLowerCase() : "";
+      if (s === "en" || s.startsWith("eng")) return "en";
+      if (s === "es" || s.startsWith("spa") || s === "español") return "es";
+      return null;
+    };
+    const fallbackSrc: "en" | "es" =
+      direction === "es-en" ? "es" : direction === "en-es" ? "en" : "en";
+    const fallbackTgt: "en" | "es" =
+      direction === "es-en" ? "en" : direction === "en-es" ? "es" : "es";
+    const resolvedSourceLanguage =
+      normalizeLang(parsed.resolvedSourceLanguage) ?? fallbackSrc;
+    let resolvedTargetLanguage =
+      normalizeLang(parsed.resolvedTargetLanguage) ?? fallbackTgt;
+    // The two must differ; if the model returned the same on both, flip target.
+    if (resolvedTargetLanguage === resolvedSourceLanguage) {
+      resolvedTargetLanguage = resolvedSourceLanguage === "en" ? "es" : "en";
+    }
+    return {
+      translatedText: parsed.translatedText || "",
+      literalText: parsed.literalText || undefined,
+      grammarNotes: Array.isArray(parsed.grammarNotes) ? parsed.grammarNotes : [],
+      detectedVerbs: Array.isArray(parsed.detectedVerbs) ? parsed.detectedVerbs : [],
+      detectedAdjectives: Array.isArray(parsed.detectedAdjectives) ? parsed.detectedAdjectives : [],
+      detectedAdverbs: Array.isArray(parsed.detectedAdverbs) ? parsed.detectedAdverbs : [],
+      suggestedTransforms: Array.isArray(parsed.suggestedTransforms) && parsed.suggestedTransforms.length
+        ? parsed.suggestedTransforms
+        : [
+            { id: "past", label: "Make it past tense" },
+            { id: "future", label: "Make it future tense" },
+            { id: "casual", label: "Make it more casual" },
+            { id: "poetic", label: "Make it more poetic" },
+          ],
+      resolvedSourceLanguage,
+      resolvedTargetLanguage,
+    };
+  } catch (e) {
+    console.error("translateRich failed:", e);
+    throw new Error("Rich translation failed");
+  }
+}
+
+export type SentenceTransformResult = {
+  transformedText: string;
+  translatedText: string;
+  note: string;
+};
+
+export async function transformSentence(
+  card: { sourceText: string; translatedText: string; sourceLanguage?: string | null; targetLanguage: string },
+  transform: string,
+  locale?: string,
+): Promise<SentenceTransformResult> {
+  const localeSegment = getLocalePromptSegment(locale);
+  // Identify which side of the card actually holds the Spanish text. For
+  // EN→ES cards the Spanish is `translatedText`; for ES→EN cards it is
+  // `sourceText`. Operating on the wrong side would tense-shift English.
+  const spanishIsSource = card.sourceLanguage === "es" || card.targetLanguage === "en";
+  const spanishText = spanishIsSource ? card.sourceText : card.translatedText;
+  const englishText = spanishIsSource ? card.translatedText : card.sourceText;
+  const layerInstructions: Record<string, string> = {
+    past: "Rewrite the Spanish sentence in the past tense (pretérito or imperfecto, choose what's natural).",
+    future: "Rewrite the Spanish sentence in the future tense (use ir + a + infinitive AND simple future, pick the more natural one).",
+    casual: "Rewrite the Spanish sentence in a more casual, conversational register, using locale-appropriate informalisms.",
+    poetic: "Rewrite the Spanish sentence in a more poetic, evocative register.",
+    subject: "Expand by making the subject richer and more specific.",
+    verb: "Expand by adding a more vivid or precise verb (or stacking verbs).",
+    object: "Expand by adding or enriching the object.",
+    adjective: "Expand by adding one descriptive adjective that fits naturally.",
+    adverb: "Expand by adding one adverb that adds nuance.",
+    place: "Expand by adding a place phrase (en…, a…, hacia…).",
+    time: "Expand by adding a time phrase (cuando…, ayer, mañana, mientras…).",
+    reason: "Expand by adding a reason clause (porque…, ya que…, para…).",
+    reflection: "Add a short reflective second clause that comments on the meaning.",
+  };
+  const instr = layerInstructions[transform] || `Apply this transformation: ${transform}`;
+  const prompt = `Transform this Spanish sentence.
+${localeSegment}
+
+English meaning: "${englishText}"
+Spanish: "${spanishText}"
+
+Task: ${instr}
+
+Return JSON:
+{
+  "transformedText": "the new Spanish sentence",
+  "translatedText": "natural English translation of it",
+  "note": "1 sentence explaining what changed grammatically"
+}`;
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You transform Spanish sentences for a learner. JSON only." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.6,
+    });
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("no response");
+    const parsed = JSON.parse(content);
+    return {
+      transformedText: parsed.transformedText || "",
+      translatedText: parsed.translatedText || "",
+      note: parsed.note || "",
+    };
+  } catch (e) {
+    console.error("transformSentence failed:", e);
+    throw new Error("Sentence transform failed");
+  }
+}
+
+export type SeededCardForPrompt = {
+  sourceText: string;
+  translatedText: string;
+  literalText?: string | null;
+  grammarNotes?: { term: string; note: string }[] | null;
+};
+
+export function buildSeededSystemPrompt(
+  card: SeededCardForPrompt,
+  locale?: string,
+): string {
+  const localeSegment = getLocalePromptSegment(locale);
+  const notes = Array.isArray(card.grammarNotes)
+    ? card.grammarNotes.map((g) => `- ${g.term}: ${g.note}`).join("\n")
+    : "";
+  return `You are Vallarta Voz, a warm Spanish learning companion.
+${localeSegment}
+
+The user is studying this specific sentence right now:
+- Original: "${card.sourceText}"
+- Translation: "${card.translatedText}"
+${card.literalText ? `- Literal: "${card.literalText}"` : ""}
+${notes ? `Grammar notes already shown:\n${notes}` : ""}
+
+Your first response MUST reference this sentence directly (don't start from zero). Help the user explore it: explain a verb, suggest a transformation, ask if they want to try a variation, or invite a related sentence. Keep it short, warm, encouraging, and practical.`;
+}
+
+export async function seededChatReply(
+  card: SeededCardForPrompt,
+  messages: { role: string; content: string }[],
+  locale?: string,
+): Promise<string> {
+  const system = buildSeededSystemPrompt(card, locale);
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: system },
+        ...messages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+      ],
+      temperature: 0.8,
+      max_tokens: 400,
+    });
+    return completion.choices[0].message.content || "Lo siento, didn't catch that — try again?";
+  } catch (e) {
+    console.error("seededChatReply failed:", e);
+    throw new Error("Seeded chat failed");
   }
 }
 

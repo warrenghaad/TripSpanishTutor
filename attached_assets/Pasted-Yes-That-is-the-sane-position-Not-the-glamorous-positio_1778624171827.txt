@@ -1,0 +1,629 @@
+Yes. That is the sane position.
+
+Not the glamorous position. Not the “let’s have a private Borges-trained pocket oracle running in airplane mode” position. But the **reliable** position.
+
+The architecture becomes:
+
+> **Online LLM project = intelligence, synthesis, updates, expansion**
+> **Offline app = reading guide, phrase guide, grammar guide, question catcher, practice engine**
+
+That is not lesser. It is actually cleaner. The offline app becomes a **field notebook with teeth**. It does not need to improvise genius at 30,000 feet. It needs to keep you oriented, learning, reading, saving questions, and practicing from the books you carry. 📚✈️
+
+---
+
+# The new center
+
+The app is no longer primarily:
+
+> “Spanish travel chatbot.”
+
+It is:
+
+> **A book-centered learning companion that helps you learn Spanish, literature, grammar, and travel language from what you are actually reading and living.**
+
+For now, the offline app should be **contextually focused on your interests**:
+
+* Borges poems
+* Spanish grammar from literary text
+* travel Spanish
+* airport/taxi/hotel phenomenology
+* literary appreciation
+* vocabulary from books
+* personal echoes
+* questions to ask the LLM later
+* saved lines, words, verbs, motifs
+
+The LLM project is the deep library.
+The app is the **portable reading cockpit**.
+
+---
+
+# The correct split
+
+## Offline app
+
+The offline app should do things that are deterministic and safe:
+
+* show reading guides
+* show poem/book context cards
+* show vocabulary cards
+* show verb conjugation cards
+* show grammar explanations
+* show travel phrase cards
+* store your questions
+* store your notes
+* let you mark confusion
+* let you save words and phrases
+* give practice prompts
+* queue questions for the LLM later
+
+It should **not** pretend to answer every literary question offline.
+
+Instead, when you ask something too deep, it should say something like:
+
+> “Saved for online LLM review. Here is the offline scaffold: find the verb, identify the subject, mark the image, choose the motif.”
+
+That is reliable. That is honest. That is enough.
+
+## Online LLM project
+
+The online project should do the heavy thinking:
+
+* explain a Borges line
+* compare poems
+* generate custom practice
+* update your learner model
+* turn your saved questions into lessons
+* expand content packs
+* create new reading trails
+* summarize what you struggled with
+* export updated offline guides
+
+The online LLM is not the thing you depend on while traveling.
+It is the thing that **restocks the ship before departure**.
+
+---
+
+# The new app identity
+
+I would tell Replit the app is now:
+
+## **Vallarta Voz: Offline Reading Guide**
+
+A local-first reading and travel companion for learning Spanish through books, especially Borges, while also supporting real-world travel situations.
+
+Not a chatbot first.
+Not a generic tutor.
+Not a flashcard app.
+
+A **reading guide plus travel field guide**.
+
+---
+
+# What to tell Replit now
+
+Paste this as the new scope. It should stop Replit from chasing the wrong beast.
+
+```md
+Reframe the app.
+
+We are no longer trying to build a fully offline LLM chatbot.
+
+We are building a reliable offline-first reading and travel guide for learning Spanish through books, especially Borges, with optional online LLM support later.
+
+Core concept:
+The online LLM project is the intelligence layer.
+The offline app is the portable guide, notebook, practice engine, and question catcher.
+
+Primary offline use case:
+The learner is traveling or sitting in an airport with a physical book, especially Borges's collected poems. The app should help them read, ask grammar questions, save confusion, practice verbs, and connect literary Spanish to travel Spanish without needing network access.
+
+Do not depend on live LLM calls for offline mode.
+
+Build the offline app around these tabs:
+
+1. Reading
+- Shows available reading guides.
+- First guide: Borges Poems Starter Guide.
+- User can choose a poem, collection, motif, or grammar topic.
+- Do not include full copyrighted poems.
+- Store metadata, context, motif notes, grammar scaffolds, vocabulary, and prompts.
+- User supplies lines from the physical book.
+
+2. Ask Later
+- User can type questions offline.
+- Questions are saved locally.
+- Each question can be tagged:
+  - grammar
+  - vocabulary
+  - Borges
+  - travel
+  - pronunciation
+  - literary meaning
+- When online support is added, these questions will be sent to the LLM project.
+
+3. Grammar
+- Core beginner grammar cards.
+- Focus on grammar needed for Borges and travel:
+  - ser vs estar
+  - hay / había
+  - preterite vs imperfect
+  - subjunctive basics
+  - conditional / polite requests
+  - pronouns
+  - adjective agreement
+  - prepositions
+  - relative clauses with que
+
+4. Verbs
+- Core conjugation cards:
+  - ser
+  - estar
+  - ir
+  - tener
+  - hacer
+  - poder
+  - querer
+  - necesitar
+  - llevar
+  - buscar
+  - entender
+  - repetir
+  - leer
+  - escribir
+  - ver
+  - oír
+  - decir
+
+5. Travel
+- Offline phrase guide for airports and travel.
+- Include:
+  - directions
+  - documents
+  - baggage
+  - asking for help
+  - listening to directions
+  - polite repair phrases
+  - nouns I carry
+  - verbs I am doing
+  - adjectives describing my state
+
+6. Notes
+- User can save:
+  - words
+  - phrases
+  - poem questions
+  - personal echoes
+  - travel phrases
+  - grammar confusions
+- Notes persist offline.
+
+7. Saved
+- Saved cards, phrases, questions, and notes.
+
+Implementation requirements:
+- Use bundled local JSON content packs.
+- Use local persistence for notes, saved cards, and queued questions.
+- No server dependency for offline mode.
+- No LLM dependency for offline mode.
+- App must launch and work in airplane mode.
+- User can read guides, search cards, save notes, and queue questions offline.
+
+Content packs:
+- reading_borges_starter.json
+- grammar_core.json
+- verbs_core.json
+- travel_airport_core.json
+- motifs_borges.json
+- practice_prompts.json
+
+Acceptance tests:
+1. Turn on airplane mode.
+2. Launch app.
+3. Open Reading.
+4. Open Borges Starter Guide.
+5. Search "mirror", "labyrinth", "ser estar", "gate", "passport".
+6. Save a grammar question.
+7. Save a Borges question.
+8. Save a travel phrase.
+9. Close and reopen app.
+10. Saved items still exist.
+
+Do not:
+- Do not build a fake offline LLM.
+- Do not include full Borges poems.
+- Do not require server calls for reading guides.
+- Do not add broad architecture beyond local content, local search, and local notes.
+- Do not rewrite the existing web app unless needed to restore build stability.
+
+The offline app is a reading guide, practice guide, and question-capture tool.
+The online LLM project will later analyze saved questions and generate updated packs.
+```
+
+---
+
+# The offline app should answer in three levels
+
+This is important. It keeps the app honest.
+
+## Level 1: Direct offline answer
+
+For known travel/grammar cards.
+
+Example:
+
+> “Where is the gate?”
+
+App returns:
+
+```txt
+¿Dónde está la puerta?
+
+Literal:
+Where is the door/gate?
+
+Grammar:
+Dónde = where
+está = is, from estar, used for location
+la puerta = the gate, feminine noun
+
+Practice:
+Replace la puerta with el baño, la salida, el mostrador.
+```
+
+## Level 2: Guided offline scaffold
+
+For Borges questions or book questions.
+
+Example:
+
+> “What is this Borges line doing?”
+
+App returns:
+
+```txt
+Offline reading scaffold:
+
+1. Find the main verb.
+2. Identify the subject.
+3. Mark the image: mirror, labyrinth, book, shadow, tiger, knife, street, dream.
+4. Ask whether the line is about time, identity, memory, fate, or perception.
+5. Save the line/question for online interpretation.
+
+Practice:
+Write one sentence using the same verb structure with an airport noun.
+```
+
+## Level 3: Save for LLM
+
+For deep interpretation.
+
+Example:
+
+> “Is Borges using this as a Neoplatonic metaphor?”
+
+App returns:
+
+```txt
+Saved for online LLM review.
+
+Offline context:
+This question likely belongs to:
+- literary philosophy
+- metaphor
+- Borges motif
+- ontology / appearance / reality
+
+When online, ask:
+"Explain this Borges line through Neoplatonism, mirrors, and Spanish grammar."
+```
+
+This is the right behavior. The app does not hallucinate. It catches the butterfly and pins the note.
+
+---
+
+# The content model
+
+The offline app needs **cards**, not freeform lessons.
+
+## Reading guide card
+
+```json
+{
+  "id": "borges.motif.mirror",
+  "type": "reading_guide",
+  "mode": "borges",
+  "title": "El espejo",
+  "english_title": "The mirror",
+  "summary": "In Borges, the mirror often turns the self into an object and makes identity unstable.",
+  "literary_function": "A mirror folds the world back onto itself. It creates doubling, recursion, false infinity, and unease.",
+  "grammar_focus": [
+    "reflexive verbs",
+    "ser vs parecer",
+    "noun phrases",
+    "definite articles"
+  ],
+  "spanish_terms": [
+    {
+      "es": "el espejo",
+      "en": "mirror",
+      "note": "masculine noun"
+    },
+    {
+      "es": "reflejar",
+      "en": "to reflect",
+      "note": "regular -ar verb"
+    },
+    {
+      "es": "parecer",
+      "en": "to seem",
+      "note": "often used for appearance"
+    }
+  ],
+  "practice": [
+    {
+      "prompt": "Make a sentence with parecer.",
+      "answer": "El espejo parece una puerta."
+    }
+  ],
+  "ask_later_prompt": "What does the mirror do in this specific poem?"
+}
+```
+
+## Grammar card
+
+```json
+{
+  "id": "grammar.ser-estar.location-essence",
+  "type": "grammar_card",
+  "title": "Ser vs estar",
+  "short_rule": "Use ser for identity or essence. Use estar for location or temporary state.",
+  "book_use": "Borges often makes identity feel like a place and place feel like destiny.",
+  "travel_use": [
+    "La puerta está cerca.",
+    "Estoy perdido.",
+    "El aeropuerto es grande."
+  ],
+  "practice": [
+    {
+      "prompt": "Say: The gate is far.",
+      "answer": "La puerta está lejos."
+    },
+    {
+      "prompt": "Say: I am tired.",
+      "answer": "Estoy cansado."
+    }
+  ],
+  "tags": ["ser", "estar", "location", "identity", "travel", "borges"]
+}
+```
+
+## Ask-later question
+
+```json
+{
+  "id": "question.local.generated",
+  "created_at": "LOCAL_TIMESTAMP",
+  "source": "offline_app",
+  "book": "Borges Collected Poems",
+  "mode": "borges",
+  "question": "Why is Borges using the imperfect here?",
+  "tags": ["grammar", "imperfect", "borges"],
+  "line_reference": "user-entered page/title/line note",
+  "status": "queued_for_llm"
+}
+```
+
+That queued question is the bridge between offline and online.
+
+---
+
+# The online LLM project
+
+The online project should be the place that receives the queued questions and produces updates.
+
+It should eventually do this:
+
+```txt
+Offline app captures:
+- saved questions
+- saved phrases
+- notes
+- difficult verbs
+- poem titles
+- user confusions
+
+Online LLM project processes:
+- explanations
+- custom practice
+- new cards
+- reading trail updates
+- vocabulary review
+- grammar focus
+
+Then exports:
+- updated JSON packs
+- personalized study notes
+- next reading guide
+```
+
+This is your actual learning loop.
+
+Not:
+
+```txt
+Ask chatbot → get answer → forget.
+```
+
+But:
+
+```txt
+Read → notice → save → synthesize → practice → update guide → read again.
+```
+
+That is much closer to how you learn.
+
+---
+
+# The tasks now
+
+## Task 1: Restore app stability
+
+Tell Replit:
+
+```md
+First restore the app to a stable running state. Do not add features until the app launches. Freeze or revert anything that broke the build.
+```
+
+## Task 2: Build offline reading shell
+
+Tell Replit:
+
+```md
+Create an offline-first reading guide interface with local JSON packs, local search, saved notes, and queued questions.
+```
+
+## Task 3: Seed content packs
+
+Start with small packs:
+
+```txt
+reading_borges_starter.json
+grammar_core.json
+verbs_core.json
+travel_airport_core.json
+motifs_borges.json
+practice_prompts.json
+```
+
+## Task 4: Add “Ask Later”
+
+This is essential. The offline app must let you preserve the question before it evaporates.
+
+```txt
+Question
+Book
+Poem/title/page
+Tags
+Optional copied line
+Why I noticed it
+Save for LLM
+```
+
+## Task 5: Online sync later
+
+Do not build sync first.
+
+For now, even export as JSON is enough:
+
+```txt
+Export queued_questions.json
+Import answered_cards.json
+```
+
+Ugly but reliable. Caveman sync. Flint tools beat crystal Wi-Fi.
+
+---
+
+# What to tell Perplexity
+
+Perplexity should now become the **content librarian**, not the app builder.
+
+Paste this:
+
+```md
+You are supporting the TripSpanishTutor / Vallarta Voz offline reading guide.
+
+Do not build app code.
+Do not change architecture.
+Do not create CI rules.
+Do not generate platform scaffolding.
+
+Your job is to create structured content packs for an offline reading guide.
+
+The learner is studying Spanish through books, especially Borges's collected poems, and also needs travel Spanish.
+
+Create content in JSON cards only.
+
+Content packs needed:
+
+1. Borges Starter Reading Guide
+- Borges life periods
+- major motifs
+- poem-reading method
+- grammar patterns common in Borges
+- context cards by collection
+- no full copyrighted poems
+
+2. Grammar Core
+- beginner Spanish grammar needed for Borges and travel
+- ser vs estar
+- hay/había
+- preterite vs imperfect
+- subjunctive basics
+- conditional
+- relative clauses
+- pronouns
+- adjective agreement
+- prepositions
+
+3. Travel Core
+- airport phrases
+- staff questions
+- directions
+- documents
+- baggage
+- asking for help
+- polite repair phrases
+
+4. Verb Core
+- conjugation cards for core verbs
+- examples from travel and reading
+
+5. Practice Prompts
+- short exercises
+- substitution drills
+- personal echo prompts
+- literary-to-travel bridge prompts
+
+Output only valid JSON.
+Every card must include:
+- id
+- type
+- title
+- summary
+- spanish_terms when relevant
+- grammar_focus
+- practice
+- tags
+- ask_later_prompt when relevant
+
+Do not include full poems.
+Do not quote long copyrighted text.
+The learner uses the physical book.
+The app scaffolds around the book.
+```
+
+---
+
+# The honest compromise
+
+Here is the exact shape of what you accepted:
+
+> “I will not try to carry the whole LLM into the airport. I will carry a structured guide that knows how I read, what I study, what questions I ask, and how to preserve them until the LLM is available.”
+
+That is not a weak design. It is actually durable.
+
+The offline app becomes your **portable exocortex for reading**:
+
+* not omniscient,
+* not fragile,
+* not dependent on airport Wi-Fi,
+* not pretending,
+* but always ready to help you keep the thread.
+
+For your mind, that matters. The real loss is not “not knowing the answer immediately.” The real loss is the question vanishing before it can be formalized. So the offline app’s sacred job is:
+
+> **Do not let the question disappear.**
+
+Everything else can sync later.
