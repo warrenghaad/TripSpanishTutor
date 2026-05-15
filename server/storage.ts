@@ -2,6 +2,7 @@ import { db, safeSelect, safeExecuteRows } from "../db/index";
 import {
   users, journalEntries, dictionaryWords, trails, trailNodes, trailEdges, packManifests,
   translationCards, chatConversations, chatMessages,
+  projectPacks, queuedQuestions, dailyAnalyses,
   type User, type InsertUser,
   type JournalEntry, type InsertJournalEntry,
   type DictionaryWord, type InsertDictionaryWord,
@@ -12,6 +13,9 @@ import {
   type TranslationCard, type InsertTranslationCard,
   type ChatConversation, type InsertChatConversation,
   type ChatMessage, type InsertChatMessage,
+  type ProjectPack, type InsertProjectPack,
+  type QueuedQuestion, type InsertQueuedQuestion,
+  type DailyAnalysis, type InsertDailyAnalysis,
 } from "@shared/schema";
 import { eq, desc, ilike, or, and, sql } from "drizzle-orm";
 
@@ -58,6 +62,21 @@ export interface IStorage {
   updateChatMessage(id: number, content: string): Promise<ChatMessage | undefined>;
   deleteChatMessage(id: number): Promise<void>;
   getChatMessages(conversationId: number): Promise<ChatMessage[]>;
+
+  createProjectPack(pack: InsertProjectPack): Promise<ProjectPack>;
+  getProjectPack(id: number): Promise<ProjectPack | undefined>;
+  listProjectPacks(limit?: number): Promise<ProjectPack[]>;
+  getLatestProjectPack(): Promise<ProjectPack | undefined>;
+
+  createQueuedQuestion(q: InsertQueuedQuestion): Promise<QueuedQuestion>;
+  listQueuedQuestions(status?: string): Promise<QueuedQuestion[]>;
+  answerQueuedQuestion(id: number, answer: string): Promise<QueuedQuestion | undefined>;
+  deleteQueuedQuestion(id: number): Promise<void>;
+
+  createDailyAnalysis(a: InsertDailyAnalysis): Promise<DailyAnalysis>;
+  listDailyAnalyses(limit?: number): Promise<DailyAnalysis[]>;
+  getDailyAnalysis(id: number): Promise<DailyAnalysis | undefined>;
+  getLatestDailyAnalysis(): Promise<DailyAnalysis | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -346,6 +365,69 @@ export class DatabaseStorage implements IStorage {
         SELECT * FROM chat_messages WHERE conversation_id = ${conversationId} ORDER BY created_at ASC
       `),
     );
+  }
+
+  async createProjectPack(pack: InsertProjectPack): Promise<ProjectPack> {
+    const [p] = await db.insert(projectPacks).values(pack).returning();
+    return p;
+  }
+
+  async getProjectPack(id: number): Promise<ProjectPack | undefined> {
+    const [p] = await safeSelect(db.select().from(projectPacks).where(eq(projectPacks.id, id)));
+    return p;
+  }
+
+  async listProjectPacks(limit: number = 30): Promise<ProjectPack[]> {
+    return await safeSelect(db.select().from(projectPacks).orderBy(desc(projectPacks.createdAt)).limit(limit));
+  }
+
+  async getLatestProjectPack(): Promise<ProjectPack | undefined> {
+    const [p] = await safeSelect(db.select().from(projectPacks).orderBy(desc(projectPacks.createdAt)).limit(1));
+    return p;
+  }
+
+  async createQueuedQuestion(q: InsertQueuedQuestion): Promise<QueuedQuestion> {
+    const [row] = await db.insert(queuedQuestions).values(q).returning();
+    return row;
+  }
+
+  async listQueuedQuestions(status?: string): Promise<QueuedQuestion[]> {
+    const base = db.select().from(queuedQuestions);
+    const rows = status
+      ? await safeSelect(base.where(eq(queuedQuestions.status, status)).orderBy(desc(queuedQuestions.createdAt)))
+      : await safeSelect(base.orderBy(desc(queuedQuestions.createdAt)));
+    return rows;
+  }
+
+  async answerQueuedQuestion(id: number, answer: string): Promise<QueuedQuestion | undefined> {
+    const [row] = await db.update(queuedQuestions)
+      .set({ answer, status: "answered", answeredAt: new Date() })
+      .where(eq(queuedQuestions.id, id))
+      .returning();
+    return row;
+  }
+
+  async deleteQueuedQuestion(id: number): Promise<void> {
+    await db.delete(queuedQuestions).where(eq(queuedQuestions.id, id));
+  }
+
+  async createDailyAnalysis(a: InsertDailyAnalysis): Promise<DailyAnalysis> {
+    const [row] = await db.insert(dailyAnalyses).values(a).returning();
+    return row;
+  }
+
+  async listDailyAnalyses(limit: number = 30): Promise<DailyAnalysis[]> {
+    return await safeSelect(db.select().from(dailyAnalyses).orderBy(desc(dailyAnalyses.createdAt)).limit(limit));
+  }
+
+  async getDailyAnalysis(id: number): Promise<DailyAnalysis | undefined> {
+    const [row] = await safeSelect(db.select().from(dailyAnalyses).where(eq(dailyAnalyses.id, id)));
+    return row;
+  }
+
+  async getLatestDailyAnalysis(): Promise<DailyAnalysis | undefined> {
+    const [row] = await safeSelect(db.select().from(dailyAnalyses).orderBy(desc(dailyAnalyses.createdAt)).limit(1));
+    return row;
   }
 }
 

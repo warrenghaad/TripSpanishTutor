@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, BookOpen, PenTool, Search, MapPin, Package, Footprints, MessageSquare, Languages } from "lucide-react";
+import { Home, BookOpen, PenTool, Search, MapPin, Package, Footprints, MessageSquare, Languages, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/lib/locale-context";
 import { locales } from "@/lib/data";
@@ -15,7 +15,7 @@ export default function Navigation() {
     { href: "/", icon: Languages, label: "Translate" },
     { href: "/home", icon: Home, label: "Home" },
     { href: "/dictionary", icon: Search, label: "Dict" },
-    { href: "/learn", icon: BookOpen, label: "Learn" },
+    { href: "/day", icon: Sun, label: "Day" },
     { href: "/journal", icon: PenTool, label: "Journal" },
     { href: "/situations", icon: MessageSquare, label: "Situations" },
     { href: "/trip-pack", icon: Package, label: "Pack" },

@@ -749,6 +749,167 @@ export async function seededChatReply(
   }
 }
 
+// ---------- Daily Loop Companion ----------
+
+export type ProjectPackBuildInput = {
+  date: string;
+  outingType: string;
+  purpose?: string;
+  tone?: string;
+  locale?: string;
+  learnerProfile?: string;
+  recentTrails?: { name: string; tags?: string[]; recentLabels: string[] }[];
+  carriedOver?: { kind: string; text: string; note?: string }[];
+  vaultHints?: { kind: string; ref: string; gist?: string }[];
+};
+
+export type ProjectPackResult = {
+  likelyPhrases: { es: string; en: string; note?: string }[];
+  likelyReplies: { es: string; en: string; note?: string }[];
+  fallbacks: { es: string; en: string; note?: string }[];
+  nearbyDoors: { label: string; es?: string; en?: string; note?: string }[];
+  personaBrief: string;
+};
+
+export async function buildProjectPack(input: ProjectPackBuildInput): Promise<ProjectPackResult> {
+  const localeSegment = getLocalePromptSegment(input.locale);
+  const carriedSection = input.carriedOver && input.carriedOver.length
+    ? `\n\nCARRY-OVER from yesterday's debrief (weave these in where natural; mark them by quoting the text in a note):\n${input.carriedOver.map(c => `- [${c.kind}] ${c.text}${c.note ? ` — ${c.note}` : ""}`).join("\n")}`
+    : "";
+  const trailsSection = input.recentTrails && input.recentTrails.length
+    ? `\n\nRECENT TRAILS (what the learner has been exploring):\n${input.recentTrails.map(t => `- ${t.name}${t.tags?.length ? ` [${t.tags.join(", ")}]` : ""}: ${t.recentLabels.slice(0, 6).join(" / ")}`).join("\n")}`
+    : "";
+  const vaultSection = input.vaultHints && input.vaultHints.length
+    ? `\n\nVAULT MATERIAL (drawn from VallartaVoxVault):\n${input.vaultHints.slice(0, 12).map(v => `- [${v.kind}] ${v.ref}${v.gist ? `: ${v.gist}` : ""}`).join("\n")}`
+    : "";
+  const profileSection = input.learnerProfile ? `\n\nLEARNER PROFILE:\n${input.learnerProfile}` : "";
+
+  const prompt = `Build a tight, offline-first ProjectPack for a single outing the learner is about to do. The pack is the cached intelligence the app will rely on when there's no signal.
+${localeSegment}
+
+OUTING:
+- date: ${input.date}
+- place / type: ${input.outingType}
+- purpose: ${input.purpose || "(not specified)"}
+- tone wanted: ${input.tone || "warm, low-pressure"}
+${profileSection}${carriedSection}${trailsSection}${vaultSection}
+
+Generate FOUR buckets of cached intelligence the learner can lean on at the moment of need. Be concrete, short, locale-appropriate, and oriented to THIS outing — not generic travel Spanish.
+
+Return JSON:
+{
+  "personaBrief": "1-2 sentences on how the offline companion should sound for this outing",
+  "likelyPhrases": [10-16 entries the learner is most likely to want to say — { es, en, note? }],
+  "likelyReplies": [8-12 entries the learner is most likely to HEAR back — { es, en, note? }],
+  "fallbacks": [6-10 repair / re-ask / 'I didn't catch that' phrases — { es, en, note? }],
+  "nearbyDoors": [5-8 small adjacent things to notice or learn — { label, es?, en?, note? }]
+}`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a precision travel-Spanish companion. Build tight, outing-specific cached packs. Always respond with valid JSON only." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.5,
+    });
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("No response");
+    const parsed = JSON.parse(content);
+    return {
+      personaBrief: parsed.personaBrief || "",
+      likelyPhrases: Array.isArray(parsed.likelyPhrases) ? parsed.likelyPhrases : [],
+      likelyReplies: Array.isArray(parsed.likelyReplies) ? parsed.likelyReplies : [],
+      fallbacks: Array.isArray(parsed.fallbacks) ? parsed.fallbacks : [],
+      nearbyDoors: Array.isArray(parsed.nearbyDoors) ? parsed.nearbyDoors : [],
+    };
+  } catch (e) {
+    console.error("buildProjectPack failed:", e);
+    throw new Error("Failed to build project pack");
+  }
+}
+
+export type AnalyzeDayInput = {
+  date: string;
+  rawOffload: string;
+  outingType?: string;
+  locale?: string;
+  trailNodes?: { kind: string; label: string }[];
+  queuedQuestions?: { query: string; context?: string | null }[];
+  packSummary?: string;
+};
+
+export type AnalyzeDayResult = {
+  summary: string;
+  extractedNeeds: string[];
+  missedTranslations: { en?: string; es?: string; note?: string }[];
+  heardPhrases: { es: string; gloss?: string }[];
+  avoidedExpressions: { en?: string; es?: string; note?: string }[];
+  emotionalMoments: string[];
+  promotedItems: { kind: string; text: string; note?: string }[];
+};
+
+export async function analyzeDay(input: AnalyzeDayInput): Promise<AnalyzeDayResult> {
+  const localeSegment = getLocalePromptSegment(input.locale);
+  const trailSection = input.trailNodes?.length
+    ? `\n\nTrail captures from today (${input.trailNodes.length}):\n${input.trailNodes.slice(0, 30).map(n => `- [${n.kind}] ${n.label}`).join("\n")}`
+    : "";
+  const queuedSection = input.queuedQuestions?.length
+    ? `\n\nQuestions the offline cache could not answer (${input.queuedQuestions.length}):\n${input.queuedQuestions.slice(0, 20).map(q => `- ${q.query}${q.context ? ` (${q.context})` : ""}`).join("\n")}`
+    : "";
+  const packSection = input.packSummary ? `\n\nThis morning's ProjectPack focus: ${input.packSummary}` : "";
+
+  const prompt = `You are running an After-mode debrief for a Spanish-learning traveler in Puerto Vallarta. The user just offloaded a messy English/Spanish account of their day. Read it warmly and extract structured learning — without judgment, without fixing them.
+${localeSegment}
+
+OUTING DATE: ${input.date}${input.outingType ? `\nOUTING: ${input.outingType}` : ""}${packSection}${trailSection}${queuedSection}
+
+USER'S RAW OFFLOAD:
+"""
+${input.rawOffload.slice(0, 6000)}
+"""
+
+Return JSON. Each list short (2-6 items max). Quote the user's own phrasing where possible. The promoted items are the ones tomorrow's pack should pre-load.
+
+{
+  "summary": "2-3 warm sentences about how the day went and what's worth carrying forward",
+  "extractedNeeds": ["short labels for needs that recurred (e.g. 'asking the bill again', 'declining without offending')"],
+  "missedTranslations": [{ "en": "what they wanted to say in English", "es": "the Spanish they could have used", "note": "1-line teach" }],
+  "heardPhrases": [{ "es": "exact Spanish they heard but couldn't fully parse", "gloss": "the meaning" }],
+  "avoidedExpressions": [{ "en": "what they wanted to express but skipped", "es": "the Spanish version", "note": "why it might have felt scary + a softer alternative" }],
+  "emotionalMoments": ["short notes on social/emotional beats worth honoring"],
+  "promotedItems": [{ "kind": "phrase|reply|fallback|door", "text": "the literal text to surface tomorrow", "note": "why it earned its way in" }]
+}`;
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a warm, precise debrief partner. Always respond with valid JSON only." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.5,
+    });
+    const content = completion.choices[0].message.content;
+    if (!content) throw new Error("No response");
+    const parsed = JSON.parse(content);
+    return {
+      summary: parsed.summary || "",
+      extractedNeeds: Array.isArray(parsed.extractedNeeds) ? parsed.extractedNeeds : [],
+      missedTranslations: Array.isArray(parsed.missedTranslations) ? parsed.missedTranslations : [],
+      heardPhrases: Array.isArray(parsed.heardPhrases) ? parsed.heardPhrases : [],
+      avoidedExpressions: Array.isArray(parsed.avoidedExpressions) ? parsed.avoidedExpressions : [],
+      emotionalMoments: Array.isArray(parsed.emotionalMoments) ? parsed.emotionalMoments : [],
+      promotedItems: Array.isArray(parsed.promotedItems) ? parsed.promotedItems : [],
+    };
+  } catch (e) {
+    console.error("analyzeDay failed:", e);
+    throw new Error("Day debrief failed");
+  }
+}
+
 export async function translateText(
   text: string,
   targetLang: string,

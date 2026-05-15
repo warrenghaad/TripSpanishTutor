@@ -670,13 +670,13 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div
-              onClick={() => setLocation('/learn')}
+              onClick={() => setLocation('/day')}
               className="bg-gradient-to-br from-secondary to-secondary/80 rounded-xl p-4 text-white cursor-pointer hover:shadow-lg transition-all"
-              data-testid="card-daily-essentials"
+              data-testid="card-day-companion"
             >
               <BookOpen className="w-5 h-5 mb-2 opacity-80" />
-              <h3 className="font-display font-bold text-sm mb-0.5">Daily Essentials</h3>
-              <p className="text-white/70 text-[11px]">Core vocabulary practice</p>
+              <h3 className="font-display font-bold text-sm mb-0.5">Day Companion</h3>
+              <p className="text-white/70 text-[11px]">Pack · live · debrief</p>
             </div>
             <div
               onClick={() => setLocation('/journal')}

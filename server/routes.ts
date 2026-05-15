@@ -5,7 +5,13 @@ import {
   analyzeSpanishText, chatWithAssistant, translateText, lookupWord, extractVocabulary,
   buildTripPack, summarizeTrail, nearbyDoors,
   translateRich, transformSentence, seededChatReply,
+  buildProjectPack, analyzeDay,
 } from "./ai-service";
+import {
+  loadLearnerProfileExcerpt, loadRecentWordlens, loadRecentGrammar,
+  loadRecentResearch, loadAtelierSnippets,
+} from "./vault/loader";
+import type { ProjectPackPayload, DailyAnalysisPayload } from "@shared/schema";
 import type { ChatConversation } from "@shared/schema";
 
 export async function registerRoutes(
@@ -405,26 +411,267 @@ export async function registerRoutes(
     }
   });
 
-  // -------- Learn modes (vault-sourced) --------
+  // -------- Daily Loop Companion (/day surface) --------
   //
-  // GET /api/learn/modes
-  //   Returns content for the /learn page grouped into the three project
-  //   modes — airport, atelier (literary authors), bridge. The grouped
-  //   payload is built once at server boot (`primeLearnCache`) and
-  //   refreshed by a chokidar watcher on 06_Atelier / 08_ProjectPacks /
-  //   11_Research, so this handler always serves a static in-memory
-  //   snapshot — no per-request disk walk. Each mode includes an `empty`
-  //   hint that tells the user exactly which template + folder to drop a
-  //   file into to populate it.
-  app.get("/api/learn/modes", async (_req, res) => {
+  // The /day page replaced the legacy airport/atelier/bridge /learn surface
+  // with a single chat-centric loop with four modes (Before / Out-Offline /
+  // Out-Online / After). The legacy /learn route, page, and vault learn-mode
+  // cache were fully removed in task #8 — nothing reads them any more.
+
+  // POST /api/day/project-packs
+  //   Build (and persist) a ProjectPack for an outing. Pulls learner
+  //   profile, recent trails, recent vault wordlens/grammar, plus carry-over
+  //   items from the last DailyAnalysis so the loop closes morning↔night.
+  app.post("/api/day/project-packs", async (req, res) => {
     try {
-      const { getLearnModes } = await import("./vault/learn");
-      const modes = await getLearnModes();
-      res.json(modes);
+      const { date, outingType, purpose, tone, locale, recentTrailIds } = req.body || {};
+      if (!date || !outingType) return res.status(400).json({ error: "Missing date or outingType" });
+
+      const [profile, words, grammar, research, atelier, trails, prevAnalysis] = await Promise.all([
+        loadLearnerProfileExcerpt(800),
+        loadRecentWordlens(8),
+        loadRecentGrammar(4),
+        loadRecentResearch(6),
+        loadAtelierSnippets(4),
+        storage.listTrails(),
+        storage.getLatestDailyAnalysis(),
+      ]);
+
+      // Load a few labels per recent trail so the AI sees what the user has
+      // actually been spelunking lately.
+      const recentTrails = await Promise.all(
+        trails.slice(0, 5).map(async (t) => {
+          const nodes = await storage.getTrailNodes(t.id);
+          return {
+            name: t.name,
+            tags: Array.isArray(t.tags) ? (t.tags as string[]) : [],
+            recentLabels: nodes.slice(-6).map((n) => n.label),
+          };
+        }),
+      );
+
+      const carriedOver = prevAnalysis
+        ? ((prevAnalysis.promotedItems as { kind: string; text: string; note?: string }[]) || [])
+        : [];
+
+      const vaultHints: { kind: string; ref: string; gist?: string }[] = [
+        ...words.map((w) => ({ kind: "wordlens", ref: w.word, gist: w.gloss })),
+        ...grammar.map((g) => ({ kind: "grammar", ref: g.title })),
+        // Re-incorporate the legacy /learn vault sources so ProjectPack
+        // building still sees Perplexity research drops + atelier material.
+        ...research.map((r) => ({
+          kind: r.mode ? `research:${r.mode}` : "research",
+          ref: r.title,
+          gist: r.excerpt,
+        })),
+        ...atelier.map((a) => ({
+          kind: "atelier",
+          ref: `${a.author} — ${a.title}`,
+          gist: a.excerpt,
+        })),
+      ];
+
+      const ai = await buildProjectPack({
+        date,
+        outingType,
+        purpose,
+        tone,
+        locale,
+        learnerProfile: profile,
+        recentTrails,
+        carriedOver,
+        vaultHints,
+      });
+
+      const payload: ProjectPackPayload = {
+        likelyPhrases: ai.likelyPhrases,
+        likelyReplies: ai.likelyReplies,
+        fallbacks: ai.fallbacks,
+        nearbyDoors: ai.nearbyDoors,
+        personaBrief: ai.personaBrief,
+        carriedOver,
+        sources: [
+          ...vaultHints.map((v) => ({ kind: v.kind, ref: v.ref })),
+          ...trails.slice(0, 5).map((t) => ({ kind: "trail", ref: `${t.id}:${t.name}` })),
+          ...(prevAnalysis ? [{ kind: "prev-analysis", ref: String(prevAnalysis.id) }] : []),
+        ],
+      };
+
+      const trailIds = Array.isArray(recentTrailIds)
+        ? recentTrailIds.filter((n: unknown): n is number => typeof n === "number")
+        : trails.slice(0, 5).map((t) => t.id);
+      const sizeBytes = Buffer.byteLength(JSON.stringify(payload), "utf8");
+
+      const pack = await storage.createProjectPack({
+        date,
+        outingType,
+        purpose: purpose || null,
+        tone: tone || null,
+        locale: locale || null,
+        payload,
+        trailIds,
+        prevAnalysisId: prevAnalysis?.id ?? null,
+        sizeBytes,
+      });
+
+      // Record a manifest row so the pack registry tracks size/version/scope.
+      try {
+        await storage.recordPackManifest({
+          locale: locale || "neutral",
+          scope: { kind: "project-pack", outingType, purpose: purpose || null, packId: pack.id },
+          sizeBytes,
+          version: 1,
+        });
+      } catch (manifestErr: any) {
+        console.warn("project pack manifest record failed:", manifestErr?.message || manifestErr);
+      }
+
+      res.json(pack);
     } catch (e: any) {
-      console.error("learn modes error:", e);
-      res.status(500).json({ error: e?.message || "Failed to load learn modes" });
+      console.error("project pack build error:", e);
+      res.status(500).json({ error: e?.message || "Failed to build project pack" });
     }
+  });
+
+  app.get("/api/day/project-packs", async (_req, res) => {
+    try {
+      res.json(await storage.listProjectPacks(30));
+    } catch (e: any) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.get("/api/day/project-packs/latest", async (_req, res) => {
+    try {
+      const pack = await storage.getLatestProjectPack();
+      res.json(pack || null);
+    } catch (e: any) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.get("/api/day/project-packs/:id", async (req, res) => {
+    try {
+      const pack = await storage.getProjectPack(parseInt(req.params.id));
+      if (!pack) return res.status(404).json({ error: "Not found" });
+      res.json(pack);
+    } catch (e: any) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  // -------- Queued questions (Out-Offline buffer) --------
+  app.post("/api/day/queued-questions", async (req, res) => {
+    try {
+      const { query, context, projectPackId, trailId } = req.body || {};
+      if (!query || typeof query !== "string") return res.status(400).json({ error: "Missing query" });
+      const q = await storage.createQueuedQuestion({
+        query,
+        context: context || null,
+        projectPackId: projectPackId ?? null,
+        trailId: trailId ?? null,
+        status: "pending",
+        answer: null,
+      });
+      res.json(q);
+    } catch (e: any) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.get("/api/day/queued-questions", async (req, res) => {
+    try {
+      const status = typeof req.query.status === "string" ? req.query.status : undefined;
+      res.json(await storage.listQueuedQuestions(status));
+    } catch (e: any) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.post("/api/day/queued-questions/:id/answer", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const queued = (await storage.listQueuedQuestions()).find((x) => x.id === id);
+      if (!queued) return res.status(404).json({ error: "Not found" });
+      const { locale } = req.body || {};
+      const reply = await chatWithAssistant(
+        [{ role: "user", content: queued.query }],
+        locale,
+      );
+      const updated = await storage.answerQueuedQuestion(id, reply);
+      res.json(updated);
+    } catch (e: any) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.delete("/api/day/queued-questions/:id", async (req, res) => {
+    try {
+      await storage.deleteQueuedQuestion(parseInt(req.params.id));
+      res.json({ success: true });
+    } catch (e: any) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  // -------- After-mode debrief --------
+  app.post("/api/day/debrief", async (req, res) => {
+    try {
+      const { date, rawOffload, projectPackId, locale, trailIds } = req.body || {};
+      if (!date || !rawOffload) return res.status(400).json({ error: "Missing date or rawOffload" });
+
+      const pack = projectPackId ? await storage.getProjectPack(projectPackId) : await storage.getLatestProjectPack();
+      const queued = await storage.listQueuedQuestions("pending");
+
+      const trailNodes: { kind: string; label: string }[] = [];
+      const idsToCheck: number[] = Array.isArray(trailIds) && trailIds.length
+        ? trailIds.filter((n: unknown): n is number => typeof n === "number")
+        : (pack && Array.isArray(pack.trailIds) ? pack.trailIds : []);
+      for (const tid of idsToCheck.slice(0, 5)) {
+        const nodes = await storage.getTrailNodes(tid);
+        for (const n of nodes.slice(-10)) trailNodes.push({ kind: n.kind, label: n.label });
+      }
+
+      const ai = await analyzeDay({
+        date,
+        rawOffload,
+        outingType: pack?.outingType,
+        locale: locale || pack?.locale || undefined,
+        trailNodes,
+        queuedQuestions: queued.map((q) => ({ query: q.query, context: q.context })),
+        packSummary: pack ? `${pack.outingType}${pack.purpose ? ` — ${pack.purpose}` : ""}` : undefined,
+      });
+
+      const payload: DailyAnalysisPayload = {
+        summary: ai.summary,
+        extractedNeeds: ai.extractedNeeds,
+        missedTranslations: ai.missedTranslations,
+        heardPhrases: ai.heardPhrases,
+        avoidedExpressions: ai.avoidedExpressions,
+        emotionalMoments: ai.emotionalMoments,
+      };
+
+      const analysis = await storage.createDailyAnalysis({
+        date,
+        projectPackId: pack?.id ?? null,
+        trailIds: idsToCheck,
+        rawOffload,
+        payload,
+        promotedItems: ai.promotedItems,
+      });
+
+      res.json(analysis);
+    } catch (e: any) {
+      console.error("debrief error:", e);
+      res.status(500).json({ error: e?.message || "Debrief failed" });
+    }
+  });
+
+  app.get("/api/day/analyses", async (_req, res) => {
+    try {
+      res.json(await storage.listDailyAnalyses(30));
+    } catch (e: any) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.get("/api/day/analyses/latest", async (_req, res) => {
+    try {
+      const a = await storage.getLatestDailyAnalysis();
+      res.json(a || null);
+    } catch (e: any) { console.error(e); res.status(500).json({ error: "Failed" }); }
+  });
+
+  app.get("/api/day/analyses/:id", async (req, res) => {
+    try {
+      const a = await storage.getDailyAnalysis(parseInt(req.params.id));
+      if (!a) return res.status(404).json({ error: "Not found" });
+      res.json(a);
+    } catch (e: any) { console.error(e); res.status(500).json({ error: "Failed" }); }
   });
 
   // -------- Vault browser (read-only) --------

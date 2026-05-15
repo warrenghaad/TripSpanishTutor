@@ -256,6 +256,71 @@ export async function loadRecentWordlens(limit = 8): Promise<{ word: string; glo
   return items.sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, limit).map(({ word, gloss }) => ({ word, gloss }));
 }
 
+/**
+ * Load recent research notes from `11_Research/<YYYY-MM-DD>/` so the
+ * ProjectPack builder can incorporate Perplexity-dropped material from the
+ * legacy /learn airport/atelier/bridge sources. Returns the most recent
+ * `limit` files across the most recent date folders, with a short body
+ * excerpt for AI context.
+ */
+export const ATELIER_DIR = path.join(VAULT_ROOT, "06_Atelier");
+
+export async function loadRecentResearch(limit = 6): Promise<{ kind: string; title: string; mode?: string; excerpt: string; date: string }[]> {
+  const dates = await listResearchDates();
+  const recentDates = dates.slice(-3).reverse();
+  const out: { kind: string; title: string; mode?: string; excerpt: string; date: string }[] = [];
+  for (const date of recentDates) {
+    if (out.length >= limit) break;
+    const files = await listMarkdownRecursive(path.join(RESEARCH_DIR, date));
+    for (const f of files) {
+      if (out.length >= limit) break;
+      try {
+        const raw = await fs.readFile(f, "utf8");
+        const { data, content } = matter(raw);
+        const title = typeof data.title === "string" ? data.title : path.basename(f, ".md");
+        const kind = typeof data.kind === "string" ? data.kind : "research";
+        const mode = typeof data.mode === "string" ? data.mode : undefined;
+        const excerpt = content.trim().replace(/\s+/g, " ").slice(0, 240);
+        out.push({ kind, title, mode, excerpt, date });
+      } catch { /* ignore unreadable file */ }
+    }
+  }
+  return out;
+}
+
+/**
+ * Load atelier snippets across `06_Atelier/<Author>/` (Borges, Neruda,
+ * Cortázar, Paz, Rulfo, plus Murals_PV / Music / Film). Returns up to
+ * `limit` short excerpts so the ProjectPack stays grounded in the
+ * learner's literary world.
+ */
+export async function loadAtelierSnippets(limit = 4): Promise<{ author: string; title: string; excerpt: string }[]> {
+  let entries: import("fs").Dirent[];
+  try {
+    entries = await fs.readdir(ATELIER_DIR, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const out: { author: string; title: string; excerpt: string }[] = [];
+  for (const e of entries) {
+    if (!e.isDirectory()) continue;
+    if (out.length >= limit) break;
+    const files = await listMarkdownRecursive(path.join(ATELIER_DIR, e.name));
+    for (const f of files) {
+      if (out.length >= limit) break;
+      try {
+        const raw = await fs.readFile(f, "utf8");
+        const { data, content } = matter(raw);
+        const title = typeof data.title === "string" ? data.title : path.basename(f, ".md");
+        const author = typeof data.author === "string" ? data.author : e.name;
+        const excerpt = content.trim().replace(/\s+/g, " ").slice(0, 200);
+        out.push({ author, title, excerpt });
+      } catch { /* ignore */ }
+    }
+  }
+  return out;
+}
+
 export async function loadRecentGrammar(limit = 4): Promise<{ title: string }[]> {
   const files = await listMarkdownRecursive(GRAMMAR_DIR);
   const items: { title: string; date: string }[] = [];

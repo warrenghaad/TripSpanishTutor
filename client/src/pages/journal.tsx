@@ -329,7 +329,7 @@ export default function Journal() {
                 </span>
               </div>
             </div>
-            <Link href="/learn">
+            <Link href="/day">
               <Button variant="ghost" size="sm" className="text-xs text-primary" data-testid="link-practice-verbs">
                 <Book className="w-3 h-3 mr-1" /> Practice verbs
               </Button>
@@ -431,9 +431,9 @@ export default function Journal() {
               </Card>
 
               <div className="flex justify-center">
-                <Link href="/learn">
+                <Link href="/day">
                   <Button variant="outline" className="text-secondary border-secondary" data-testid="link-practice-more">
-                    <Book className="w-4 h-4 mr-2" /> Practice these verbs in Sentence Builder
+                    <Book className="w-4 h-4 mr-2" /> Practice these verbs in Day Companion
                   </Button>
                 </Link>
               </div>

@@ -7,7 +7,7 @@ import { LocaleProvider } from "@/lib/locale-context";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Dictionary from "@/pages/dictionary";
-import Learn from "@/pages/learn";
+import DayPage from "@/pages/day";
 import Situations from "@/pages/situations";
 import Journal from "@/pages/journal";
 import TripPackPage from "@/pages/trip-pack";
@@ -27,7 +27,7 @@ function Router() {
       <Route path="/chat" component={ChatPage} />
       <Route path="/grow/:id" component={GrowPage} />
       <Route path="/dictionary" component={Dictionary} />
-      <Route path="/learn" component={Learn} />
+      <Route path="/day" component={DayPage} />
       <Route path="/situations" component={Situations} />
       <Route path="/journal" component={Journal} />
       <Route path="/trip-pack" component={TripPackPage} />

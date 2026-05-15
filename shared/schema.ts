@@ -185,3 +185,103 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
 
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
+
+// ---------- Daily Loop Companion ----------
+//
+// `project_packs` is the cached intelligence built in Before mode. The payload
+// holds the four cached_intelligence buckets from SPEC: likely_phrases,
+// likely_replies, fallbacks, nearby_doors — plus optional carriedOver markers
+// from a previous DailyAnalysis and a sources array describing how the pack
+// was assembled.
+export const projectPacks = pgTable("project_packs", {
+  id: serial("id").primaryKey(),
+  date: text("date").notNull(),
+  outingType: text("outing_type").notNull(),
+  purpose: text("purpose"),
+  tone: text("tone"),
+  locale: text("locale"),
+  payload: jsonb("payload").notNull(),
+  trailIds: jsonb("trail_ids").$type<number[]>().default(sql`'[]'::jsonb`).notNull(),
+  prevAnalysisId: integer("prev_analysis_id"),
+  sizeBytes: integer("size_bytes").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertProjectPackSchema = createInsertSchema(projectPacks, {
+  trailIds: z.array(z.number()).optional(),
+}).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertProjectPack = z.infer<typeof insertProjectPackSchema>;
+export type ProjectPack = typeof projectPacks.$inferSelect;
+
+// `queued_questions` are things the offline cache could not answer. They are
+// drained when the device is back online — either via the live LLM or by the
+// user dismissing them.
+export const queuedQuestions = pgTable("queued_questions", {
+  id: serial("id").primaryKey(),
+  projectPackId: integer("project_pack_id").references(() => projectPacks.id, { onDelete: "set null" }),
+  trailId: integer("trail_id").references(() => trails.id, { onDelete: "set null" }),
+  query: text("query").notNull(),
+  context: text("context"),
+  status: text("status").notNull().default("pending"),
+  answer: text("answer"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  answeredAt: timestamp("answered_at"),
+});
+
+export const insertQueuedQuestionSchema = createInsertSchema(queuedQuestions).omit({
+  id: true,
+  createdAt: true,
+  answeredAt: true,
+});
+export type InsertQueuedQuestion = z.infer<typeof insertQueuedQuestionSchema>;
+export type QueuedQuestion = typeof queuedQuestions.$inferSelect;
+
+// `daily_analyses` capture the After-mode debrief and a list of items to
+// promote into the next ProjectPack so the loop closes.
+export const dailyAnalyses = pgTable("daily_analyses", {
+  id: serial("id").primaryKey(),
+  date: text("date").notNull(),
+  projectPackId: integer("project_pack_id").references(() => projectPacks.id, { onDelete: "set null" }),
+  trailIds: jsonb("trail_ids").$type<number[]>().default(sql`'[]'::jsonb`).notNull(),
+  rawOffload: text("raw_offload").notNull(),
+  payload: jsonb("payload").notNull(),
+  promotedItems: jsonb("promoted_items").$type<{ kind: string; text: string; note?: string }[]>().default(sql`'[]'::jsonb`).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertDailyAnalysisSchema = createInsertSchema(dailyAnalyses, {
+  trailIds: z.array(z.number()).optional(),
+  promotedItems: z.array(z.object({
+    kind: z.string(),
+    text: z.string(),
+    note: z.string().optional(),
+  })).optional(),
+}).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertDailyAnalysis = z.infer<typeof insertDailyAnalysisSchema>;
+export type DailyAnalysis = typeof dailyAnalyses.$inferSelect;
+
+// Shape of the cached intelligence payload stored on a ProjectPack.
+export type ProjectPackPayload = {
+  likelyPhrases: { es: string; en: string; note?: string }[];
+  likelyReplies: { es: string; en: string; note?: string }[];
+  fallbacks: { es: string; en: string; note?: string }[];
+  nearbyDoors: { label: string; es?: string; en?: string; note?: string }[];
+  personaBrief?: string;
+  carriedOver?: { kind: string; text: string; note?: string }[];
+  sources?: { kind: string; ref: string }[];
+};
+
+export type DailyAnalysisPayload = {
+  summary: string;
+  extractedNeeds: string[];
+  missedTranslations: { en?: string; es?: string; note?: string }[];
+  heardPhrases: { es: string; gloss?: string }[];
+  avoidedExpressions: { en?: string; es?: string; note?: string }[];
+  emotionalMoments: string[];
+};
