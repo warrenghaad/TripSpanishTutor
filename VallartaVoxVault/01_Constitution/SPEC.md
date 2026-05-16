@@ -151,4 +151,8 @@ For copyrighted poems, prose, lyrics, or screenplays:
 - `01_Constitution/VAULT.md` — folder purposes at a glance
 - `01_Constitution/project-space.md` — the founding vision document
 - `01_Constitution/learner-profile.md` — who the learner is
+- `01_Constitution/CUBE.md` — **the geometry**: faces, edges, axes, vertices, the graph-as-learner-model
+- `01_Constitution/PRISM.md` — **how the Cube refracts under attention** to produce the next prompt
+- `12_Schemas/prompts/cube-emergence-rule.md` — the operational rule prepended to every surface's system prompt
 - `12_Schemas/Templates/` — copy-paste starting points
+- `CUBE-prism-vox.md` (repo root) — full theoretical audit with citations
