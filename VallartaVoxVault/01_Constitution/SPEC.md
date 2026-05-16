@@ -148,7 +148,9 @@ For copyrighted poems, prose, lyrics, or screenplays:
 
 ## 9. See also
 
+- `01_Constitution/LANGUAGE_PRISM.md` — **the canonical Prism architecture** (v0.1): 6 face-workspaces × 9-cubie grid, 12 typed edge-contracts, 8 vertices, myelination, trails, data model
 - `01_Constitution/VAULT.md` — folder purposes at a glance
 - `01_Constitution/project-space.md` — the founding vision document
-- `01_Constitution/learner-profile.md` — who the learner is
+- `01_Constitution/learner-profile.md` — who the learner is (defined through use)
 - `12_Schemas/Templates/` — copy-paste starting points
+- ~~`01_Constitution/CUBE.md`~~, ~~`01_Constitution/PRISM.md`~~, ~~`12_Schemas/prompts/cube-emergence-rule.md`~~, ~~`CUBE-prism-vox.md`~~ — **superseded by `LANGUAGE_PRISM.md` on 2026-05-16**. Kept on disk for audit trail. Do not cite as canon.

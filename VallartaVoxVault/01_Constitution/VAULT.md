@@ -18,13 +18,30 @@ Read this first if you are ChatGPT, Perplexity, or a new collaborator orienting 
 | `11_Research/` | **The Perplexity drop zone.** New research lands here as `11_Research/YYYY-MM-DD/<kind>-<slug>.md`. | …Perplexity is producing new content. |
 | `12_Schemas/Templates/` | Frontmatter templates — one per content kind. Copy-paste starting points. | …starting a new file. Do not edit the templates themselves. |
 
-## Three modes
+## The Language Prism
 
-The vault organizes meaning around three modes (declared in each file's frontmatter):
+The app's operational geometry is a Rubik's-style cube: 6 face-workspaces × 9-cubie grid × 12 typed edge-contracts × 8 trilateral vertices. Full spec: [`LANGUAGE_PRISM.md`](LANGUAGE_PRISM.md).
 
-- **`airport`** — phenomenology of travel: orientation, signs, asking, listening under pressure, motion, need.
-- **`atelier`** — literary + cultural Spanish: poems, prose, murals, music, film. The `06_Atelier/` folder lives here.
-- **`bridge`** — paired travel ↔ literary lines that share grammar or image (e.g. "Voy a la puerta" ↔ Borges's "la puerta").
+- **Translator** (front lateral) — situation-aware Spanish, voice-preserving.
+- **Atelier** (right lateral) — literary / cultural / art-history / music lens.
+- **Explorable World** (back lateral) — place- and situation-grounded Spanish.
+- **Creative Writing Lab** (left lateral) — sentence-gardening, variants, voice palette.
+- **Build & Contract** (top) — schema authoring, contract writing, scaffold generation.
+- **Troubleshoot & Validate** (bottom) — CAF reading, PCIC diagnostic, critic swarm, drift checks.
+
+Every face is a 3×3 cubie grid with universal rows (R1 Intake · R2 Work · R3 Render) and face-specific columns. 54 cubies total. Each cubie is a concrete tool-action you invoke in one click.
+
+Situations (airport, market, clinic) are **named trails through cubies**, not separate faces.
+
+## Three modes (legacy)
+
+Early files still declare one of three modes in frontmatter. These now map onto the cube:
+
+- **`airport`** → trails on **Explorable World** face + Translator
+- **`atelier`** → **Atelier** face (right lateral)
+- **`bridge`** → traversals of edges E1–E4 between lateral faces
+
+New files should declare a `face:` frontmatter key (one of `translator`, `atelier`, `explorable_world`, `creative_writing_lab`, `top`, `bottom`). Both keys accepted during migration.
 
 ## Builder roles
 
