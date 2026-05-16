@@ -150,5 +150,6 @@ For copyrighted poems, prose, lyrics, or screenplays:
 
 - `01_Constitution/VAULT.md` — folder purposes at a glance
 - `01_Constitution/project-space.md` — the founding vision document
-- `01_Constitution/learner-profile.md` — who the learner is
+- `01_Constitution/learner-profile.md` — who the learner is (defined through use)
+- `01_Constitution/FACES.md` — **the four faces of the Cube**: Travel, Curaduría, Curiosos, Atelier
 - `12_Schemas/Templates/` — copy-paste starting points

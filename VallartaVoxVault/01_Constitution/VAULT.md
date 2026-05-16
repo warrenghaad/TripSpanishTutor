@@ -18,13 +18,24 @@ Read this first if you are ChatGPT, Perplexity, or a new collaborator orienting 
 | `11_Research/` | **The Perplexity drop zone.** New research lands here as `11_Research/YYYY-MM-DD/<kind>-<slug>.md`. | …Perplexity is producing new content. |
 | `12_Schemas/Templates/` | Frontmatter templates — one per content kind. Copy-paste starting points. | …starting a new file. Do not edit the templates themselves. |
 
-## Three modes
+## The Four Faces of the Cube
 
-The vault organizes meaning around three modes (declared in each file's frontmatter):
+The writer lives on one of four Faces at any moment. The Faces are not menu items — the Prism selects them from the writer's opening utterance and the day's shape. Full spec: [`FACES.md`](FACES.md).
 
-- **`airport`** — phenomenology of travel: orientation, signs, asking, listening under pressure, motion, need.
-- **`atelier`** — literary + cultural Spanish: poems, prose, murals, music, film. The `06_Atelier/` folder lives here.
-- **`bridge`** — paired travel ↔ literary lines that share grammar or image (e.g. "Voy a la puerta" ↔ Borges's "la puerta").
+- **Travel** — the whole-trip Face. Pre-day, in-day, post-day, itinerary, locals events. Not a phrasebook.
+- **Curaduría** — the literary canon as Spanish-learning paths. Authors as curriculums. Phenomenologically indexed (apple → Neruda; insomnia → early Borges). The *palabra bonita* archive.
+- **Curiosos** — the spelunk surface. Trails inspired by any other Face. `04_Trails/` is the on-disk home.
+- **Atelier** — the human surface. Therapist + Translator + Conversant + Coach, swapped fluidly. The Translator role is the app's launch surface.
+
+## Three modes (legacy)
+
+Early files still declare one of three modes in frontmatter. These now map onto the Faces:
+
+- **`airport`** → **Travel** Face (a single moment-type inside Travel)
+- **`atelier`** → **Atelier** Face (literary + cultural surface, now the human surface)
+- **`bridge`** → cross-Face moves (Travel ↔ Curaduría is the canonical bridge)
+
+New files should declare a `face:` frontmatter key instead of `mode:`. The migration is in-flight; both keys are accepted.
 
 ## Builder roles
 
