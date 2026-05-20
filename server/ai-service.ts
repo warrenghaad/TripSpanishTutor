@@ -99,7 +99,7 @@ Respond in JSON format:
   "corrected": "The fully corrected ALL-SPANISH version of their entry",
   "corrections": [
     {
-      "original": "what they wrote (English or incorrect Spanish)",
+      "original": "what they wrote (English or non-standard Spanish)",
       "fixed": "correct Spanish version",
       "explanation": "Brief explanation - praise if they got it right, teach if it's new or corrected"
     }
