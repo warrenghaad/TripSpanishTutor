@@ -1,0 +1,182 @@
+GRAMMAR STUDY DOCUMENT SYSTEM
+=============================
+
+This is the canonical format for studying phrases suggested in chat.
+A phrase is the entry point, not the destination.
+
+A. PHRASE LAYER
+---------------
+PHRASE:
+LITERAL MEANING:
+NATURAL MEANING:
+REGISTER: neutral / polite / casual / formal / literary
+REGION: neutral / Mexico / Rioplatense / other
+SITUATION:
+
+B. GRAMMAR SKELETON
+-------------------
+Write the reusable pattern with slots.
+
+Example:
+¿Puede + INFINITIVE + COMPLEMENTO?
+= Can/Could you + VERB + COMPLEMENT?
+
+Then identify:
+SUBJECT:
+MAIN VERB:
+OBJECT / COMPLEMENT:
+PREPOSITIONS:
+ARTICLES:
+PRONOUNS:
+AGREEMENT:
+WORD ORDER:
+OMITTED / IMPLIED ELEMENTS:
+
+C. VERB MAP
+-----------
+For every important verb:
+LEMMA:
+MEANING:
+FORM IN PHRASE:
+PERSON:
+NUMBER:
+TENSE:
+MOOD:
+ASPECT / FUNCTION:
+IRREGULARITY:
+
+MINIMUM TENSE WEB
+- present: what happens / is true now
+- preterite: bounded completed event
+- imperfect: ongoing/background/habitual past
+- present perfect: what has happened / experience relevant now
+- future: what will happen
+- conditional: what would happen; also softens requests
+- present subjunctive: desired, uncertain, dependent, non-asserted possibilities
+- imperative: direct action/request
+
+Do not force every verb through every tense at once. Expand the tense web when the learner actually needs the contrast.
+
+D. VOCABULARY WEB
+-----------------
+HEADWORD:
+PART OF SPEECH:
+GENDER if noun:
+CORE MEANING:
+NEARBY WORDS:
+OPPOSITES:
+COLLOCATIONS:
+DERIVED WORDS:
+SITUATIONAL SUBSTITUTIONS:
+
+Example web:
+puerta = door / airport gate
+  la puerta de embarque = boarding gate
+  abrir = open
+  cerrar = close
+  abierta / cerrada = open / closed
+  entrada = entrance
+  salida = exit
+  umbral = threshold
+
+E. DICTION
+----------
+Explain why this word or construction fits.
+
+DEFAULT WORD:
+ALTERNATIVE 1:
+DIFFERENCE:
+ALTERNATIVE 2:
+DIFFERENCE:
+REGISTER / REGION NOTE:
+
+Example:
+Quiero... = I want...; direct and ordinary.
+Quisiera... = I would like...; conditional/imperfect-subjunctive-shaped polite formula, softer.
+Me gustaría... = I would like...; frames desire through gustar and often feels gentle/polite.
+
+F. ETYMOLOGY / CHUNKING
+-----------------------
+The goal is memory through structure, not trivia.
+
+WORD:
+ORIGIN:
+ROOT / PREFIX / SUFFIX:
+COGNATES / FAMILY:
+MEMORY HOOK:
+CONFIDENCE: HIGH / MEDIUM / RESEARCH
+
+Never invent an etymology because it sounds plausible.
+
+G. SYNTAX TRANSFORMATIONS
+-------------------------
+Create a small transformation ladder.
+
+1. SAME SKELETON, NEW NOUN
+2. SAME SKELETON, NEW VERB
+3. CHANGE PERSON
+4. CHANGE TIME
+5. CHANGE POLITENESS / REGISTER
+6. NEGATE IT
+7. TURN STATEMENT INTO QUESTION or vice versa
+
+H. POETRY / LITERARY BRIDGE
+---------------------------
+Optional, used when it illuminates the grammar or vocabulary.
+
+AUTHOR / WORK:
+SHORT EXCERPT OR PARAPHRASED PATTERN:
+GRAMMAR CONNECTION:
+IMAGE / MOTIF CONNECTION:
+TRAVEL OR DAILY-LIFE BRIDGE:
+
+Copyright rule: use metadata, commentary, learner-supplied text, public-domain text where appropriate, and only short excerpts from copyrighted works.
+
+Poetry is evidence that grammar can carry perception. It is not decoration and it is not required on every card.
+
+I. PRACTICE
+-----------
+TINY MOVE:
+One transformation that takes under 30 seconds.
+
+RECALL:
+Hide the Spanish and produce it from the situation.
+
+RECOGNITION:
+Identify the verb/tense/syntax in a new sentence.
+
+PERSONAL ECHO:
+Use the structure to say something actually true or interesting to the learner.
+
+J. GRAPH EDGES
+--------------
+Every completed card should add graph links.
+
+Possible edge types:
+USES_GRAMMAR
+USES_TENSE
+USES_MOOD
+USES_VERB
+USES_NOUN
+USES_ADJECTIVE
+USES_PREPOSITION
+VARIANT_OF
+CONTRASTS_WITH
+DERIVED_FROM
+ETYMOLOGICALLY_RELATED_TO
+USED_IN_SITUATION
+APPEARS_IN_CHAT
+BRIDGES_TO_MOTIF
+BRIDGES_TO_POETRY
+PRACTICED_BY
+
+K. SOURCE TRACE
+---------------
+SOURCE CHAT:
+DATE:
+ORIGINAL USER INTENT:
+ORIGINAL ATTEMPT if useful:
+CORRECTED / NATURAL FORM:
+NOTES:
+
+This source trace matters. The study system should remember how the grammar became necessary, not merely the final polished sentence.
