@@ -1,0 +1,210 @@
+TRIPSPANISHTUTOR CONCEPT GRAPH
+==============================
+
+PURPOSE
+-------
+This is a human-readable graph specification. It organizes acquired Spanish by relationships rather than by textbook chapter.
+
+NODE TYPES
+----------
+PHRASE
+GRAMMAR_CONCEPT
+VERB
+TENSE
+MOOD
+NOUN
+ADJECTIVE
+ADVERB
+PREPOSITION
+PRONOUN
+SYNTAX_PATTERN
+ETYMOLOGY_ROOT
+WORD_FAMILY
+SITUATION
+FUNCTION
+REGISTER
+REGION
+MOTIF
+POETRY_WORK
+AUTHOR
+CHAT
+PRACTICE_MOVE
+
+CORE GRAPH
+----------
+VOICE
+  -> expressed_in -> TRAVEL
+  -> expressed_in -> SMALL_TALK
+  -> expressed_in -> PERSONAL_REFLECTION
+  -> expressed_in -> MUSIC_ART_FILM
+  -> expressed_in -> LITERATURE
+
+SITUATION: AIRPORT
+  -> needs_function -> ORIENTATION
+  -> needs_function -> MOVEMENT
+  -> needs_function -> POSSESSION
+  -> needs_function -> NEED
+  -> needs_function -> PERMISSION
+  -> needs_function -> LISTENING_REPAIR
+  -> needs_function -> CONFIRMATION
+
+FUNCTION: ORIENTATION
+  -> grammar -> ESTAR_FOR_LOCATION
+  -> grammar -> HAY_EXISTENCE
+  -> syntax -> DONDE_ESTA_X
+  -> vocabulary -> CERCA / LEJOS / AQUI / ALLI
+
+FUNCTION: MOVEMENT
+  -> verbs -> IR / LLEGAR / SALIR / SEGUIR / GIRAR / SUBIR / BAJAR
+  -> prepositions -> A / HACIA / DESDE / POR
+  -> tense -> PRESENT
+  -> mood -> IMPERATIVE_FOR_DIRECTIONS
+
+FUNCTION: NEED
+  -> verbs -> NECESITAR / QUERER / PODER
+  -> syntax -> NECESITO_X
+  -> syntax -> QUIERO_INFINITIVE
+  -> syntax -> PUEDE_INFINITIVE
+  -> diction_contrast -> QUIERO / QUISIERA / ME_GUSTARIA
+
+FUNCTION: LISTENING_REPAIR
+  -> phrase -> PUEDE_REPETIR
+  -> phrase -> MAS_DESPACIO_POR_FAVOR
+  -> phrase -> NO_ENTIENDO_TODAVIA
+  -> phrase -> ENTONCES_X
+  -> grammar -> PODER_PLUS_INFINITIVE
+  -> grammar -> NEGATION
+  -> grammar -> TODAVIA_ASPECTUAL_TIME
+
+SITUATION: SMALL_TALK
+  -> functions -> GREETING / CURRENT_STATE / RECENT_PAST / BACKGROUND / FUTURE_PLANS / INTEREST
+  -> tense -> PRESENT
+  -> tense -> PRESENT_PERFECT
+  -> tense -> PRETERITE
+  -> tense -> IMPERFECT
+  -> tense -> FUTURE_PERIPHRASTIC
+
+QUESTION_FAMILY: HOW_HAVE_YOU_BEEN
+  -> present_perfect -> COMO_HAS_ESTADO
+  -> present -> COMO_ESTAS
+  -> regional_variant -> COMO_TE_HA_IDO
+
+QUESTION_FAMILY: ORIGIN_AND_GROWING_UP
+  -> preterite -> DONDE_NACISTE
+  -> imperfect -> DONDE_VIVIAS_DE_NINO
+  -> lexical -> CRECER
+  -> phrase -> DONDE_CRECISTE
+
+PERSONAL_REFLECTION
+  -> verbs -> SENTIR / PARECER / RECORDAR / PENSAR / VER / OIR / BUSCAR
+  -> grammar -> SER_VS_ESTAR
+  -> grammar -> PRETERITE_VS_IMPERFECT
+  -> grammar -> RELATIVE_QUE
+  -> grammar -> GERUND_PROGRESSIVE
+  -> diction -> SENSORY_ADJECTIVES
+  -> diction -> METAPHORICAL_NOUNS
+
+TENSE NETWORK
+-------------
+PRESENT
+  -> contrasts_with -> PRESENT_PROGRESSIVE
+  -> expands_to -> PRESENT_PERFECT
+
+PRETERITE
+  -> contrasts_with -> IMPERFECT
+  -> useful_for -> COMPLETED_TRAVEL_EVENT
+  -> useful_for -> NARRATIVE_EVENT
+
+IMPERFECT
+  -> useful_for -> BACKGROUND
+  -> useful_for -> HABIT
+  -> useful_for -> DESCRIPTION_IN_PAST
+  -> contrasts_with -> PRETERITE
+
+CONDITIONAL
+  -> useful_for -> HYPOTHETICAL
+  -> useful_for -> POLITE_REQUEST
+  -> diction_bridge -> QUISIERA / ME_GUSTARIA
+
+SUBJUNCTIVE
+  -> triggered_by -> DESIRE
+  -> triggered_by -> DOUBT
+  -> triggered_by -> NONEXISTENT_OR_UNCERTAIN_REFERENT
+  -> triggered_by -> EVALUATION
+  -> introduced_after -> CORE_INDICATIVE_PATTERNS
+
+WORD-FAMILY NETWORKS
+--------------------
+EMBARCAR
+  -> embarque
+  -> desembarcar
+  -> desembarque
+  -> tarjeta de embarque
+
+LLEGAR
+  -> llegada
+  -> contrasts_with -> salir / salida
+
+SALIR
+  -> salida
+  -> airport -> exit / departure
+  -> literary_motif -> threshold
+
+REFLEJAR
+  -> reflejo
+  -> espejo
+  -> motif -> MIRROR
+  -> literary_bridge -> BORGES
+
+RECORDAR
+  -> recuerdo
+  -> memoria
+  -> motif -> MEMORY
+  -> literary_bridge -> BORGES
+
+SITUATION TO LITERATURE BRIDGES
+-------------------------------
+AIRPORT_GATE
+  -> noun -> PUERTA
+  -> motif -> THRESHOLD
+  -> grammar -> ESTAR_LOCATION
+  -> movement -> IR_A
+  -> literature -> BORGES_THRESHOLD_IMAGERY
+
+LOOKING_FOR_EXIT
+  -> verb -> BUSCAR
+  -> noun -> SALIDA
+  -> motif -> LABYRINTH
+  -> preposition -> POR
+  -> literature -> BORGES / CORTAZAR
+
+ORDINARY_OBJECT
+  -> nouns_and_adjectives
+  -> article_agreement
+  -> sensory_description
+  -> motif -> OBJECT_AS_WORLD
+  -> literature -> NERUDA_ODE_LAB
+
+MIRROR
+  -> noun -> ESPEJO
+  -> verb -> REFLEJAR
+  -> verb -> PARECER
+  -> grammar -> REFLEXIVES
+  -> identity -> SER
+  -> literature -> BORGES / PIZARNIK
+
+GRAPH GROWTH RULE
+-----------------
+When a new phrase is learned:
+1. Add the PHRASE node.
+2. Link its situation and communicative function.
+3. Link each important verb.
+4. Link tense and mood.
+5. Link syntax pattern.
+6. Link vocabulary substitutions.
+7. Add etymology/word-family links only when supported.
+8. Link literary motif only when genuinely illuminating.
+9. Link the source CHAT.
+10. Add one PRACTICE_MOVE.
+
+The graph should reveal repeated structures. If ten phrases all use PODER + INFINITIVE, the learner should be shown that family as a concept, not asked to memorize ten unrelated strings.
