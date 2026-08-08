@@ -1,0 +1,176 @@
+CHAT GRAMMAR SUMMARY: SMALL TALK
+================================
+DATE: 2026-08-07
+MODE: Conversation / social contact
+
+CHAT PURPOSE
+------------
+Build natural questions for moments of shared time: how someone's day is going, work, what they like about it, past background, and what they are looking forward to later.
+
+CORE FUNCTION FAMILIES
+----------------------
+CURRENT STATE
+¿Cómo va tu día?
+Natural: How's your day going?
+
+¿Cómo estás?
+Natural: How are you?
+
+RECENT EXPERIENCE
+¿Cómo has estado?
+Natural: How have you been?
+Skeleton: ¿Cómo + haber present + participle?
+
+WORK
+¿En qué trabajas?
+Natural: What do you do for work? / What do you work in?
+
+¿Qué te gusta de tu trabajo?
+Natural: What do you like about your work?
+Skeleton: ¿Qué + indirect-object pronoun + gustar + de + noun?
+
+BACKGROUND / GROWING UP
+¿Dónde creciste?
+Natural: Where did you grow up?
+Skeleton: ¿Dónde + preterite?
+
+¿Dónde vivías de niño/de niña?
+Natural: Where did you live as a child?
+Skeleton: ¿Dónde + imperfect + background period?
+
+LATER / ANTICIPATION
+¿Qué vas a hacer más tarde?
+Natural: What are you going to do later?
+Skeleton: ir present + a + infinitive
+
+¿Qué te hace ilusión hacer después?
+Natural: What are you excited/looking forward to doing later?
+Register note: hacer ilusión is common in Spain; regional alternatives should be researched for Mexico before making it the default.
+
+GRAMMAR EXTRACTED
+-----------------
+1. PRESENT FOR CURRENT STATE / HABIT
+¿Cómo va tu día?
+¿En qué trabajas?
+
+2. PRESENT PERFECT FOR A PERIOD REACHING NOW
+¿Cómo has estado?
+has = second-person singular present of haber
+estado = past participle of estar
+Useful contrast with ¿Cómo estás? which asks current state more directly.
+
+3. PRETERITE FOR BOUNDED BIOGRAPHICAL EVENT
+¿Dónde creciste?
+creciste treats growing up as a completed biographical span when asking where it occurred.
+
+4. IMPERFECT FOR BACKGROUND / HABITUAL PAST
+¿Dónde vivías de niño?
+vivías frames residence as ongoing background during childhood.
+This creates a useful preterite/imperfect contrast:
+¿Dónde creciste? vs ¿Dónde vivías de niño?
+
+5. NEAR FUTURE
+¿Qué vas a hacer más tarde?
+Pattern: ir + a + infinitive.
+This is high-value conversational future language.
+
+6. GUSTAR SYNTAX
+¿Qué te gusta de tu trabajo?
+The liked thing is grammatical subject; te marks the experiencer.
+Do not translate the English word order mechanically.
+
+VERBS + TENSES
+---------------
+ir: va / vas; present; current progression metaphor and near-future auxiliary
+estar: estado; participle in present perfect
+haber: has; present auxiliary
+trabajar: trabajas; second-person present
+gustar: gusta; third-person singular present
+crecer: creciste; second-person preterite
+vivir: vivías; second-person imperfect
+hacer: hacer; infinitive after ir a
+
+VOCABULARY WEBS
+----------------
+DAY / TIME
+- el día
+- hoy = today
+- ahora = now
+- más tarde = later
+- esta noche = tonight
+- después = afterward/later
+- mañana = tomorrow / morning depending article/context
+
+WORK
+- el trabajo = work/job
+- trabajar = to work
+- compañero/a = coworker/classmate depending context
+- horario = schedule
+- turno = shift
+- disfrutar = enjoy
+- gustar = like
+
+BACKGROUND
+- crecer = grow / grow up
+- vivir = live
+- nacer = be born
+- de niño/a = as a child
+- antes = before / formerly
+
+SYNTAX PATTERNS
+---------------
+¿Cómo + verb + subject/context?
+¿En qué + verb?
+¿Qué te gusta de + noun?
+¿Dónde + preterite?
+¿Dónde + imperfect + background frame?
+¿Qué vas a + infinitive + time expression?
+
+DICTION / REGISTER
+------------------
+¿Cómo va tu día? is conversational and focuses on unfolding experience rather than a static state.
+¿Cómo has estado? opens a larger recent-time window.
+¿Dónde creciste? is compact biography.
+¿Dónde vivías de niño? invites narrative background and naturally teaches imperfect.
+
+ETYMOLOGY TARGETS
+-----------------
+trabajo / trabajar: investigate historical development and the well-known tripalium connection carefully before canonical inclusion; avoid oversimplified folk-etymology storytelling.
+crecer: Latin root and relation to English increase/crescent family is a promising memory web to verify.
+
+POETRY / LITERARY BRIDGES
+-------------------------
+Tense itself can become a literary bridge:
+- preterite places a boundary around an event
+- imperfect creates a field/background
+This distinction is useful both for ordinary biography and narrative/poetic description.
+
+TINY REVIEW SET
+---------------
+1. Ask how someone has been:
+¿Cómo has estado?
+
+2. Ask where they grew up:
+¿Dónde creciste?
+
+3. Change bounded biography to background:
+¿Dónde vivías de niño/de niña?
+
+4. Ask what they will do later using near future:
+¿Qué vas a hacer más tarde?
+
+5. Ask what they like about their work:
+¿Qué te gusta de tu trabajo?
+
+CONCEPT GRAPH EDGES
+-------------------
+SMALL_TALK -> CURRENT_STATE
+SMALL_TALK -> RECENT_PAST
+SMALL_TALK -> BIOGRAPHY
+SMALL_TALK -> FUTURE_PLANS
+COMO_HAS_ESTADO -> PRESENT_PERFECT
+DONDE_CRECISTE -> PRETERITE
+DONDE_VIVIAS -> IMPERFECT
+PRETERITE -> CONTRASTS_WITH -> IMPERFECT
+VAS_A_HACER -> IR_A_INFINITIVE
+QUE_TE_GUSTA -> GUSTAR_SYNTAX
