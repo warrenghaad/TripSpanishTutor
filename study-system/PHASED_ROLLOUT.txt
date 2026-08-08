@@ -1,0 +1,162 @@
+PHASED ROLLOUT: STUDY DOCUMENT + CONCEPT GRAPH
+==============================================
+
+PHASE 0 - CANONICAL TEXT LAYER (NOW)
+------------------------------------
+Goal: make the system readable anywhere, especially iOS.
+
+Deliverables:
+- study-system/README.txt
+- study-system/GRAMMAR_STUDY_SYSTEM.txt
+- study-system/CONCEPT_GRAPH.txt
+- study-system/PHASED_ROLLOUT.txt
+- chat-outputs/README.txt
+- initial chat grammar summaries
+
+Success test:
+A learner can open the repo on an iPhone, read a chat summary, follow a concept link by search, and understand why a phrase works without a database or app runtime.
+
+PHASE 1 - CHAT HARVESTING
+-------------------------
+Goal: convert real conversations into structured learning material.
+
+For each relevant chat:
+- summarize phrases actually suggested or attempted
+- preserve useful learner attempts and corrections
+- extract grammar concepts
+- extract verbs and tense contrasts
+- extract vocabulary webs
+- identify diction choices
+- identify etymology research targets
+- add literary bridges where already present or genuinely useful
+- add graph edges
+
+Naming convention:
+chat-outputs/YYYY-MM-DD_short-topic.txt
+
+Initial priority chats:
+1. airport phrases
+2. small talk
+3. situational shopping / leather bag / instruments
+4. personal reflection and sensory description
+5. grammar-focused chat
+6. haircut / barber conversation
+
+PHASE 2 - STUDY PACKS BY CONCEPT
+--------------------------------
+Goal: stop forcing review to follow chat chronology.
+
+Create concept packs such as:
+- concepts/estar-location.txt
+- concepts/poder-infinitive.txt
+- concepts/preterite-vs-imperfect.txt
+- concepts/ir-a-movement.txt
+- concepts/ser-estar.txt
+- concepts/question-words.txt
+- concepts/polite-requests.txt
+- concepts/sensory-description.txt
+
+Each concept pack pulls examples from multiple chats.
+
+PHASE 3 - TENSE LADDERS + VOCABULARY WEBS
+-----------------------------------------
+Goal: let one phrase unfold into a small language system.
+
+For high-frequency verbs, add:
+- present
+- preterite
+- imperfect
+- present perfect
+- near future / future where useful
+- conditional
+- subjunctive only where a real communicative need makes it meaningful
+
+For nouns/adjectives, add semantic webs:
+object -> descriptors -> actions -> locations -> opposites -> word family -> situations.
+
+Avoid giant undifferentiated vocabulary dumps.
+
+PHASE 4 - ETYMOLOGY LAYER
+-------------------------
+Goal: support memory through roots and families.
+
+Each etymology entry includes:
+- Spanish word
+- source language
+- root/morpheme analysis where valid
+- cognates and descendants
+- false-friend warning if relevant
+- confidence level
+- source/research note
+
+Research should be source-backed before claims are promoted to canonical study material.
+
+PHASE 5 - POETRY + LITERARY GRAMMAR LAB
+---------------------------------------
+Goal: use literature as high-density examples of grammar, diction, time, perception, and image.
+
+Organize by concept rather than author alone:
+- time / memory
+- threshold / door
+- mirror / seeming / identity
+- object / adjective / praise
+- city / movement / labyrinth
+- body / state / feeling
+
+Use short excerpts where appropriate, public-domain text when available, learner-supplied lines, and commentary. Do not reproduce long copyrighted poems.
+
+PHASE 6 - MACHINE-READABLE MIRROR
+---------------------------------
+Goal: make the same study system available to the app without sacrificing readable text.
+
+Add JSON or JSONL generated/mirrored from the text canon:
+- graph/nodes.jsonl
+- graph/edges.jsonl
+- cards/phrase_cards.jsonl
+- cards/concept_cards.jsonl
+- cards/chat_summaries.jsonl
+
+Do not make the database the only place where meaning lives.
+
+PHASE 7 - INTERACTIVE REVIEW
+----------------------------
+Goal: build flashcard/retrieval experiences from the graph.
+
+Review modes:
+- phrase -> meaning
+- situation -> phrase
+- phrase -> grammar skeleton
+- tense contrast
+- substitution
+- diction choice
+- word-family reconstruction
+- concept-neighbor exploration
+- personal echo
+
+Scheduling can later use exposure history and retrieval success, but the first version can be simple and deterministic.
+
+PHASE 8 - AUTOMATED CHAT SUMMARY PIPELINE
+-----------------------------------------
+Goal: new chats automatically produce candidate study artifacts.
+
+Pipeline:
+CHAT TRANSCRIPT
+ -> extract candidate phrases
+ -> identify grammar/verbs/vocabulary
+ -> generate draft summary
+ -> detect graph links
+ -> mark uncertain etymologies/research claims
+ -> human/LLM review
+ -> commit canonical text
+ -> rebuild machine-readable mirror
+
+Important: chat summaries are evidence of learning history. Do not silently overwrite old summaries when understanding changes. Add corrections or version notes.
+
+ROLLOUT PRIORITY
+----------------
+First: readable files + actual chat summaries.
+Second: concept packs.
+Third: tense/vocabulary/etymology depth.
+Fourth: app parsing and interactive review.
+
+The system earns complexity by accumulating real language encounters.
