@@ -1,0 +1,22 @@
+CHAT OUTPUT INDEX
+=================
+
+2026-08-07_airport-phrases.txt
+Focus: airport orientation, staff interaction, polite repair, present progressive, preterite arrival event, direct object pronoun, directions/imperatives.
+High-value concepts: ESTAR_FOR_LOCATION; PODER_PLUS_INFINITIVE; PRESENT_PROGRESSIVE; PRETERITE; BUSCAR_VS_ENCONTRAR; PUERTA_THRESHOLD.
+
+2026-08-07_small-talk.txt
+Focus: current state, recent experience, work, growing up, later plans.
+High-value concepts: PRESENT_PERFECT; PRETERITE_VS_IMPERFECT; IR_A_INFINITIVE; GUSTAR_SYNTAX; TIME_WORDS.
+
+NEXT SUMMARIES TO ADD
+---------------------
+- situational shopping: leather camera bag, stores, instruments
+- personal reflection / sensory prose: movement, perception, calm, image-language
+- grammar-focused workshop: first/third person, tense expansion, personality vocabulary
+- haircut/barber: physical description, degree/comparison, instructions, hair texture and styling
+- daily review synthesis combining repeated concepts across chats
+
+INDEX RULE
+----------
+Add one short entry per chat output. List the grammar concepts that should be reviewed across chats so chronology never becomes the only navigation method.
