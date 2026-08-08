@@ -1,0 +1,204 @@
+CHAT GRAMMAR SUMMARY: AIRPORT PHRASES
+=====================================
+DATE: 2026-08-07
+MODE: Airport / travel phenomenology
+
+CHAT PURPOSE
+------------
+Acquire language for orientation, movement, belongings, staff questions, listening under pressure, and polite repair.
+
+PHRASES LEARNED
+---------------
+¿Dónde está la puerta B12?
+Literal: Where is gate B12?
+Natural: Where's gate B12?
+Skeleton: ¿Dónde está + PLACE/THING?
+
+¿Puede repetir más despacio, por favor?
+Literal: Can you repeat more slowly, please?
+Natural: Could you say that again more slowly?
+Skeleton: ¿Puede + INFINITIVE + ADVERB/COMPLEMENT?
+
+Estoy aprendiendo español.
+Literal/Natural: I am learning Spanish.
+Skeleton: estar + gerundio
+
+Entiendo un poco, pero no todo.
+Natural: I understand a little, but not everything.
+
+Solo llevo esta mochila.
+Natural: I'm only carrying this backpack.
+Skeleton: llevar + direct object
+
+¿El vuelo sale a tiempo?
+Natural: Is the flight leaving on time?
+
+¿A qué hora empieza el abordaje?
+Natural: What time does boarding begin?
+
+¿Ya están abordando?
+Natural: Are they boarding already?
+Skeleton: estar + gerundio
+
+¿Dónde recojo mi equipaje?
+Natural: Where do I pick up my luggage?
+
+Mi maleta no llegó.
+Natural: My suitcase didn't arrive.
+Skeleton: completed event -> preterite
+
+Estoy buscando mi maleta.
+Natural: I'm looking for my suitcase.
+
+Busco mi maleta, pero no la encuentro.
+Natural: I'm looking for my suitcase, but I can't find it.
+
+Entonces sigo los letreros y subo.
+Natural: So I follow the signs and go up.
+Function: confirmation by restating directions.
+
+GRAMMAR EXTRACTED
+-----------------
+1. ESTAR FOR LOCATION
+¿Dónde está la puerta?
+Location of a thing uses estar.
+Graph: ORIENTATION -> ESTAR_FOR_LOCATION
+
+2. PODER + INFINITIVE
+¿Puede repetir?
+Puede is third-person singular present indicative of poder, used with usted understood.
+The infinitive repetir remains unconjugated after poder.
+Graph: LISTENING_REPAIR -> PODER_PLUS_INFINITIVE
+
+3. PRESENT PROGRESSIVE
+Estoy aprendiendo.
+Estoy buscando.
+Están abordando.
+Pattern: estar conjugated + gerund.
+Use when emphasizing an action in progress.
+Contrast: Busco mi maleta can also naturally mean I am looking for my suitcase without progressive morphology.
+
+4. PRETERITE FOR COMPLETED EVENT
+Mi maleta no llegó.
+llegó = third-person singular preterite of llegar.
+The non-arrival is treated as a bounded event tied to the completed flight/arrival context.
+
+5. DIRECT OBJECT PRONOUN
+No la encuentro.
+la = it, referring back to feminine singular maleta.
+
+6. IMPERATIVE IN DIRECTIONS
+Siga derecho.
+Gire a la izquierda.
+Suba las escaleras.
+These are formal usted commands, useful for recognizing what staff say.
+
+7. QUESTION WORDS
+¿Dónde...? = where?
+¿A qué hora...? = at what time?
+
+VERBS + TENSES
+---------------
+estar: está / estoy / están; present indicative; location and progressive auxiliary
+poder: puede; present indicative; polite ability/request frame
+repetir: infinitive after poder
+aprender: aprendiendo; gerund
+entender: entiendo; first-person present
+llevar: llevo; first-person present
+salir: sale; third-person present, scheduled departure
+empezar: empieza; third-person present
+abordar: abordando; gerund
+recoger: recojo; first-person present
+llegar: llegó; third-person preterite
+buscar: busco / buscando; present / gerund
+ encontrar: encuentro; first-person present
+seguir: sigo; first-person present
+subir: subo; first-person present
+
+VOCABULARY WEBS
+----------------
+PUERTA
+- la puerta = door / airport gate
+- puerta de embarque = boarding gate
+- embarque = boarding
+- abordar = to board
+- salida = exit / departure
+- entrada = entrance
+- literary bridge: threshold
+
+EQUIPAJE
+- el equipaje = luggage, mass/collective noun
+- la maleta = suitcase
+- la mochila = backpack
+- equipaje de mano = carry-on luggage
+
+DIRECTIONS
+- derecho = straight
+- izquierda = left
+- derecha = right
+- después de = after
+- antes de = before
+- al fondo = at the end/back
+- subir = go up
+- bajar = go down
+- seguir = follow/continue
+- girar = turn
+
+SYNTAX PATTERNS
+---------------
+¿Dónde está + noun?
+¿Puede + infinitive + complemento?
+Estoy + gerundio.
+Busco + direct object.
+No + direct-object-pronoun + verb.
+¿A qué hora + verb + subject?
+Entonces + restatement.
+
+DICTION / REGISTER
+------------------
+Disculpe / Perdón soften an interruption.
+¿Puede...? uses formal usted agreement and is appropriate with airport staff.
+Más despacio is a compact repair request and can stand alone with por favor.
+Entonces... is valuable because it confirms comprehension while creating active production.
+
+ETYMOLOGY TARGETS
+-----------------
+embarcar / embarque / desembarcar: research word-family history and relation to barco.
+llegar / llegada: research Latin development.
+equipaje: research French/Spanish history before canonical etymology note.
+
+POETRY / LITERARY BRIDGES
+-------------------------
+PUERTA -> threshold: the same noun can be an airport gate and a literary boundary/crossing.
+SALIDA -> exit/departure: useful for literal navigation and motifs of escape/path.
+Airport movement vocabulary can bridge to labyrinth/city/path imagery without changing the underlying grammar.
+
+TINY REVIEW SET
+---------------
+1. Replace puerta with baño:
+¿Dónde está el baño?
+
+2. Ask someone to speak more slowly:
+Más despacio, por favor.
+
+3. Change estoy buscando to simple present:
+Busco mi maleta.
+
+4. Say the suitcase did not arrive:
+Mi maleta no llegó.
+
+5. Confirm directions using entonces:
+Entonces sigo los letreros y subo.
+
+CONCEPT GRAPH EDGES
+-------------------
+AIRPORT -> ORIENTATION
+ORIENTATION -> ESTAR_FOR_LOCATION
+LISTENING_REPAIR -> PODER_PLUS_INFINITIVE
+PODER_PLUS_INFINITIVE -> PUEDE_REPETIR
+PRESENT_PROGRESSIVE -> ESTAR_PLUS_GERUND
+MAL_ARRIVAL_EVENT -> PRETERITE
+MALETA -> FEMININE_DIRECT_OBJECT_LA
+DIRECTIONS -> USTED_IMPERATIVE
+PUERTA -> THRESHOLD_MOTIF
+SALIDA -> LABYRINTH_PATH_MOTIF
